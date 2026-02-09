@@ -15,6 +15,8 @@ namespace Backend.Domain
         public int CurrentPlayerIndex { get; set; }
         public List<Player> Players { get; set; }
         public Board GameBoard { get; set; }
+        public List<RewardCard> RewardCardsDeck { get; set; }
+        public List<SurpriseCard> SurpriseCardsDeck { get; set; }
 
         public void StartGame() 
         {

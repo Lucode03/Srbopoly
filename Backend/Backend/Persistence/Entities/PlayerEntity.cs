@@ -13,7 +13,7 @@ namespace Backend.Persistence.Entities
         public int Position { get; set; }
         public Color Color { get; set; }
         public bool IsInJail { get; set; }
-        public List<PropertyFieldEntity> Properties { get; set; }
+        public List<PropertyFieldEntity>? Properties { get; set; }
         public UserEntity User {get; set;}
     }
 }
