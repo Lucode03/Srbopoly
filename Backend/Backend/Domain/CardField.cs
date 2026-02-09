@@ -8,7 +8,6 @@ namespace Backend.Domain
 {
     public abstract class CardField : Field
     {
-        public int CurrentCardIndex { get; set; }
         public abstract override void Action(Player player);
         public abstract Card DrawCard();
     }

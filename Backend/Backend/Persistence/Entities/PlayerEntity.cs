@@ -7,12 +7,13 @@ using System.Threading.Tasks;
 
 namespace Backend.Persistence.Entities
 {
-    public class PlayerEntity : UserEntity
+    public class PlayerEntity
     {
         public int Balance { get; set; }
         public int Position { get; set; }
         public Color Color { get; set; }
         public bool IsInJail { get; set; }
-        public ICollection<PropertyFieldEntity> Properties { get; set; }
+        public List<PropertyFieldEntity> Properties { get; set; }
+        public UserEntity User {get; set;}
     }
 }

@@ -10,6 +10,7 @@ namespace Backend.Domain
     {
         public String CardName { get; set; }
         public String Description { get; set; }
+        public int GameCardID {get; set;}
         public abstract void Apply(Player player);
     }
 }

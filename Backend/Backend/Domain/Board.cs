@@ -8,11 +8,12 @@ namespace Backend.Domain
 {
     public class Board
     {
+        public int Size {get; set;} = 40;
         public List<Field> Fields { get; set; }
 
         public Field GetField(int position)
         {
-            return Fields[position % 40];
+            return Fields[position % Size];
         }
     }
 }

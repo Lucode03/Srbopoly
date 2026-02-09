@@ -14,7 +14,9 @@ namespace Backend.Persistence.Entities
         public int MaxTurns { get; set; }
         public int CurrentTurn { get; set; }
         public int CurrentPlayerIndex { get; set; }
-        public ICollection<PlayerEntity> Players { get; set; }
+        public List<PlayerEntity> Players { get; set; }
         public BoardEntity Board { get; set; }
+        // public DeckRewardCardsOrderEntity RewardsDeck {get; set;}
+        // public DeckSurpriseCardsOrderEntity SurprisesDeck {get; set;}
     }
 }
