@@ -1,0 +1,36 @@
+using Backend.Domain;
+using Backend.Persistence.Entities;
+
+namespace Backend.Persistence.Mappers
+{
+    public class PropertyFieldMapper
+    {
+        public static PropertyFieldEntity ToEntity(PropertyField field)
+        {
+            return new PropertyFieldEntity
+            {
+                GameFieldID = field.GameFieldID,
+                Houses = field.Houses,
+                Hotels = field.Hotels,
+                OwnerID = field.Owner?.ID,
+                Owner = field.Owner!=null? PlayerMapper.ToEntity(field.Owner)
+                        : null
+            };
+        }
+        public static PropertyField ToBusiness(PropertyFieldEntity entity, List<Player> players)
+        {
+            var owner = entity.Owner != null
+                ? players.FirstOrDefault(p => p.ID == entity.OwnerID)
+                : null;
+
+            return new PropertyField
+            {
+                GameFieldID = entity.GameFieldID,
+                Houses = entity.Houses,
+                Hotels = entity.Hotels,
+                Owner = owner
+            };
+        }
+
+    }
+}

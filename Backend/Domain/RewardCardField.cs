@@ -8,14 +8,13 @@ namespace Backend.Domain
 {
     public class RewardCardField : CardField
     {
-        public List<RewardCard> Cards { get; set;}
         public override void Action(Player player)
         {
 
         }
-        public override Card DrawCard()
+        public override Card DrawCard(Game game)
         {
-            return Cards.FirstOrDefault();
+            return game.RewardCardsDeck.FirstOrDefault();
         }
     }
 }

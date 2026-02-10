@@ -15,6 +15,9 @@ namespace Backend.Persistence.Mappers
                 CurrentTurn = game.CurrentTurn,
                 CurrentPlayerIndex = game.CurrentPlayerIndex,
                 Players = game.Players.Select(PlayerMapper.ToEntity).ToList()
+            
+                RewardCardsDeck = game.RewardCardsDeck.Select(CardMapper.ToEntity).ToList(),
+                SurpriseCardsDeck = game.SurpriseCardsDeck.Select(CardMapper.ToEntity).ToList()
             };
         }
 
@@ -28,6 +31,14 @@ namespace Backend.Persistence.Mappers
                 CurrentTurn = entity.CurrentTurn,
                 CurrentPlayerIndex = entity.CurrentPlayerIndex,
                 Players = entity.Players.Select(PlayerMapper.ToBusiness).ToList()
+                
+                RewardCardsDeck = entity.RewardCardsDeck
+                    .Select(CardFactory.CreateCard)
+                    .ToList();
+
+                SurpriseCardsDeck = entity.SurpriseCardsDeck
+                    .Select(CardFactory.CreateCard)
+                    .ToList();           
             };
         }
     }

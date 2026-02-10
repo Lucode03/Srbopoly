@@ -4,6 +4,6 @@
     {
         [Key]
         public int ID { get; set; }
-        public List<FieldEntity>? ChangeableFields { get; set; }
+        public List<PropertyFieldEntity>? PropertyFields { get; set; }
     }
 }

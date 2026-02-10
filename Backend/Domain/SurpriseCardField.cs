@@ -13,9 +13,9 @@ namespace Backend.Domain
         {
 
         }
-        public override Card DrawCard()
+        public override Card DrawCard(Game game)
         {
-            return Cards.FirstOrDefault();
+            return game.SurpriseCardsDeck.FirstOrDefault();
         }
     }
 }
