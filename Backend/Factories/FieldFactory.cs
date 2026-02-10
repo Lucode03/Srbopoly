@@ -22,7 +22,7 @@ namespace Backend.Factories
                 },
                 2 => new PropertyField
                 {
-                    Name = "Pancevo",
+                    Name = "Pančevo",
                     Price = 280,
                     BaseRent = 45,
                     Type = "Vojvodina"
@@ -41,32 +41,32 @@ namespace Backend.Factories
                 },
                 5 => new SurpriseCardField
                 {
-                    Name = "Iznenadjenje 1"
+                    Name = "Iznenađenje sa istoka"
                 },
                 6 => new PropertyField
                 {
                     Name = "Negotin",
                     Price = 400,
                     BaseRent = 60,
-                    Type = "Istocna Srbija"
+                    Type = "Istočna Srbija"
                 },
                 7 => new NationalParkField
                 {
-                    Name = "Djerdap"
+                    Name = "Đerdap"
                 },
                 8 => new PropertyField
                 {
                     Name = "Bor",
                     Price = 500,
                     BaseRent = 70,
-                    Type = "Istocna Srbija"
+                    Type = "Istočna Srbija"
                 },
                 9 => new PropertyField
                 {
-                    Name = "Zajecar",
+                    Name = "Zaječar",
                     Price = 600,
                     BaseRent = 80,
-                    Type = "Istocna Srbija"
+                    Type = "Istočna Srbija"
                 },
                 10 => new MovementField
                 {
@@ -77,14 +77,14 @@ namespace Backend.Factories
                     Name = "Vranje",
                     Price = 800,
                     BaseRent = 100,
-                    Type = "Juzna Srbija"
+                    Type = "Južna Srbija"
                 },
                 12 => new PropertyField
                 {
                     Name = "Leskovac",
                     Price = 850,
                     BaseRent = 110,
-                    Type = "Juzna Srbija"
+                    Type = "Južna Srbija"
                 },
                 13 => new PaymentField
                 {
@@ -96,11 +96,11 @@ namespace Backend.Factories
                     Name = "Pirot",
                     Price = 1000,
                     BaseRent = 140,
-                    Type = "Juzna Srbija"
+                    Type = "Južna Srbija"
                 },
                 15 => new SurpriseCardField
                 {
-                    Name = "Iznenadjenje 2"
+                    Name = "Iznenađenje sa juga"
                 },
                 16 => new PropertyField
                 {
@@ -111,7 +111,7 @@ namespace Backend.Factories
                 },
                 17 => new NationalParkField
                 {
-                    Name = "Sar planina"
+                    Name = "Šar planina"
                 },
                 18 => new PropertyField
                 {
@@ -122,7 +122,7 @@ namespace Backend.Factories
                 },
                 19 => new PropertyField
                 {
-                    Name = "Pec",
+                    Name = "Peć",
                     Price = 1400,
                     BaseRent = 180,
                     Type = "Kosovo i Metohija"
@@ -131,120 +131,114 @@ namespace Backend.Factories
                 {
                     Name = "Zatvor",
                 },
-                1 => new PropertyField
+                21 => new PropertyField
                 {
-                    Name = "Subotica",
-                    Price = 250,
-                    BaseRent = 40,
-                    Type = "Vojvodina"
+                    Name = "Smederevo",
+                    Price = 1500,
+                    BaseRent = 190,
+                    Type = "Šumadija"
                 },
-                2 => new PropertyField
+                22 => new PropertyField
                 {
-                    Name = "Pancevo",
-                    Price = 280,
-                    BaseRent = 45,
-                    Type = "Vojvodina"
+                    Name = "Čačak",
+                    Price = 1650,
+                    BaseRent = 210,
+                    Type = "Šumadija"
                 },
-                3 => new PaymentField
+                23 => new NationalParkField
                 {
-                    Name = "Elektrodistribucija",
-                    Price = 800
+                    Name = "Kopaonik"
                 },
-                4 => new PropertyField
+                24 => new PropertyField
                 {
-                    Name = "Zrenjanin",
-                    Price = 350,
-                    BaseRent = 55,
-                    Type = "Vojvodina"
+                    Name = "Kragujevac",
+                    Price = 1800,
+                    BaseRent = 230,
+                    Type = "Šumadija"
                 },
-                5 => new SurpriseCardField
+                25 => new SurpriseCardField
                 {
-                    Name = "Iznenadjenje 1"
+                    Name = "Iznenađenje sa zapada"
                 },
-                6 => new PropertyField
+                26 => new PropertyField
                 {
-                    Name = "Negotin",
-                    Price = 400,
-                    BaseRent = 60,
-                    Type = "Istocna Srbija"
+                    Name = "Loznica",
+                    Price = 2000,
+                    BaseRent = 250,
+                    Type = "Zapadna Srbija"
                 },
-                7 => new NationalParkField
+                27 => new NationalParkField
                 {
-                    Name = "Djerdap"
+                    Name = "Tara"
                 },
-                8 => new PropertyField
+                28 => new PropertyField
                 {
-                    Name = "Bor",
-                    Price = 500,
-                    BaseRent = 70,
-                    Type = "Istocna Srbija"
+                    Name = "Šabac",
+                    Price = 2200,
+                    BaseRent = 275,
+                    Type = "Zapadna Srbija"
                 },
-                9 => new PropertyField
+                29 => new PropertyField
                 {
-                    Name = "Zajecar",
-                    Price = 600,
-                    BaseRent = 80,
-                    Type = "Istocna Srbija"
+                    Name = "Valjevo",
+                    Price = 2500,
+                    BaseRent = 300,
+                    Type = "Zapadna Srbija"
                 },
                 30 => new BonusField
                 {
                     Name = "Besplatan parking",
                     Bonus = 2000,
                 },
-                1 => new PropertyField
+                31 => new PaymentField
                 {
-                    Name = "Subotica",
-                    Price = 250,
-                    BaseRent = 40,
-                    Type = "Vojvodina"
+                    Name = "Vodovod",
+                    Price = 2000,
                 },
-                2 => new PropertyField
+                32 => new PaymentField
                 {
-                    Name = "Pancevo",
-                    Price = 280,
-                    BaseRent = 45,
-                    Type = "Vojvodina"
+                    Name = "Porez",
+                    Price = 1500,
                 },
-                3 => new PaymentField
+                33 => new SurpriseCardField
                 {
-                    Name = "Elektrodistribucija",
-                    Price = 800
+                    Name = "Iznenađenje sa severa",
                 },
-                4 => new PropertyField
+                34 => new PropertyField
                 {
-                    Name = "Zrenjanin",
-                    Price = 350,
-                    BaseRent = 55,
-                    Type = "Vojvodina"
+                    Name = "Priština",
+                    Price = 4000,
+                    BaseRent = 500,
+                    Type = "Premijum lokacija 1"
                 },
-                5 => new SurpriseCardField
+                35 => new RewardCardField
                 {
-                    Name = "Iznenadjenje 1"
+                    Name = "Nagrada"
                 },
-                6 => new PropertyField
+                36 => new PropertyField
                 {
-                    Name = "Negotin",
-                    Price = 400,
-                    BaseRent = 60,
-                    Type = "Istocna Srbija"
+                    Name = "Niš",
+                    Price = 4500,
+                    BaseRent = 550,
+                    Type = "Premijum lokacija 1"
                 },
-                7 => new NationalParkField
+                37 => new PropertyField
                 {
-                    Name = "Djerdap"
+                    Name = "Novi Sad",
+                    Price = 5500,
+                    BaseRent = 600,
+                    Type = "Premijum lokacija 2"
                 },
-                8 => new PropertyField
+                38 => new NationalParkField
                 {
-                    Name = "Bor",
-                    Price = 500,
-                    BaseRent = 70,
-                    Type = "Istocna Srbija"
+                    Name = "Fruška gora"
                 },
-                9 => new PropertyField
+                39 => new PropertyField
                 {
-                    Name = "Zajecar",
-                    Price = 600,
-                    BaseRent = 80,
-                    Type = "Istocna Srbija"
+                    Name = "Beograd",
+                    Price = 6500,
+                    BaseRent = 700,
+                    Type = "Premijum lokacija 2"
                 },                
                 _ => throw new NotImplementedException()
             };
