@@ -17,7 +17,7 @@ namespace Backend.Persistence.Mappers
         }
         public static Card ToBusiness(CardEntity entity)
         {
-            return CardFactory.CreateCard(entity.GameCardID,entity.CardType);
+            return CardFactory.CreateCard(entity.GameCardID);
         }
     }
 }

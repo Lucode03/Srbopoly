@@ -16,7 +16,7 @@ namespace Backend.Persistence.Mappers
                 CurrentTurn = game.CurrentTurn,
                 CurrentPlayerIndex = game.CurrentPlayerIndex,
                 Players = game.Players.Select(PlayerMapper.ToEntity).ToList(),
-            
+                Board = BoardMapper.ToEntity(game.GameBoard),
                 RewardCardsDeck = game.RewardCardsDeck.Select(CardMapper.ToEntity).ToList(),
                 SurpriseCardsDeck = game.SurpriseCardsDeck.Select(CardMapper.ToEntity).ToList()
             };
@@ -24,6 +24,8 @@ namespace Backend.Persistence.Mappers
 
         public static Game ToBusiness(GameEntity entity)
         {
+            List<Player> players = entity.Players.Select(PlayerMapper.ToBusiness).ToList();
+
             return new Game
             {
                 ID = entity.ID,
@@ -31,16 +33,15 @@ namespace Backend.Persistence.Mappers
                 MaxTurns = entity.MaxTurns,
                 CurrentTurn = entity.CurrentTurn,
                 CurrentPlayerIndex = entity.CurrentPlayerIndex,
-                Players = entity.Players.Select(PlayerMapper.ToBusiness).ToList(),
-
-
+                Players = players,
+                GameBoard = BoardMapper.ToBusiness(entity.Board,players),
                 RewardCardsDeck = entity.RewardCardsDeck
-                    .Select(card => CardFactory.CreateCard(card.GameCardID,card.CardType))
+                    .Select(card => CardFactory.CreateCard(card.GameCardID))
                     .OfType<RewardCard>()
                     .ToList(),
 
                 SurpriseCardsDeck = entity.SurpriseCardsDeck
-                    .Select(card => CardFactory.CreateCard(card.GameCardID,card.CardType))
+                    .Select(card => CardFactory.CreateCard(card.GameCardID))
                     .OfType<SurpriseCard>()
                     .ToList()       
             };

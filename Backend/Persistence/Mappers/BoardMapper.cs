@@ -27,9 +27,9 @@ namespace Backend.Persistence.Mappers
 
             if (entity.PropertyFields != null)
             {
-                foreach (var propEntity in entity.PropertyFields)
+                foreach (PropertyFieldEntity propertyEntity in entity.PropertyFields)
                 {
-                    var propertyField = PropertyFieldMapper.ToBusiness(propEntity, players);
+                    PropertyField propertyField = PropertyFieldMapper.ToBusiness(propertyEntity, players);
                     board.Fields[propertyField.GameFieldID] = propertyField;
                 }
             }
