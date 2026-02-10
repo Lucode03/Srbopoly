@@ -18,24 +18,27 @@ namespace Backend.Persistence.Mappers
         }
         public static Board ToBusiness(BoardEntity entity, List<Player> players)
         {
+            int boardSize = 40; // default
             var board = new Board
             {
-                Size = 40, // default
-                Fields = new List<Field>(40)
+                Size = boardSize,
+                Fields = new List<Field>(new Field[boardSize])
             };
-
-            foreach (PropertyFieldEntity field in entity.PropertyFields)
-            {
-                board.Fields[field.GameFieldID]=FieldFactory.CreateField(field.GameFieldID);
-            }
 
             if (entity.PropertyFields != null)
             {
                 foreach (var propEntity in entity.PropertyFields)
                 {
                     var propertyField = PropertyFieldMapper.ToBusiness(propEntity, players);
-
                     board.Fields[propertyField.GameFieldID] = propertyField;
+                }
+            }
+
+            for (int i = 0; i < boardSize; i++)
+            {
+                if (board.Fields[i] == null)
+                {
+                    board.Fields[i] = FieldFactory.CreateField(i);
                 }
             }
 
