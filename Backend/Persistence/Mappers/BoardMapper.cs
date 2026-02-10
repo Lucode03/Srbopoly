@@ -1,4 +1,5 @@
 using Backend.Domain;
+using Backend.Factories;
 using Backend.Persistence.Entities;
 
 namespace Backend.Persistence.Mappers
@@ -11,7 +12,7 @@ namespace Backend.Persistence.Mappers
             {
                 PropertyFields = board.Fields
                     .OfType<PropertyField>()         
-                    .Select(PropertyFieldMapper.ToEntity)
+                    .Select(field => PropertyFieldMapper.ToEntity(field))
                     .ToList()
             };
         }
@@ -20,11 +21,13 @@ namespace Backend.Persistence.Mappers
             var board = new Board
             {
                 Size = 40, // default
-                Fields = new List<Field>()
+                Fields = new List<Field>(40)
             };
 
-            //treba izmena u zavisnosti od factory
-            board.Fields.AddRange(FieldFactory.CreateFields());
+            foreach (PropertyFieldEntity field in entity.PropertyFields)
+            {
+                board.Fields[field.GameFieldID]=FieldFactory.CreateField(field.GameFieldID);
+            }
 
             if (entity.PropertyFields != null)
             {

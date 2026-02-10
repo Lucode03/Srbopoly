@@ -1,4 +1,6 @@
-﻿namespace Backend.Persistence.Entities
+﻿using System.ComponentModel.DataAnnotations.Schema;
+
+namespace Backend.Persistence.Entities
 {
     public class PropertyFieldEntity
     {

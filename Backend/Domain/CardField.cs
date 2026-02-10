@@ -9,6 +9,6 @@ namespace Backend.Domain
     public abstract class CardField : Field
     {
         public abstract override void Action(Player player);
-        public abstract Card DrawCard();
+        public abstract Card DrawCard(Game game);
     }
 }

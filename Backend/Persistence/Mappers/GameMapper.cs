@@ -1,4 +1,5 @@
 ﻿using Backend.Domain;
+using Backend.Factories;
 using Backend.Persistence.Entities;
 
 namespace Backend.Persistence.Mappers
@@ -14,7 +15,7 @@ namespace Backend.Persistence.Mappers
                 MaxTurns = game.MaxTurns,
                 CurrentTurn = game.CurrentTurn,
                 CurrentPlayerIndex = game.CurrentPlayerIndex,
-                Players = game.Players.Select(PlayerMapper.ToEntity).ToList()
+                Players = game.Players.Select(PlayerMapper.ToEntity).ToList(),
             
                 RewardCardsDeck = game.RewardCardsDeck.Select(CardMapper.ToEntity).ToList(),
                 SurpriseCardsDeck = game.SurpriseCardsDeck.Select(CardMapper.ToEntity).ToList()
@@ -30,15 +31,18 @@ namespace Backend.Persistence.Mappers
                 MaxTurns = entity.MaxTurns,
                 CurrentTurn = entity.CurrentTurn,
                 CurrentPlayerIndex = entity.CurrentPlayerIndex,
-                Players = entity.Players.Select(PlayerMapper.ToBusiness).ToList()
-                
+                Players = entity.Players.Select(PlayerMapper.ToBusiness).ToList(),
+
+
                 RewardCardsDeck = entity.RewardCardsDeck
-                    .Select(CardFactory.CreateCard)
-                    .ToList();
+                    .Select(card => CardFactory.CreateCard(card.GameCardID,card.CardType))
+                    .OfType<RewardCard>()
+                    .ToList(),
 
                 SurpriseCardsDeck = entity.SurpriseCardsDeck
-                    .Select(CardFactory.CreateCard)
-                    .ToList();           
+                    .Select(card => CardFactory.CreateCard(card.GameCardID,card.CardType))
+                    .OfType<SurpriseCard>()
+                    .ToList()       
             };
         }
     }

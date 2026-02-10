@@ -8,7 +8,6 @@ namespace Backend.Domain
 {
     public class SurpriseCardField : CardField
     {
-        public List<SurpriseCard> Cards { get; set;}
         public override void Action(Player player)
         {
 

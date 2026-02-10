@@ -1,9 +1,10 @@
 using Backend.Domain;
+using Backend.Factories;
 using Backend.Persistence.Entities;
 
 namespace Backend.Persistence.Mappers
 {
-    public class PropertyFieldMapper
+    public static class PropertyFieldMapper
     {
         public static PropertyFieldEntity ToEntity(PropertyField field)
         {
@@ -23,13 +24,9 @@ namespace Backend.Persistence.Mappers
                 ? players.FirstOrDefault(p => p.ID == entity.OwnerID)
                 : null;
 
-            return new PropertyField
-            {
-                GameFieldID = entity.GameFieldID,
-                Houses = entity.Houses,
-                Hotels = entity.Hotels,
-                Owner = owner
-            };
+            PropertyField propertyField= (PropertyField)FieldFactory.CreateField(entity.GameFieldID);
+            propertyField.Owner = owner;
+            return propertyField;
         }
 
     }
