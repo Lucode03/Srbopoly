@@ -59,5 +59,13 @@ namespace Backend.Domain
         {
             MaxTurns = maxTurns;
         }
+        public RewardCard DrawRewardsCard()
+        {
+            return RewardCardsDeck.FirstOrDefault();
+        }
+        public SurpriseCard DrawSurpriseCard()
+        {
+            return SurpriseCardsDeck.FirstOrDefault();
+        }
     }
 }
