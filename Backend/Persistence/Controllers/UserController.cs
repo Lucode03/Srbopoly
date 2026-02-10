@@ -33,7 +33,15 @@ public class UserController : ControllerBase
 
             await Context.Users.AddAsync(user);
             await Context.SaveChangesAsync();
-            return Ok(user);
+
+            var dto = new UserDto
+            {
+                Id = user.ID,
+                Username = user.Username,
+                Points = user.Points
+            };
+
+            return Ok(dto);
         }
         catch (Exception e)
         {
@@ -52,7 +60,12 @@ public class UserController : ControllerBase
             var user = await Context.Users.FindAsync(id);
             if (user == null)
                 return NotFound($"Korisnik sa ID {id} nije pronađen.");
-            return Ok(user);
+            return Ok(new UserDto
+            {
+                Id = user.ID,
+                Username = user.Username,
+                Points = user.Points
+            });
         }
         catch (Exception e)
         {
@@ -73,7 +86,12 @@ public class UserController : ControllerBase
             if (user == null)
                 return NotFound($"Korisnik sa username '{username}' nije pronađen.");
 
-            return Ok(user);
+             return Ok(new UserDto
+            {
+                Id = user.ID,
+                Username = user.Username,
+                Points = user.Points
+            });
         }
         catch (Exception e)
         {
@@ -100,7 +118,12 @@ public class UserController : ControllerBase
             user.Points += points;
 
             await Context.SaveChangesAsync();
-            return Ok(user);
+            return Ok(new UserDto
+            {
+                Id = user.ID,
+                Username = user.Username,
+                Points = user.Points
+            });
         }
         catch (Exception e)
         {
@@ -169,7 +192,12 @@ public class UserController : ControllerBase
             if (users == null)
                 return NotFound("Nema registrovanih korisnika.");
 
-            return Ok(users);
+            return Ok(users.Select(u => new UserDto
+            {
+                Id = u.ID,
+                Username = u.Username,
+                Points = u.Points
+            }).ToList());
         }
         catch (Exception e)
         {
@@ -192,7 +220,12 @@ public class UserController : ControllerBase
 
             var users = await query.ToListAsync();
 
-            return Ok(users);
+            return Ok(users.Select(u => new UserDto
+            {
+                Id = u.ID,
+                Username = u.Username,
+                Points = u.Points
+            }).ToList());
         }
         catch (Exception e)
         {

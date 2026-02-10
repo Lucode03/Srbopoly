@@ -10,7 +10,7 @@ namespace Backend.Persistence.Mappers
         {
             return new CardEntity
             {
-                CardType = card.GetType().Name,
+                //CardType = card.GetType().Name,
                 GameCardID = card.GameCardID
             };
 

@@ -1,4 +1,5 @@
 ﻿using System.ComponentModel.DataAnnotations.Schema;
+using System.Text.Json.Serialization;
 
 namespace Backend.Persistence.Entities
 {
@@ -13,5 +14,11 @@ namespace Backend.Persistence.Entities
         public PlayerEntity? Owner { get; set; }
         public int Houses { get; set; }
         public int Hotels { get; set; }
+
+        [ForeignKey(nameof(Board))]
+        public int BoardId { get; set; }
+
+        [JsonIgnore]
+        public BoardEntity Board { get; set; } = null!;
     }
 }

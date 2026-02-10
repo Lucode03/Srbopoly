@@ -1,4 +1,5 @@
-﻿using Backend.Domain;
+﻿using System.Text.Json.Serialization;
+using Backend.Domain;
 
 namespace Backend.Persistence.Entities
 {
@@ -10,10 +11,12 @@ namespace Backend.Persistence.Entities
         public int MaxTurns { get; set; }
         public int CurrentTurn { get; set; }
         public int CurrentPlayerIndex { get; set; }
-        public List<PlayerEntity> Players { get; set; }
-        public BoardEntity Board { get; set; }
-
-        public List<CardEntity> RewardCardsDeck { get; set; }
-        public List<CardEntity> SurpriseCardsDeck { get; set; }
+        public List<PlayerEntity> Players { get; set; } = new List<PlayerEntity>();
+        public BoardEntity Board { get; set; } = null!;
+        public List<CardEntity> RewardCardsDeck { get; set; } = new List<CardEntity>();
+        public List<CardEntity> SurpriseCardsDeck { get; set; } = new List<CardEntity>();
+        
+        // public List<int> RewardCardsDeck { get; set; } = new List<int>();
+        // public List<int> SurpriseCardsDeck { get; set; } = new List<int>();
     }
 }
