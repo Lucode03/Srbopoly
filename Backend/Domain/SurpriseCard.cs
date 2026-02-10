@@ -9,7 +9,10 @@ namespace Backend.Domain
     public class SurpriseCard : Card
     {
         public int Amount { get; set; }
-        public int Type { get; set; }
+        public String Type { get; set; }
+        //Position -> postavi igraca na polje Amount
+        //Movement -> pomeriti igraca za Amount polja
+        //Balance -> dodati igracu Amount para
         public override void Apply(Player player)
         {
             
