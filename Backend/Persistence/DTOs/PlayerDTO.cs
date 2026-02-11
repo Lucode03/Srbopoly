@@ -8,4 +8,5 @@ public class PlayerDto
     public int Position { get; set; }
     public Color Color { get; set; }
     public bool IsInJail { get; set; }
+    public int UserId {get; set;}
 }
