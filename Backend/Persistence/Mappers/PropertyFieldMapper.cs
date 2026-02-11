@@ -6,25 +6,23 @@ namespace Backend.Persistence.Mappers
 {
     public static class PropertyFieldMapper
     {
-        public static PropertyFieldEntity ToEntity(PropertyField field)
+        public static PropertyFieldDto ToDTO(PropertyField field)
         {
-            return new PropertyFieldEntity
+            return new PropertyFieldDto
             {
                 GameFieldID = field.GameFieldID,
                 Houses = field.Houses,
                 Hotels = field.Hotels,
-                OwnerID = field.Owner?.ID,
-                Owner = field.Owner!=null? PlayerMapper.ToEntity(field.Owner)
-                        : null
+                OwnerId = field.Owner?.ID
             };
         }
-        public static PropertyField ToBusiness(PropertyFieldEntity entity, List<Player> players)
+        public static PropertyField ToBusiness(PropertyFieldDto dto, List<Player> players)
         {
-            var owner = entity.OwnerID != null
-                ? players.FirstOrDefault(p => p.ID == entity.OwnerID)
+            var owner = dto.OwnerId != null
+                ? players.FirstOrDefault(p => p.ID == dto.OwnerId)
                 : null;
 
-            PropertyField propertyField= (PropertyField)FieldFactory.CreateField(entity.GameFieldID);
+            PropertyField propertyField= (PropertyField)FieldFactory.CreateField(dto.GameFieldID);
             propertyField.Owner = owner;
             if (owner != null)
                 owner.Properties.Add(propertyField);

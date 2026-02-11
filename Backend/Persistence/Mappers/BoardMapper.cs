@@ -6,17 +6,17 @@ namespace Backend.Persistence.Mappers
 {
     public static class BoardMapper
     {
-        public static BoardEntity ToEntity(Board board)
+        public static BoardDto ToDTO(Board board)
         {
-            return new BoardEntity
+            return new BoardDto
             {
                 PropertyFields = board.Fields
                     .OfType<PropertyField>()         
-                    .Select(field => PropertyFieldMapper.ToEntity(field))
+                    .Select(field => PropertyFieldMapper.ToDTO(field))
                     .ToList()
             };
         }
-        public static Board ToBusiness(BoardEntity entity, List<Player> players)
+        public static Board ToBusiness(BoardDto dto, List<Player> players)
         {
             int boardSize = 40; // default
             var board = new Board
@@ -25,11 +25,11 @@ namespace Backend.Persistence.Mappers
                 Fields = new List<Field>(new Field[boardSize])
             };
 
-            if (entity.PropertyFields != null)
+            if (dto.PropertyFields != null)
             {
-                foreach (PropertyFieldEntity propertyEntity in entity.PropertyFields)
+                foreach (PropertyFieldDto propertyDto in dto.PropertyFields)
                 {
-                    PropertyField propertyField = PropertyFieldMapper.ToBusiness(propertyEntity, players);
+                    PropertyField propertyField = PropertyFieldMapper.ToBusiness(propertyDto, players);
                     board.Fields[propertyField.GameFieldID] = propertyField;
                 }
             }

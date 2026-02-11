@@ -6,18 +6,18 @@ namespace Backend.Persistence.Mappers
 {
     public static class CardMapper
     {
-        public static CardEntity ToEntity(Card card)
+        public static CardDto ToDto(Card card)
         {
-            return new CardEntity
+            return new CardDto
             {
                 //CardType = card.GetType().Name,
                 GameCardID = card.GameCardID
             };
 
         }
-        public static Card ToBusiness(CardEntity entity)
+        public static Card ToBusiness(CardDto dto)
         {
-            return CardFactory.CreateCard(entity.GameCardID);
+            return CardFactory.CreateCard(dto.GameCardID);
         }
     }
 }

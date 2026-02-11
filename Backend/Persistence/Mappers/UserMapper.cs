@@ -5,23 +5,23 @@ namespace Backend.Persistence.Mappers
 {
     public static class UserMapper
     {
-        public static UserEntity ToEntity(User user)
+        public static UserDto ToEntity(User user)
         {
-            return new UserEntity
+            return new UserDto
             {
-                ID = user.ID,
+                Id = user.ID,
                 Username = user.Username,
                 Points = user.Points
             };
         }
 
-        public static User ToBusiness(UserEntity entity)
+        public static User ToBusiness(UserDto dto)
         {
             return new User
             {
-                ID = entity.ID,
-                Username = entity.Username,
-                Points = entity.Points
+                ID = dto.Id,
+                Username = dto.Username,
+                Points = dto.Points
             };
         }
     }
