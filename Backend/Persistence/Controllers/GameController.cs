@@ -72,8 +72,8 @@ public class GameController : ControllerBase
                     .ThenInclude(p => p.User)
                 .Include(g => g.Board)
                     .ThenInclude(b => b.PropertyFields)
-                .Include(g => g.RewardCardsDeck)
-                .Include(g => g.SurpriseCardsDeck)
+                .Include(g => g.RewardCardsDeckIds)
+                .Include(g => g.SurpriseCardsDeckIds)
                 .FirstOrDefaultAsync(g => g.ID == id);
 
             if (game == null)
@@ -107,8 +107,10 @@ public class GameController : ControllerBase
                         Hotels = f.Hotels
                     }).ToList() ?? new List<PropertyFieldDto>()
                 },
-                RewardCardsDeckIds = game.RewardCardsDeck.Select(c => c.ID).ToList(),
-                SurpriseCardsDeckIds = game.SurpriseCardsDeck.Select(c => c.ID).ToList()
+                // RewardCardsDeckIds = game.RewardCardsDeck.Select(c => c.ID).ToList(),
+                // SurpriseCardsDeckIds = game.SurpriseCardsDeck.Select(c => c.ID).ToList()
+                RewardCardsDeckIds = game.RewardCardsDeckIds.Select(c => c).ToList(),
+                SurpriseCardsDeckIds = game.SurpriseCardsDeckIds.Select(c => c).ToList()
             };
 
             return Ok(dto);
@@ -131,8 +133,8 @@ public class GameController : ControllerBase
                     .ThenInclude(p => p.User)
                 .Include(g => g.Board)
                     .ThenInclude(b => b.PropertyFields)
-                .Include(g => g.RewardCardsDeck)
-                .Include(g => g.SurpriseCardsDeck)
+                .Include(g => g.RewardCardsDeckIds)
+                .Include(g => g.SurpriseCardsDeckIds)
                 .ToListAsync();
 
             var dtos = games.Select(game => new GameDto
@@ -163,8 +165,10 @@ public class GameController : ControllerBase
                         Hotels = f.Hotels
                     }).ToList() ?? new List<PropertyFieldDto>()
                 },
-                RewardCardsDeckIds = game.RewardCardsDeck.Select(c => c.ID).ToList(),
-                SurpriseCardsDeckIds = game.SurpriseCardsDeck.Select(c => c.ID).ToList()
+                // RewardCardsDeckIds = game.RewardCardsDeck.Select(c => c.ID).ToList(),
+                // SurpriseCardsDeckIds = game.SurpriseCardsDeck.Select(c => c.ID).ToList()
+                RewardCardsDeckIds = game.RewardCardsDeckIds.Select(c => c).ToList(),
+                SurpriseCardsDeckIds = game.SurpriseCardsDeckIds.Select(c => c).ToList()
             }).ToList();
 
             return Ok(dtos);

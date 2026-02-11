@@ -17,8 +17,10 @@ namespace Backend.Persistence.Mappers
                 CurrentPlayerIndex = game.CurrentPlayerIndex,
                 Players = game.Players.Select(PlayerMapper.ToEntity).ToList(),
                 Board = BoardMapper.ToEntity(game.GameBoard),
-                RewardCardsDeck = game.RewardCardsDeck.Select(CardMapper.ToEntity).ToList(),
-                SurpriseCardsDeck = game.SurpriseCardsDeck.Select(CardMapper.ToEntity).ToList()
+                // RewardCardsDeck = game.RewardCardsDeck.Select(CardMapper.ToEntity).ToList(),
+                // SurpriseCardsDeck = game.SurpriseCardsDeck.Select(CardMapper.ToEntity).ToList()
+                RewardCardsDeckIds = game.RewardCardsDeck.Select(c => c.GameCardID).ToList(),
+                SurpriseCardsDeckIds = game.SurpriseCardsDeck.Select(c => c.GameCardID).ToList()
             };
         }
 
@@ -35,15 +37,24 @@ namespace Backend.Persistence.Mappers
                 CurrentPlayerIndex = entity.CurrentPlayerIndex,
                 Players = players,
                 GameBoard = BoardMapper.ToBusiness(entity.Board,players),
-                RewardCardsDeck = entity.RewardCardsDeck
-                    .Select(card => CardFactory.CreateCard(card.GameCardID))
+                // RewardCardsDeck = entity.RewardCardsDeck
+                //     .Select(card => CardFactory.CreateCard(card.GameCardID))
+                //     .OfType<RewardCard>()
+                //     .ToList(),
+
+                // SurpriseCardsDeck = entity.SurpriseCardsDeck
+                //     .Select(card => CardFactory.CreateCard(card.GameCardID))
+                //     .OfType<SurpriseCard>()
+                //     .ToList()     
+                RewardCardsDeck = entity.RewardCardsDeckIds
+                    .Select(c => CardFactory.CreateCard(c))
                     .OfType<RewardCard>()
                     .ToList(),
 
-                SurpriseCardsDeck = entity.SurpriseCardsDeck
-                    .Select(card => CardFactory.CreateCard(card.GameCardID))
+                SurpriseCardsDeck = entity.SurpriseCardsDeckIds
+                    .Select(c => CardFactory.CreateCard(c))
                     .OfType<SurpriseCard>()
-                    .ToList()       
+                    .ToList()   
             };
         }
     }
