@@ -5,7 +5,7 @@ using Backend.Persistence.Entities;
 
 namespace Backend.Persistence.Mappers
 {
-    public static class GameMapper
+    public static class GameMapperDE
     {
         public static GameDto ToDto(GameEntity entity)
         {
@@ -18,37 +18,39 @@ namespace Backend.Persistence.Mappers
                 CurrentPlayerIndex = entity.CurrentPlayerIndex,
 
                 Players = entity.Players?
-                    .Select(PlayerMapper.ToDto)
+                    .Select(PlayerMapperDE.ToDto)
                     .ToList() ?? new(),
 
-                Board = BoardMapper.ToDto(entity.Board),
+                Board = BoardMapperDE.ToDto(entity.Board),
 
-                RewardCardsDeckIds = entity.RewardCardsDeckIds?.ToList() ?? new(),
-                SurpriseCardsDeckIds = entity.SurpriseCardsDeckIds?.ToList() ?? new()
+                RewardCardsDeckIds = entity.RewardCardsDeckIds?.ToList() ?? new List<int>(),
+                SurpriseCardsDeckIds = entity.SurpriseCardsDeckIds?.ToList() ?? new List<int>()
             };
         }
         public static GameEntity ToEntity(GameDto dto)
-    {
-        var entity = new GameEntity
         {
-            ID = dto.Id,
-            Status = dto.Status,
-            MaxTurns = dto.MaxTurns,
-            CurrentTurn = dto.CurrentTurn,
-            CurrentPlayerIndex = dto.CurrentPlayerIndex,
+            var entity = new GameEntity
+            {
+                ID = dto.Id,
+                Status = dto.Status,
+                MaxTurns = dto.MaxTurns,
+                CurrentTurn = dto.CurrentTurn,
+                CurrentPlayerIndex = dto.CurrentPlayerIndex,
 
-            Players = dto.Players?
-                .Select(PlayerMapper.ToEntity)
-                .ToList() ?? new(),
+                Players = dto.Players?
+                    .Select(PlayerMapperDE.ToEntity)
+                    .ToList() ?? new List<PlayerEntity>(),
 
-            RewardCardsDeckIds = dto.RewardCardsDeckIds?.ToList() ?? new(),
-            SurpriseCardsDeckIds = dto.SurpriseCardsDeckIds?.ToList() ?? new()
-        };
+                RewardCardsDeckIds = dto.RewardCardsDeckIds?.ToList() ?? new List<int>(),
+                SurpriseCardsDeckIds = dto.SurpriseCardsDeckIds?.ToList() ?? new List<int>()
+            };
 
-        // Board mapping (FK fix ako treba)
-        entity.Board = BoardMapper.ToEntity(dto.Board, entity.ID);
+            if (dto.Board != null)
+            {
+                entity.Board = BoardMapperDE.ToEntity(dto.Board, entity.ID);
+            }
 
-        return entity;
-    }
+            return entity;
+        }
     }
 }

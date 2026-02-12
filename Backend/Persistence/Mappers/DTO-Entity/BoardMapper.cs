@@ -4,7 +4,7 @@ using Backend.Persistence.Entities;
 
 namespace Backend.Persistence.Mappers
 {
-    public static class BoardMapper
+    public static class BoardMapperDE
     {
         public static BoardDto ToDto(BoardEntity entity)
         {
@@ -12,20 +12,20 @@ namespace Backend.Persistence.Mappers
             {
                 Id = entity.ID,
                 PropertyFields = entity.PropertyFields?
-                    .Select(PropertyFieldMapper.ToDto)
+                    .Select(PropertyFieldMapperDE.ToDto)
                     .ToList() ?? new List<PropertyFieldDto>()
             };
         }
         public static BoardEntity ToEntity(BoardDto dto, int gameId)
-    {
-        return new BoardEntity
         {
-            ID = dto.Id,
-            GameId = gameId,
-            PropertyFields = dto.PropertyFields?
-                .Select(PropertyFieldMapper.ToEntity)
-                .ToList()
-        };
-    }
+            return new BoardEntity
+            {
+                ID = dto.Id,
+                GameId = gameId,
+                PropertyFields = dto.PropertyFields?
+                    .Select(PropertyFieldMapperDE.ToEntity)
+                    .ToList()
+            };
+        }
     }
 }

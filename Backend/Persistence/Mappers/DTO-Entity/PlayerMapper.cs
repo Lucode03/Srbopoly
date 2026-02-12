@@ -3,7 +3,7 @@ using Backend.Persistence.Entities;
 
 namespace Backend.Persistence.Mappers
 {
-    public static class PlayerMapper
+    public static class PlayerMapperDE
     {
         public static PlayerDto ToDto(PlayerEntity entity)
         {

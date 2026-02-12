@@ -1,6 +1,8 @@
 using Backend.Persistence.Entities;
 using Backend.Persistence.DTO;
 using Backend.Domain;
+using Backend.Repository;
+using Backend.Persistence.Mappers;
 
 namespace Backend.Persistence.Controllers;
 
@@ -8,11 +10,11 @@ namespace Backend.Persistence.Controllers;
 [Route("[controller]")]
 public class GameController : ControllerBase
 {
-    public SrbopolyContext Context { get; set; }
+    private readonly IGameRepository _repository;
 
-    public GameController(SrbopolyContext context)
+    public GameController(IGameRepository repository)
     {
-        Context = context;
+        _repository = repository;
     }
 
     [HttpPost("CreateGame")]
@@ -22,36 +24,17 @@ public class GameController : ControllerBase
     {
         try
         {
-            var game = new GameEntity
+            var game = new Game
             {
                 Status = GameStatus.Paused,
                 MaxTurns = maxTurns,
                 CurrentTurn = 0,
                 CurrentPlayerIndex = 0,
-                Board = new BoardEntity(),
+                GameBoard = new Board()
             };
 
-            await Context.Games.AddAsync(game);
-            await Context.SaveChangesAsync();
-
-            var dto = new GameDto
-            {
-                Id = game.ID,
-                Status = game.Status,
-                MaxTurns = game.MaxTurns,
-                CurrentTurn = game.CurrentTurn,
-                CurrentPlayerIndex = game.CurrentPlayerIndex,
-                Board = new BoardDto
-                {
-                    Id = game.Board.ID,
-                    PropertyFields = new List<PropertyFieldDto>()
-                },
-                Players = new List<PlayerDto>(),
-                RewardCardsDeckIds = new List<int>(),
-                SurpriseCardsDeckIds = new List<int>()
-            };
-
-            return Ok(dto);
+            var createdGame = await _repository.CreateAsync(game);
+            return Ok(GameMapper.ToEntity(createdGame));
         }
         catch (Exception e)
         {
@@ -67,53 +50,11 @@ public class GameController : ControllerBase
     {
         try
         {
-            var game = await Context.Games
-                .Include(g => g.Players)
-                    .ThenInclude(p => p.User)
-                .Include(g => g.Board)
-                    .ThenInclude(b => b.PropertyFields)
-                .Include(g => g.RewardCardsDeckIds)
-                .Include(g => g.SurpriseCardsDeckIds)
-                .FirstOrDefaultAsync(g => g.ID == id);
-
+            var game = await _repository.GetByIdAsync(id);
             if (game == null)
                 return NotFound($"Game sa ID {id} nije pronađen.");
 
-            var dto = new GameDto
-            {
-                Id = game.ID,
-                Status = game.Status,
-                MaxTurns = game.MaxTurns,
-                CurrentTurn = game.CurrentTurn,
-                CurrentPlayerIndex = game.CurrentPlayerIndex,
-                Players = game.Players.Select(p => new PlayerDto
-                {
-                    Id = p.ID,
-                    Username = p.User.Username,
-                    Balance = p.Balance,
-                    Position = p.Position,
-                    Color = p.Color,
-                    IsInJail = p.IsInJail
-                }).ToList(),
-                Board = new BoardDto
-                {
-                    Id = game.Board.ID,
-                    PropertyFields = game.Board.PropertyFields?.Select(f => new PropertyFieldDto
-                    {
-                        Id = f.ID,
-                        GameFieldID = f.GameFieldID,
-                        OwnerId = f.OwnerID,
-                        Houses = f.Houses,
-                        Hotels = f.Hotels
-                    }).ToList() ?? new List<PropertyFieldDto>()
-                },
-                // RewardCardsDeckIds = game.RewardCardsDeck.Select(c => c.ID).ToList(),
-                // SurpriseCardsDeckIds = game.SurpriseCardsDeck.Select(c => c.ID).ToList()
-                RewardCardsDeckIds = game.RewardCardsDeckIds.Select(c => c).ToList(),
-                SurpriseCardsDeckIds = game.SurpriseCardsDeckIds.Select(c => c).ToList()
-            };
-
-            return Ok(dto);
+            return Ok(GameMapper.ToEntity(game));
         }
         catch (Exception e)
         {
@@ -128,50 +69,8 @@ public class GameController : ControllerBase
     {
         try
         {
-            var games = await Context.Games
-                .Include(g => g.Players)
-                    .ThenInclude(p => p.User)
-                .Include(g => g.Board)
-                    .ThenInclude(b => b.PropertyFields)
-                .Include(g => g.RewardCardsDeckIds)
-                .Include(g => g.SurpriseCardsDeckIds)
-                .ToListAsync();
-
-            var dtos = games.Select(game => new GameDto
-            {
-                Id = game.ID,
-                Status = game.Status,
-                MaxTurns = game.MaxTurns,
-                CurrentTurn = game.CurrentTurn,
-                CurrentPlayerIndex = game.CurrentPlayerIndex,
-                Players = game.Players.Select(p => new PlayerDto
-                {
-                    Id = p.ID,
-                    Username = p.User.Username,
-                    Balance = p.Balance,
-                    Position = p.Position,
-                    Color = p.Color,
-                    IsInJail = p.IsInJail
-                }).ToList(),
-                Board = new BoardDto
-                {
-                    Id = game.Board.ID,
-                    PropertyFields = game.Board.PropertyFields?.Select(f => new PropertyFieldDto
-                    {
-                        Id = f.ID,
-                        GameFieldID = f.GameFieldID,
-                        OwnerId = f.OwnerID,
-                        Houses = f.Houses,
-                        Hotels = f.Hotels
-                    }).ToList() ?? new List<PropertyFieldDto>()
-                },
-                // RewardCardsDeckIds = game.RewardCardsDeck.Select(c => c.ID).ToList(),
-                // SurpriseCardsDeckIds = game.SurpriseCardsDeck.Select(c => c.ID).ToList()
-                RewardCardsDeckIds = game.RewardCardsDeckIds.Select(c => c).ToList(),
-                SurpriseCardsDeckIds = game.SurpriseCardsDeckIds.Select(c => c).ToList()
-            }).ToList();
-
-            return Ok(dtos);
+            var games = await _repository.GetAllAsync();
+            return Ok(games.Select(GameMapper.ToEntity).ToList());
         }
         catch (Exception e)
         {
@@ -187,14 +86,11 @@ public class GameController : ControllerBase
     {
         try
         {
-            var game = await Context.Games.FindAsync(id);
-
+            var game = await _repository.GetByIdAsync(id);
             if (game == null)
                 return NotFound($"Game sa ID {id} nije pronađen.");
 
-            Context.Games.Remove(game);
-            await Context.SaveChangesAsync();
-
+            await _repository.DeleteAsync(game);
             return Ok($"Game sa ID {id} je uspešno obrisan.");
         }
         catch (Exception e)

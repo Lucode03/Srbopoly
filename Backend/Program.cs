@@ -1,4 +1,6 @@
 using Backend.Persistence.Entities;
+using Backend.Repositories;
+using Backend.Repository;
 
 var builder = WebApplication.CreateBuilder(args);
 
@@ -6,6 +8,13 @@ var builder = WebApplication.CreateBuilder(args);
 // Learn more about configuring Swagger/OpenAPI at https://aka.ms/aspnetcore/swashbuckle
 builder.Services.AddEndpointsApiExplorer();
 builder.Services.AddSwaggerGen();
+
+builder.Services.AddScoped<UserRepository>();
+builder.Services.AddScoped<IGameRepository, GameRepository>();
+builder.Services.AddScoped<CardRepository>();
+builder.Services.AddScoped<BoardRepository>();
+builder.Services.AddScoped<PlayerRepository>();
+builder.Services.AddScoped<PropertyFieldRepository>();
 
 builder.Services.AddControllers();
 builder.Services.AddDbContext<SrbopolyContext> (Options => 

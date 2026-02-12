@@ -1,5 +1,8 @@
-using Backend.Persistence.Entities;
+using Backend.Domain;
+using Backend.Persistence.DTO;
 using Backend.Persistence.Records;
+using Backend.Repositories;
+using Backend.Persistence.Mappers;
 
 namespace Backend.Persistence.Controllers;
 
@@ -7,11 +10,11 @@ namespace Backend.Persistence.Controllers;
 [Route("[controller]")]
 public class PlayerController : ControllerBase
 {
-    public SrbopolyContext Context { get; set; }
+    private readonly PlayerRepository _repository;
 
-    public PlayerController(SrbopolyContext context)
+    public PlayerController(PlayerRepository repository)
     {
-        Context = context;
+        _repository = repository;
     }
 
     [HttpPost("CreatePlayer")]
@@ -22,43 +25,16 @@ public class PlayerController : ControllerBase
     {
         try
         {
-            var user = await Context.Users.FindAsync(request.UserId);
-            if (user == null)
-                return NotFound($"User sa ID {request.UserId} ne postoji.");
-
-            var game = await Context.Games.FindAsync(request.GameId);
-                    if (game == null)
-            return NotFound($"Game sa ID {request.GameId} ne postoji.");
-
-            if (request.Balance < 0)
-                return BadRequest("Balance ne može biti negativan.");
-
-            if (request.Position < 0)
-                return BadRequest("Position ne može biti negativna.");
-
-            var player = new PlayerEntity
-            {
-                UserId = request.UserId,
-                Balance = request.Balance,
-                Position = request.Position,
-                Color = request.Color,
-                IsInJail = request.IsInJail
-            };
-
-            await Context.Players.AddAsync(player);
-            await Context.SaveChangesAsync();
-
-            var dto = new PlayerDto
-            {
-                Id = player.ID,
-                Username = user.Username,
-                Balance = player.Balance,
-                Position = player.Position,
-                Color = player.Color,
-                IsInJail = player.IsInJail
-            };
-
-            return Ok(dto);
+            var player = await _repository.CreatePlayerAsync(request);
+            return Ok(PlayerMapper.ToDTO(player));
+        }
+        catch (KeyNotFoundException knf)
+        {
+            return NotFound(knf.Message);
+        }
+        catch (InvalidOperationException ioe)
+        {
+            return BadRequest(ioe.Message);
         }
         catch (Exception e)
         {
@@ -74,24 +50,10 @@ public class PlayerController : ControllerBase
     {
         try
         {
-            var player = await Context.Players
-                .Include(p => p.User)
-                .FirstOrDefaultAsync(p => p.ID == id);
+            var player = await _repository.GetByIdAsync(id);
+            if (player == null) return NotFound($"Player sa ID {id} nije pronađen.");
 
-            if (player == null)
-                return NotFound($"Player sa ID {id} nije pronađen.");
-
-            var dto = new PlayerDto
-            {
-                Id = player.ID,
-                Username = player.User.Username,
-                Balance = player.Balance,
-                Position = player.Position,
-                Color = player.Color,
-                IsInJail = player.IsInJail
-            };
-
-            return Ok(dto);
+            return Ok(PlayerMapper.ToDTO(player));
         }
         catch (Exception e)
         {
@@ -106,21 +68,8 @@ public class PlayerController : ControllerBase
     {
         try
         {
-            var players = await Context.Players
-                .Include(p => p.User)
-                .ToListAsync();
-
-            var dtos = players.Select(p => new PlayerDto
-            {
-                Id = p.ID,
-                Username = p.User.Username,
-                Balance = p.Balance,
-                Position = p.Position,
-                Color = p.Color,
-                IsInJail = p.IsInJail,
-            }).ToList();
-
-            return Ok(dtos);
+            var players = await _repository.GetAllAsync();
+            return Ok(players.Select(PlayerMapper.ToDTO).ToList());
         }
         catch (Exception e)
         {
@@ -136,15 +85,12 @@ public class PlayerController : ControllerBase
     {
         try
         {
-            var player = await Context.Players.FindAsync(id);
-
-            if (player == null)
-                return NotFound($"Player sa ID {id} nije pronađen.");
-
-            Context.Players.Remove(player);
-            await Context.SaveChangesAsync();
-
+            await _repository.DeleteAsync(id);
             return Ok($"Player sa ID {id} je uspešno obrisan.");
+        }
+        catch (KeyNotFoundException knf)
+        {
+            return NotFound(knf.Message);
         }
         catch (Exception e)
         {
