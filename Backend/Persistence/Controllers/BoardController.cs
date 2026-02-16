@@ -1,4 +1,6 @@
 using Backend.Persistence.Entities;
+using Backend.Repositories;
+using Backend.Persistence.Mappers;
 
 namespace Backend.Persistence.Controllers;
 
@@ -6,11 +8,11 @@ namespace Backend.Persistence.Controllers;
 [Route("[controller]")]
 public class BoardController : ControllerBase
 {
-    public SrbopolyContext Context { get; set; }
+    private readonly BoardRepository _repository;
 
-    public BoardController(SrbopolyContext context)
+    public BoardController(BoardRepository repository)
     {
-        Context = context;
+        _repository = repository;
     }
 
     [HttpPost("CreateBoard")]
@@ -21,26 +23,14 @@ public class BoardController : ControllerBase
     {
         try
         {
-            var game = await Context.Games.FindAsync(gameId);
-            if (game == null)
-                return NotFound($"Game sa ID {gameId} ne postoji.");
-
-            var board = new BoardEntity
-            {
-                GameId = gameId,
-                PropertyFields = new List<PropertyFieldEntity>()
-            };
-
-            await Context.Boards.AddAsync(board);
-            await Context.SaveChangesAsync();
-
-            var dto = new BoardDto
-            {
-                Id = board.ID,
-                PropertyFields = new List<PropertyFieldDto>()
-            };
+            var board = await _repository.CreateBoardAsync(gameId);
+            var dto = BoardMapper.ToDTO(board);
 
             return Ok(dto);
+        }
+        catch (KeyNotFoundException e)
+        {
+            return NotFound(e.Message);
         }
         catch (Exception e)
         {
@@ -54,30 +44,14 @@ public class BoardController : ControllerBase
     [ProducesResponseType(StatusCodes.Status400BadRequest)]
     public async Task<ActionResult<BoardDto>> GetBoardByGame(int gameId)
     {
-        try
+       try
         {
-            var board = await Context.Boards
-                .Include(b => b.PropertyFields)
-                .FirstOrDefaultAsync(b => b.GameId == gameId);
+            var board = await _repository.GetBoardByGameAsync(gameId);
 
             if (board == null)
                 return NotFound($"Board za Game ID {gameId} nije pronađen.");
 
-            var dto = new BoardDto
-            {
-                Id = board.ID,
-                PropertyFields = board.PropertyFields != null 
-                    ? board.PropertyFields.Select(f => new PropertyFieldDto
-                    {
-                        Id = f.ID,
-                        GameFieldID = f.GameFieldID,
-                        OwnerId = f.OwnerID,
-                        Houses = f.Houses,
-                        Hotels = f.Hotels
-                    }).ToList()
-                    : new List<PropertyFieldDto>()
-            };
-
+            var dto = BoardMapper.ToDTO(board);
             return Ok(dto);
         }
         catch (Exception e)
@@ -94,33 +68,15 @@ public class BoardController : ControllerBase
     {
         try
         {
-            var board = await Context.Boards.FindAsync(boardId);
-            if (board == null)
-                return NotFound($"Board sa ID {boardId} nije pronađen.");
-
-            var field = new PropertyFieldEntity
-            {
-                GameFieldID = fieldDto.GameFieldID,
-                Houses = fieldDto.Houses,
-                Hotels = fieldDto.Hotels,
-                OwnerID = fieldDto.OwnerId,
-            };
-
-            board.PropertyFields ??= new List<PropertyFieldEntity>();
-            board.PropertyFields.Add(field);
-
-            await Context.SaveChangesAsync();
-
-            var dto = new PropertyFieldDto
-            {
-                Id = field.ID,
-                GameFieldID = field.GameFieldID,
-                OwnerId = field.OwnerID,
-                Houses = field.Houses,
-                Hotels = field.Hotels
-            };
+            var field = PropertyFieldMapper.ToBusiness(fieldDto, new List<Domain.Player>());
+            var addedField = await _repository.AddPropertyFieldAsync(boardId, field);
+            var dto = PropertyFieldMapper.ToDTO(addedField);
 
             return Ok(dto);
+        }
+        catch (KeyNotFoundException e)
+        {
+            return NotFound(e.Message);
         }
         catch (Exception e)
         {

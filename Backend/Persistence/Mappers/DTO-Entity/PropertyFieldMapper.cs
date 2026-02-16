@@ -4,7 +4,7 @@ using Backend.Persistence.Entities;
 
 namespace Backend.Persistence.Mappers
 {
-    public static class PropertyFieldMapper
+    public static class PropertyFieldMapperDE
     {
         public static PropertyFieldDto ToDto(PropertyFieldEntity entity)
         {

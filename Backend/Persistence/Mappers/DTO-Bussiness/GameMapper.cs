@@ -16,12 +16,12 @@ namespace Backend.Persistence.Mappers
                 MaxTurns = game.MaxTurns,
                 CurrentTurn = game.CurrentTurn,
                 CurrentPlayerIndex = game.CurrentPlayerIndex,
-                Players = game.Players.Select(PlayerMapper.ToDTO).ToList(),
+                Players = game.Players?.Select(PlayerMapper.ToDTO).ToList()?? new List<PlayerDto>(),
                 Board = BoardMapper.ToDTO(game.GameBoard),
                 // RewardCardsDeck = game.RewardCardsDeck.Select(CardMapper.ToEntity).ToList(),
                 // SurpriseCardsDeck = game.SurpriseCardsDeck.Select(CardMapper.ToEntity).ToList()
-                RewardCardsDeckIds = game.RewardCardsDeck.Select(c => c.GameCardID).ToList(),
-                SurpriseCardsDeckIds = game.SurpriseCardsDeck.Select(c => c.GameCardID).ToList()
+                RewardCardsDeckIds = game.RewardCardsDeck?.Select(c => c.GameCardID).ToList() ?? new List<int>(),
+                SurpriseCardsDeckIds = game.SurpriseCardsDeck?.Select(c => c.GameCardID).ToList() ?? new List<int>()
             };
         }
 

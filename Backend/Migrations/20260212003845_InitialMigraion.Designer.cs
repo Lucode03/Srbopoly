@@ -12,8 +12,8 @@ using Microsoft.EntityFrameworkCore.Storage.ValueConversion;
 namespace Srbopoly_backend.Migrations
 {
     [DbContext(typeof(SrbopolyContext))]
-    [Migration("20260209225914_FixingPlayerEntity")]
-    partial class FixingPlayerEntity
+    [Migration("20260212003845_InitialMigraion")]
+    partial class InitialMigraion
     {
         /// <inheritdoc />
         protected override void BuildTargetModel(ModelBuilder modelBuilder)
@@ -33,71 +33,15 @@ namespace Srbopoly_backend.Migrations
 
                     SqlServerPropertyBuilderExtensions.UseIdentityColumn(b.Property<int>("ID"));
 
+                    b.Property<int>("GameId")
+                        .HasColumnType("int");
+
                     b.HasKey("ID");
+
+                    b.HasIndex("GameId")
+                        .IsUnique();
 
                     b.ToTable("Boards");
-                });
-
-            modelBuilder.Entity("Backend.Persistence.Entities.CardEntity", b =>
-                {
-                    b.Property<int>("ID")
-                        .ValueGeneratedOnAdd()
-                        .HasColumnType("int");
-
-                    SqlServerPropertyBuilderExtensions.UseIdentityColumn(b.Property<int>("ID"));
-
-                    b.Property<string>("CardType")
-                        .HasColumnType("nvarchar(max)");
-
-                    b.Property<int>("GameCardID")
-                        .HasColumnType("int");
-
-                    b.Property<int?>("GameEntityID")
-                        .HasColumnType("int");
-
-                    b.Property<int?>("GameEntityID1")
-                        .HasColumnType("int");
-
-                    b.HasKey("ID");
-
-                    b.HasIndex("GameEntityID");
-
-                    b.HasIndex("GameEntityID1");
-
-                    b.ToTable("Cards");
-                });
-
-            modelBuilder.Entity("Backend.Persistence.Entities.FieldEntity", b =>
-                {
-                    b.Property<int>("ID")
-                        .ValueGeneratedOnAdd()
-                        .HasColumnType("int");
-
-                    SqlServerPropertyBuilderExtensions.UseIdentityColumn(b.Property<int>("ID"));
-
-                    b.Property<int?>("BoardEntityID")
-                        .HasColumnType("int");
-
-                    b.Property<string>("Discriminator")
-                        .IsRequired()
-                        .HasMaxLength(21)
-                        .HasColumnType("nvarchar(21)");
-
-                    b.Property<string>("FieldType")
-                        .HasColumnType("nvarchar(max)");
-
-                    b.Property<int>("GameFieldID")
-                        .HasColumnType("int");
-
-                    b.HasKey("ID");
-
-                    b.HasIndex("BoardEntityID");
-
-                    b.ToTable("Fields");
-
-                    b.HasDiscriminator().HasValue("FieldEntity");
-
-                    b.UseTphMappingStrategy();
                 });
 
             modelBuilder.Entity("Backend.Persistence.Entities.GameEntity", b =>
@@ -108,9 +52,6 @@ namespace Srbopoly_backend.Migrations
 
                     SqlServerPropertyBuilderExtensions.UseIdentityColumn(b.Property<int>("ID"));
 
-                    b.Property<int?>("BoardID")
-                        .HasColumnType("int");
-
                     b.Property<int>("CurrentPlayerIndex")
                         .HasColumnType("int");
 
@@ -120,12 +61,18 @@ namespace Srbopoly_backend.Migrations
                     b.Property<int>("MaxTurns")
                         .HasColumnType("int");
 
+                    b.Property<string>("RewardCardsDeckIds")
+                        .IsRequired()
+                        .HasColumnType("nvarchar(max)");
+
                     b.Property<int>("Status")
                         .HasColumnType("int");
 
-                    b.HasKey("ID");
+                    b.Property<string>("SurpriseCardsDeckIds")
+                        .IsRequired()
+                        .HasColumnType("nvarchar(max)");
 
-                    b.HasIndex("BoardID");
+                    b.HasKey("ID");
 
                     b.ToTable("Games");
                 });
@@ -144,7 +91,7 @@ namespace Srbopoly_backend.Migrations
                     b.Property<int>("Color")
                         .HasColumnType("int");
 
-                    b.Property<int?>("GameEntityID")
+                    b.Property<int>("GameId")
                         .HasColumnType("int");
 
                     b.Property<bool>("IsInJail")
@@ -153,16 +100,48 @@ namespace Srbopoly_backend.Migrations
                     b.Property<int>("Position")
                         .HasColumnType("int");
 
-                    b.Property<int?>("UserID")
+                    b.Property<int>("UserId")
                         .HasColumnType("int");
 
                     b.HasKey("ID");
 
-                    b.HasIndex("GameEntityID");
+                    b.HasIndex("GameId");
 
-                    b.HasIndex("UserID");
+                    b.HasIndex("UserId");
 
                     b.ToTable("Players");
+                });
+
+            modelBuilder.Entity("Backend.Persistence.Entities.PropertyFieldEntity", b =>
+                {
+                    b.Property<int>("ID")
+                        .ValueGeneratedOnAdd()
+                        .HasColumnType("int");
+
+                    SqlServerPropertyBuilderExtensions.UseIdentityColumn(b.Property<int>("ID"));
+
+                    b.Property<int>("BoardId")
+                        .HasColumnType("int");
+
+                    b.Property<int>("GameFieldID")
+                        .HasColumnType("int");
+
+                    b.Property<int>("Hotels")
+                        .HasColumnType("int");
+
+                    b.Property<int>("Houses")
+                        .HasColumnType("int");
+
+                    b.Property<int?>("OwnerID")
+                        .HasColumnType("int");
+
+                    b.HasKey("ID");
+
+                    b.HasIndex("BoardId");
+
+                    b.HasIndex("OwnerID");
+
+                    b.ToTable("PropertyFields");
                 });
 
             modelBuilder.Entity("Backend.Persistence.Entities.UserEntity", b =>
@@ -189,90 +168,74 @@ namespace Srbopoly_backend.Migrations
                     b.ToTable("Users");
                 });
 
-            modelBuilder.Entity("Backend.Persistence.Entities.PropertyFieldEntity", b =>
+            modelBuilder.Entity("Backend.Persistence.Entities.BoardEntity", b =>
                 {
-                    b.HasBaseType("Backend.Persistence.Entities.FieldEntity");
+                    b.HasOne("Backend.Persistence.Entities.GameEntity", "Game")
+                        .WithOne("Board")
+                        .HasForeignKey("Backend.Persistence.Entities.BoardEntity", "GameId")
+                        .OnDelete(DeleteBehavior.Cascade)
+                        .IsRequired();
 
-                    b.Property<int>("Hotels")
-                        .HasColumnType("int");
-
-                    b.Property<int>("Houses")
-                        .HasColumnType("int");
-
-                    b.Property<int?>("OwnerID")
-                        .HasColumnType("int");
-
-                    b.HasIndex("OwnerID");
-
-                    b.HasDiscriminator().HasValue("PropertyFieldEntity");
-                });
-
-            modelBuilder.Entity("Backend.Persistence.Entities.CardEntity", b =>
-                {
-                    b.HasOne("Backend.Persistence.Entities.GameEntity", null)
-                        .WithMany("RewardCardsDeck")
-                        .HasForeignKey("GameEntityID");
-
-                    b.HasOne("Backend.Persistence.Entities.GameEntity", null)
-                        .WithMany("SurpriseCardsDeck")
-                        .HasForeignKey("GameEntityID1");
-                });
-
-            modelBuilder.Entity("Backend.Persistence.Entities.FieldEntity", b =>
-                {
-                    b.HasOne("Backend.Persistence.Entities.BoardEntity", null)
-                        .WithMany("ChangeableFields")
-                        .HasForeignKey("BoardEntityID");
-                });
-
-            modelBuilder.Entity("Backend.Persistence.Entities.GameEntity", b =>
-                {
-                    b.HasOne("Backend.Persistence.Entities.BoardEntity", "Board")
-                        .WithMany()
-                        .HasForeignKey("BoardID");
-
-                    b.Navigation("Board");
+                    b.Navigation("Game");
                 });
 
             modelBuilder.Entity("Backend.Persistence.Entities.PlayerEntity", b =>
                 {
-                    b.HasOne("Backend.Persistence.Entities.GameEntity", null)
+                    b.HasOne("Backend.Persistence.Entities.GameEntity", "Game")
                         .WithMany("Players")
-                        .HasForeignKey("GameEntityID");
+                        .HasForeignKey("GameId")
+                        .OnDelete(DeleteBehavior.Cascade)
+                        .IsRequired();
 
                     b.HasOne("Backend.Persistence.Entities.UserEntity", "User")
-                        .WithMany()
-                        .HasForeignKey("UserID");
+                        .WithMany("Players")
+                        .HasForeignKey("UserId")
+                        .OnDelete(DeleteBehavior.Cascade)
+                        .IsRequired();
+
+                    b.Navigation("Game");
 
                     b.Navigation("User");
                 });
 
             modelBuilder.Entity("Backend.Persistence.Entities.PropertyFieldEntity", b =>
                 {
+                    b.HasOne("Backend.Persistence.Entities.BoardEntity", "Board")
+                        .WithMany("PropertyFields")
+                        .HasForeignKey("BoardId")
+                        .OnDelete(DeleteBehavior.Cascade)
+                        .IsRequired();
+
                     b.HasOne("Backend.Persistence.Entities.PlayerEntity", "Owner")
-                        .WithMany("Properties")
+                        .WithMany("OwnedFields")
                         .HasForeignKey("OwnerID");
+
+                    b.Navigation("Board");
 
                     b.Navigation("Owner");
                 });
 
             modelBuilder.Entity("Backend.Persistence.Entities.BoardEntity", b =>
                 {
-                    b.Navigation("ChangeableFields");
+                    b.Navigation("PropertyFields");
                 });
 
             modelBuilder.Entity("Backend.Persistence.Entities.GameEntity", b =>
                 {
+                    b.Navigation("Board")
+                        .IsRequired();
+
                     b.Navigation("Players");
-
-                    b.Navigation("RewardCardsDeck");
-
-                    b.Navigation("SurpriseCardsDeck");
                 });
 
             modelBuilder.Entity("Backend.Persistence.Entities.PlayerEntity", b =>
                 {
-                    b.Navigation("Properties");
+                    b.Navigation("OwnedFields");
+                });
+
+            modelBuilder.Entity("Backend.Persistence.Entities.UserEntity", b =>
+                {
+                    b.Navigation("Players");
                 });
 #pragma warning restore 612, 618
         }

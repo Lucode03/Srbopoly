@@ -10,10 +10,10 @@ namespace Backend.Persistence.Mappers
         {
             return new BoardDto
             {
-                PropertyFields = board.Fields
+                PropertyFields = board.Fields?
                     .OfType<PropertyField>()         
                     .Select(field => PropertyFieldMapper.ToDTO(field))
-                    .ToList()
+                    .ToList() ?? new List<PropertyFieldDto>()
             };
         }
         public static Board ToBusiness(BoardDto dto, List<Player> players)

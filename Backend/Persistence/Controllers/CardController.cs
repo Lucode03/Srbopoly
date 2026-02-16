@@ -1,4 +1,8 @@
 using Backend.Persistence.Entities;
+using Backend.Domain;
+using Backend.Persistence.DTO;
+using Backend.Repositories;
+using Backend.Persistence.Mappers;
 
 namespace Backend.Persistence.Controllers;
 
@@ -6,11 +10,11 @@ namespace Backend.Persistence.Controllers;
 [Route("[controller]")]
 public class CardController : ControllerBase
 {
-    public SrbopolyContext Context { get; set; }
+    private readonly CardRepository _repository;
 
-    public CardController(SrbopolyContext context)
+    public CardController(CardRepository repository)
     {
-        Context = context;
+        _repository = repository;
     }
 
     [HttpPost("CreateCard")]
@@ -21,30 +25,16 @@ public class CardController : ControllerBase
     {
         try
         {
-            var game = await Context.Games.FindAsync(gameId);
-            if (game == null)
-                return NotFound($"Game sa ID {gameId} nije pronađen.");
-
-            if (dto.GameCardID < 0)
-                return BadRequest("GameCardID mora biti pozitivan.");
-
-            var card = new CardEntity
-            {
-                GameCardID = dto.GameCardID,
-                GameId = gameId,
-                Game = game
-            };
-
-            await Context.Cards.AddAsync(card);
-            await Context.SaveChangesAsync();
-
-            var resultDto = new CardDto
-            {
-                Id = card.ID,
-                GameCardID = card.GameCardID,
-            };
-
-            return Ok(resultDto);
+            var card = await _repository.CreateCardAsync(gameId, CardMapper.ToBusiness(dto));
+            return Ok(CardMapper.ToDto(card));
+        }
+        catch (KeyNotFoundException knf)
+        {
+            return NotFound(knf.Message);
+        }
+        catch (InvalidOperationException ioe)
+        {
+            return BadRequest(ioe.Message);
         }
         catch (Exception e)
         {
@@ -60,20 +50,10 @@ public class CardController : ControllerBase
     {
         try
         {
-            var card = await Context.Cards
-                .Include(c => c.Game)
-                .FirstOrDefaultAsync(c => c.ID == id);
+            var card = await _repository.GetByIdAsync(id);
+            if (card == null) return NotFound($"Card sa ID {id} nije pronađena.");
 
-            if (card == null)
-                return NotFound($"Card sa ID {id} nije pronađena.");
-
-            var dto = new CardDto
-            {
-                Id = card.ID,
-                GameCardID = card.GameCardID,
-            };
-
-            return Ok(dto);
+            return Ok(CardMapper.ToDto(card));
         }
         catch (Exception e)
         {
@@ -89,21 +69,12 @@ public class CardController : ControllerBase
     {
         try
         {
-            var game = await Context.Games.FindAsync(gameId);
-            if (game == null)
-                return NotFound($"Game sa ID {gameId} nije pronađen.");
-
-            var cards = await Context.Cards
-                .Where(c => c.GameId == gameId)
-                .ToListAsync();
-
-            var dtos = cards.Select(c => new CardDto
-            {
-                Id = c.ID,
-                GameCardID = c.GameCardID,
-            }).ToList();
-
-            return Ok(dtos);
+            var cards = await _repository.GetByGameAsync(gameId);
+            return Ok(cards.Select(CardMapper.ToDto).ToList());
+        }
+        catch (KeyNotFoundException knf)
+        {
+            return NotFound(knf.Message);
         }
         catch (Exception e)
         {
@@ -119,14 +90,12 @@ public class CardController : ControllerBase
     {
         try
         {
-            var card = await Context.Cards.FindAsync(id);
-            if (card == null)
-                return NotFound($"Card sa ID {id} nije pronađena.");
-
-            Context.Cards.Remove(card);
-            await Context.SaveChangesAsync();
-
+            await _repository.DeleteAsync(id);
             return Ok($"Card sa ID {id} je uspešno obrisana.");
+        }
+        catch (KeyNotFoundException knf)
+        {
+            return NotFound(knf.Message);
         }
         catch (Exception e)
         {

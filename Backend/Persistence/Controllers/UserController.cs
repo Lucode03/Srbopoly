@@ -1,4 +1,6 @@
 using Backend.Persistence.Entities;
+using Backend.Persistence.Mappers;
+using Backend.Repositories;
 
 namespace Backend.Persistence.Controllers;
 
@@ -6,11 +8,12 @@ namespace Backend.Persistence.Controllers;
 [Route("[controller]")]
 public class UserController : ControllerBase 
 {
-    public SrbopolyContext Context { get; set; }
+    private readonly UserRepository _repository;
 
-    public UserController(SrbopolyContext c) {
-        Context = c;
-    }
+        public UserController(UserRepository repository)
+        {
+            _repository = repository;
+        }
 
     [HttpPost("CreateUser")]
     [ProducesResponseType(StatusCodes.Status200OK)]
@@ -18,35 +21,21 @@ public class UserController : ControllerBase
     public async Task<ActionResult> CreateUser([FromBody] string username)
     {
         try
-        {
-            if (string.IsNullOrWhiteSpace(username))
-                return BadRequest("Username nije validan.");
-            var exists = await Context.Users
-                .AnyAsync(u => u.Username == username);
-            if (exists)
-                return BadRequest("Username već postoji.");
-            var user = new UserEntity
             {
-                Username = username,
-                Points = 0
-            };
+                if (string.IsNullOrWhiteSpace(username))
+                    return BadRequest("Username nije validan.");
 
-            await Context.Users.AddAsync(user);
-            await Context.SaveChangesAsync();
-
-            var dto = new UserDto
+                var user = await _repository.CreateUserAsync(username);
+                return Ok(UserMapper.ToEntity(user));
+            }
+            catch (InvalidOperationException ioe)
             {
-                Id = user.ID,
-                Username = user.Username,
-                Points = user.Points
-            };
-
-            return Ok(dto);
-        }
-        catch (Exception e)
-        {
-            return BadRequest(e.Message);
-        }
+                return BadRequest(ioe.Message);
+            }
+            catch (Exception e)
+            {
+                return BadRequest(e.Message);
+            }
     }
 
     [HttpGet("GetById/{id}")]
@@ -56,21 +45,16 @@ public class UserController : ControllerBase
     public async Task<ActionResult> GetById(int id)
     {
         try
-        {
-            var user = await Context.Users.FindAsync(id);
-            if (user == null)
-                return NotFound($"Korisnik sa ID {id} nije pronađen.");
-            return Ok(new UserDto
             {
-                Id = user.ID,
-                Username = user.Username,
-                Points = user.Points
-            });
-        }
-        catch (Exception e)
-        {
-            return BadRequest(e.Message);
-        }
+                var user = await _repository.GetByIdAsync(id);
+                if (user == null) return NotFound($"Korisnik sa ID {id} nije pronađen.");
+
+                return Ok(UserMapper.ToEntity(user));
+            }
+            catch (Exception e)
+            {
+                return BadRequest(e.Message);
+            }
     }
 
     [HttpGet("GetByUsername/{username}")]
@@ -80,23 +64,16 @@ public class UserController : ControllerBase
     public async Task<ActionResult> GetByUsername(string username)
     {
         try
-        {
-            var user = await Context.Users
-                .FirstOrDefaultAsync(u => u.Username == username);
-            if (user == null)
-                return NotFound($"Korisnik sa username '{username}' nije pronađen.");
-
-             return Ok(new UserDto
             {
-                Id = user.ID,
-                Username = user.Username,
-                Points = user.Points
-            });
-        }
-        catch (Exception e)
-        {
-            return BadRequest(e.Message);
-        }
+                var user = await _repository.GetByUsernameAsync(username);
+                if (user == null) return NotFound($"Korisnik sa username '{username}' nije pronađen.");
+
+                return Ok(UserMapper.ToEntity(user));
+            }
+            catch (Exception e)
+            {
+                return BadRequest(e.Message);
+            }
     }
 
     [HttpPut("AddPoints/{id}/{points}")]
@@ -105,30 +82,23 @@ public class UserController : ControllerBase
     [ProducesResponseType(StatusCodes.Status400BadRequest)]
     public async Task<ActionResult> AddPoints(int id, int points)
     {
-        try
-        {
-            var user = await Context.Users.FindAsync(id);
-
-            if (user == null)
-                return NotFound($"Korisnik sa ID {id} nije pronađen.");
-
-            if (user.Points + points < 0)
-                return BadRequest("Korisnik ne može imati negativan broj bodova.");
-
-            user.Points += points;
-
-            await Context.SaveChangesAsync();
-            return Ok(new UserDto
+         try
             {
-                Id = user.ID,
-                Username = user.Username,
-                Points = user.Points
-            });
-        }
-        catch (Exception e)
-        {
-            return BadRequest(e.Message);
-        }
+                var user = await _repository.AddPointsAsync(id, points);
+                return Ok(UserMapper.ToEntity(user));
+            }
+            catch (KeyNotFoundException knf)
+            {
+                return NotFound(knf.Message);
+            }
+            catch (InvalidOperationException ioe)
+            {
+                return BadRequest(ioe.Message);
+            }
+            catch (Exception e)
+            {
+                return BadRequest(e.Message);
+            }
     }
 
     [HttpDelete("DeleteById/{id}")]
@@ -138,20 +108,18 @@ public class UserController : ControllerBase
     public async Task<ActionResult> DeleteById(int id)
     {
         try
-        {
-            var user = await Context.Users.FindAsync(id);
-            if (user == null)
-                return NotFound($"Korisnik sa ID {id} nije pronađen.");
-
-            Context.Users.Remove(user);
-            await Context.SaveChangesAsync();
-
-            return Ok($"Korisnik sa ID {id} je uspešno obrisan.");
-        }
-        catch (Exception e)
-        {
-            return BadRequest(e.Message);
-        }
+            {
+                await _repository.DeleteByIdAsync(id);
+                return Ok($"Korisnik sa ID {id} je uspešno obrisan.");
+            }
+            catch (KeyNotFoundException knf)
+            {
+                return NotFound(knf.Message);
+            }
+            catch (Exception e)
+            {
+                return BadRequest(e.Message);
+            }
     }
 
     [HttpDelete("DeleteByUsername/{username}")]
@@ -162,16 +130,12 @@ public class UserController : ControllerBase
     {
         try
         {
-            var user = await Context.Users
-                .FirstOrDefaultAsync(u => u.Username == username);
-
-            if (user == null)
-                return NotFound($"Korisnik sa username '{username}' nije pronađen.");
-
-            Context.Users.Remove(user);
-            await Context.SaveChangesAsync();
-
+            await _repository.DeleteByUsernameAsync(username);
             return Ok($"Korisnik '{username}' je uspešno obrisan.");
+        }
+        catch (KeyNotFoundException knf)
+        {
+            return NotFound(knf.Message);
         }
         catch (Exception e)
         {
@@ -186,23 +150,16 @@ public class UserController : ControllerBase
     public async Task<ActionResult> GetAllUsers()
     {
         try
-        {
-            var users = await Context.Users.ToListAsync();
-
-            if (users == null)
-                return NotFound("Nema registrovanih korisnika.");
-
-            return Ok(users.Select(u => new UserDto
             {
-                Id = u.ID,
-                Username = u.Username,
-                Points = u.Points
-            }).ToList());
-        }
-        catch (Exception e)
-        {
-            return BadRequest(e.Message);
-        }
+                var users = await _repository.GetAllAsync();
+                if (users.Count == 0) return NotFound("Nema registrovanih korisnika.");
+
+                return Ok(users.Select(UserMapper.ToEntity).ToList());
+            }
+            catch (Exception e)
+            {
+                return BadRequest(e.Message);
+            }
     }
 
     [HttpGet("GetUsers")]
@@ -211,26 +168,14 @@ public class UserController : ControllerBase
     public async Task<ActionResult> GetUsers([FromQuery] int top = 0)
     {
         try
-        {
-            IQueryable<UserEntity> query = Context.Users;
-
-            query = query.OrderByDescending(u => u.Points);
-            if (top > 0)
-                query = query.Take(top);
-
-            var users = await query.ToListAsync();
-
-            return Ok(users.Select(u => new UserDto
             {
-                Id = u.ID,
-                Username = u.Username,
-                Points = u.Points
-            }).ToList());
-        }
-        catch (Exception e)
-        {
-            return BadRequest(e.Message);
-        }
+                var users = await _repository.GetTopUsersAsync(top);
+                return Ok(users.Select(UserMapper.ToEntity).ToList());
+            }
+            catch (Exception e)
+            {
+                return BadRequest(e.Message);
+            }
     }
 }
 
