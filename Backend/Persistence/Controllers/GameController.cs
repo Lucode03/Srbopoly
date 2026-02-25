@@ -34,6 +34,7 @@ public class GameController : ControllerBase
             };
 
             var createdGame = await _repository.CreateAsync(game);
+            game.ID = createdGame.ID;
             return Ok(GameMapper.ToEntity(createdGame));
         }
         catch (Exception e)

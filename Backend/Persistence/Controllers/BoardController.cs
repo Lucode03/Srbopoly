@@ -25,7 +25,7 @@ public class BoardController : ControllerBase
         {
             var board = await _repository.CreateBoardAsync(gameId);
             var dto = BoardMapper.ToDTO(board);
-
+            
             return Ok(dto);
         }
         catch (KeyNotFoundException e)

@@ -16,10 +16,32 @@ public class GameRepository : IGameRepository
 
     public async Task<Game> CreateAsync(Game game)
     {
-        var gameDto =GameMapper.ToEntity(game);
+        var gameDto = GameMapper.ToEntity(game);
         var entity = GameMapperDE.ToEntity(gameDto);
         await _context.Games.AddAsync(entity);
         await _context.SaveChangesAsync();
+
+        game.ID = entity.ID;
+    
+        if (game.GameBoard != null && entity.Board != null)
+        {
+            game.GameBoard.Id = entity.Board.ID; 
+            if (entity.Board.PropertyFields != null)
+        {
+            foreach (var pfEntity in entity.Board.PropertyFields)
+            {
+                var domainField = game.GameBoard.Fields
+                    .OfType<PropertyField>()
+                    .FirstOrDefault(f => f.GameFieldID == pfEntity.GameFieldID);
+
+                if (domainField != null)
+                {
+                    domainField.Id = pfEntity.ID;
+                }
+            }
+        }
+        }
+
         return game;
     }
 

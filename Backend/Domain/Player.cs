@@ -12,7 +12,7 @@ namespace Backend.Domain
         public int Position { get; set; }
         public Color Color { get; set; }
         public bool IsInJail { get; set; }
-        public List<PropertyField> Properties { get; set; }
+        public List<PropertyField> Properties { get; set; } = new List<PropertyField>();
 
         public void Receive(int amount)
         {

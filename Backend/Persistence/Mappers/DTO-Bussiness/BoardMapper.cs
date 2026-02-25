@@ -13,7 +13,8 @@ namespace Backend.Persistence.Mappers
                 PropertyFields = board.Fields?
                     .OfType<PropertyField>()         
                     .Select(field => PropertyFieldMapper.ToDTO(field))
-                    .ToList() ?? new List<PropertyFieldDto>()
+                    .ToList() ?? new List<PropertyFieldDto>(),
+                Id = board.Id
             };
         }
         public static Board ToBusiness(BoardDto dto, List<Player> players)
@@ -22,7 +23,8 @@ namespace Backend.Persistence.Mappers
             var board = new Board
             {
                 Size = boardSize,
-                Fields = new List<Field>(new Field[boardSize])
+                Fields = new List<Field>(new Field[boardSize]),
+                Id = dto.Id
             };
 
             if (dto.PropertyFields != null)

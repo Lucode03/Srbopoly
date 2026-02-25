@@ -119,4 +119,25 @@ public class PropertyFieldController : ControllerBase
             return BadRequest(e.Message);
         }
     }
+
+    [HttpPut("SetOwner/{boardId}/{gameFieldId}/{playerId}")]
+    [ProducesResponseType(StatusCodes.Status200OK)]
+    [ProducesResponseType(StatusCodes.Status404NotFound)]
+    [ProducesResponseType(StatusCodes.Status400BadRequest)]
+    public async Task<ActionResult<PropertyFieldDto>> SetOwner(int boardId, int gameFieldId, int playerId)
+    {
+        try
+        {
+            var updatedField = await _repository.UpdateOwnerAsync(boardId, gameFieldId, playerId);
+            return Ok(PropertyFieldMapper.ToDTO(updatedField));
+        }
+        catch (KeyNotFoundException knf)
+        {
+            return NotFound(knf.Message);
+        }
+        catch (Exception e)
+        {
+            return BadRequest(e.Message);
+        }
+    }
 }

@@ -8,12 +8,13 @@ namespace Backend.Domain
 {
     public class PropertyField : Field
     {
+        public int Id {get; set;}
         public int Price { get; set; }
-        public Player Owner { get; set; } = null;
+        public Player? Owner { get; set; } = null;
         public int BaseRent { get; set; }
         public int Houses { get; set; } = 0;
         public int Hotels { get; set; } = 0;
-        public String Type { get; set; }
+        public String? Type { get; set; }
         public override void Action(Player player)
         {
             

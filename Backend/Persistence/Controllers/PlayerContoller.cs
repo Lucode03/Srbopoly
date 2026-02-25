@@ -26,7 +26,10 @@ public class PlayerController : ControllerBase
         try
         {
             var player = await _repository.CreatePlayerAsync(request);
-            return Ok(PlayerMapper.ToDTO(player));
+            var playerDto = PlayerMapper.ToDTO(player);
+            playerDto.UserId = request.UserId;
+            playerDto.Username = player?.Username ?? "";
+            return Ok(playerDto);
         }
         catch (KeyNotFoundException knf)
         {

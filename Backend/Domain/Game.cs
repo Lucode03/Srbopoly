@@ -13,10 +13,10 @@ namespace Backend.Domain
         public int MaxTurns { get; set; }
         public int CurrentTurn { get; set; }
         public int CurrentPlayerIndex { get; set; }
-        public List<Player> Players { get; set; }
-        public Board GameBoard { get; set; }
-        public List<RewardCard> RewardCardsDeck { get; set; }
-        public List<SurpriseCard> SurpriseCardsDeck { get; set; }
+        public List<Player> Players { get; set; } = new List<Player>();
+        public Board? GameBoard { get; set; }
+        public List<RewardCard> RewardCardsDeck { get; set; } = new List<RewardCard>();
+        public List<SurpriseCard> SurpriseCardsDeck { get; set; } = new List<SurpriseCard>();
 
         public void StartGame() 
         {
