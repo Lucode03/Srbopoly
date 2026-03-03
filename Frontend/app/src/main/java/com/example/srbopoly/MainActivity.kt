@@ -32,9 +32,10 @@ class MainActivity : ComponentActivity() {
                     composable("login") {
                         LoginScreen(navController = navController)
                     }
-                    composable("user/{username}") { backStackEntry ->
+                    composable("user/{userId}/{username}") { backStackEntry ->
+                        val userId = backStackEntry.arguments?.getString("userId")?.toInt() ?: 0
                         val username = backStackEntry.arguments?.getString("username") ?: ""
-                        UserScreen(username = username)
+                        UserScreen(userId = userId, username = username)
                     }
                 }
             }

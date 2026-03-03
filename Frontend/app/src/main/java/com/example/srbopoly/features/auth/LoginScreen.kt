@@ -34,7 +34,7 @@ fun LoginScreen(
 
     LaunchedEffect(user) {
         user?.let {
-            navController.navigate("user/${it.username}")
+            navController.navigate("user/${it.id}/${it.username}")
         }
     }
 
