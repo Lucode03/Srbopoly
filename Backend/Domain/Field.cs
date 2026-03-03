@@ -8,7 +8,7 @@ namespace Backend.Domain
 {
     public abstract class Field
     {
-        public string Name { get; set; }
+        public string? Name { get; set; }
         public int GameFieldID {get; set;}
 
         public abstract void Action(Player player);

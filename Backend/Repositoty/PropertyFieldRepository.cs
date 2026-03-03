@@ -74,4 +74,20 @@ public class PropertyFieldRepository
         _context.PropertyFields.Remove(entity);
         await _context.SaveChangesAsync();
     }
+
+    public async Task<PropertyField> UpdateOwnerAsync(int boardId, int gameFieldId, int playerId)
+    {
+        var entity = await _context.PropertyFields
+            .FirstOrDefaultAsync(f => f.BoardId == boardId && f.GameFieldID == gameFieldId);
+
+        if (entity == null)
+            throw new KeyNotFoundException($"PropertyField na poziciji {gameFieldId} za Board ID {boardId} nije pronađen.");
+
+        entity.OwnerID = playerId;
+
+        await _context.SaveChangesAsync();
+
+        var propertyDto = PropertyFieldMapperDE.ToDto(entity);
+        return PropertyFieldMapper.ToBusiness(propertyDto, new List<Player>());
+    }
 }

@@ -8,8 +8,9 @@ namespace Backend.Domain
 {
     public class Board
     {
+        public int Id {get; set;}
         public int Size {get; set;} = 40;
-        public List<Field> Fields { get; set; }
+        public List<Field> Fields { get; set; } = new List<Field>();
 
         public Field GetField(int position)
         {

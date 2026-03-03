@@ -5,7 +5,7 @@
 namespace Srbopoly_backend.Migrations
 {
     /// <inheritdoc />
-    public partial class InitialMigraion : Migration
+    public partial class IntV1 : Migration
     {
         /// <inheritdoc />
         protected override void Up(MigrationBuilder migrationBuilder)

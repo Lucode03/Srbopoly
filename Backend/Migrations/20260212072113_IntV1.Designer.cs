@@ -12,8 +12,8 @@ using Microsoft.EntityFrameworkCore.Storage.ValueConversion;
 namespace Srbopoly_backend.Migrations
 {
     [DbContext(typeof(SrbopolyContext))]
-    [Migration("20260212003845_InitialMigraion")]
-    partial class InitialMigraion
+    [Migration("20260212072113_IntV1")]
+    partial class IntV1
     {
         /// <inheritdoc />
         protected override void BuildTargetModel(ModelBuilder modelBuilder)

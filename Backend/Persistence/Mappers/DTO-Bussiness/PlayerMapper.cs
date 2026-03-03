@@ -9,6 +9,7 @@ namespace Backend.Persistence.Mappers
         {
             return new PlayerDto
             {
+                Id = player.ID,
                 Balance = player.Balance,
                 Position = player.Position,
                 Color = player.Color,
@@ -20,11 +21,13 @@ namespace Backend.Persistence.Mappers
         {
             return new Player
             {
+                ID = dto.Id,
                 Balance = dto.Balance,
                 Position = dto.Position,
                 Color = dto.Color,
                 IsInJail = dto.IsInJail,
-                Properties = new List<PropertyField>()
+                Properties = new List<PropertyField>(),
+                Username = dto.Username
             };
         }
     }

@@ -9,7 +9,7 @@ namespace Backend.Domain
     public class User
     {
         public int ID { get; set; }
-        public string Username { get; set; }
+        public string? Username { get; set; }
         public int Points{ get; set; }
 
         public void UpdatePoints(int points)

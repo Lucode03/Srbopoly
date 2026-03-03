@@ -32,6 +32,7 @@ public class PlayerRepository
 
         var playerEntity = new PlayerEntity
         {
+            GameId = request.GameId,
             UserId = request.UserId,
             Balance = request.Balance,
             Position = request.Position,
