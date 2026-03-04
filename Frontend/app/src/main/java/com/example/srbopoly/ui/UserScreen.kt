@@ -1,5 +1,6 @@
 package com.example.srbopoly.ui
 
+import androidx.compose.foundation.clickable
 import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.Row
@@ -29,6 +30,7 @@ import com.example.srbopoly.data.Game
 fun UserScreen(
     userId: Int,
     username: String,
+    onGameClick: (gameId: Int, username: String) -> Unit,
     viewModel: UserScreenViewModel = hiltViewModel()
 ) {
     val games by viewModel.games.collectAsState()
@@ -91,7 +93,9 @@ fun UserScreen(
                 verticalArrangement = Arrangement.spacedBy(8.dp)
             ) {
                 items(games) { game ->
-                    GameItemCard(game = game)
+                    GameItemCard(game = game) {
+                        onGameClick(game.id, username)
+                    }
                 }
             }
         }
@@ -99,9 +103,13 @@ fun UserScreen(
 }
 
 @Composable
-fun GameItemCard(game: Game) {
+fun GameItemCard(
+    game: Game,
+    onClick: () -> Unit) {
     Card(
-        modifier = Modifier.fillMaxWidth()
+        modifier = Modifier
+            .fillMaxWidth()
+            .clickable { onClick() }
     ) {
         Column(modifier = Modifier.padding(16.dp)) {
             Text(text = "Igra ID: ${game.id}")

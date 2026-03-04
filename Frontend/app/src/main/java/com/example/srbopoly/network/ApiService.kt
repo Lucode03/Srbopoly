@@ -3,6 +3,7 @@ import com.example.srbopoly.data.User
 import com.example.srbopoly.data.Game
 import com.example.srbopoly.data.PlayerRequest
 import com.example.srbopoly.data.PlayerResponse
+import com.example.srbopoly.data.SendChatMessageRequest
 import retrofit2.Response
 import retrofit2.http.Body
 import retrofit2.http.DELETE
@@ -45,4 +46,10 @@ interface ApiService {
 
     @POST("Player/CreatePlayer")
     suspend fun createPlayer(@Body player: PlayerRequest): Response<PlayerResponse>
+
+    @POST("chat/{gameId}")
+    suspend fun sendChatMessage(
+        @Path("gameId") gameId: Int,
+        @Body request: SendChatMessageRequest
+    ): Response<Unit>
 }

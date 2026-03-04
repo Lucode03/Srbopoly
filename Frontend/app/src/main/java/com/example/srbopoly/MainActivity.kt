@@ -16,6 +16,7 @@ import androidx.navigation.compose.NavHost
 import androidx.navigation.compose.composable
 import androidx.navigation.compose.rememberNavController
 import com.example.srbopoly.features.auth.LoginScreen
+import com.example.srbopoly.features.chat.ChatScreen
 import com.example.srbopoly.ui.UserScreen
 import com.example.srbopoly.ui.theme.SrbopolyTheme
 import dagger.hilt.android.AndroidEntryPoint
@@ -35,7 +36,20 @@ class MainActivity : ComponentActivity() {
                     composable("user/{userId}/{username}") { backStackEntry ->
                         val userId = backStackEntry.arguments?.getString("userId")?.toInt() ?: 0
                         val username = backStackEntry.arguments?.getString("username") ?: ""
-                        UserScreen(userId = userId, username = username)
+                        UserScreen(userId = userId, username = username,
+                            onGameClick = { gameId, uname ->
+                                navController.navigate("chat/$gameId/$uname")
+                            }
+                        )
+                    }
+                    composable("chat/{gameId}/{username}") { backStackEntry ->
+                        val gameId = backStackEntry.arguments?.getString("gameId")?.toInt() ?: 0
+                        val username = backStackEntry.arguments?.getString("username") ?: ""
+
+                        ChatScreen(
+                            gameId = gameId,
+                            username = username
+                        )
                     }
                 }
             }
