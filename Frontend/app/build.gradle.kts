@@ -64,6 +64,7 @@ dependencies {
     implementation ("androidx.lifecycle:lifecycle-livedata-ktx:2.6.2")
     implementation ("androidx.activity:activity-ktx:1.8.0")
 
+    implementation("com.microsoft.signalr:signalr:7.0.5")
 
     testImplementation(libs.junit)
     androidTestImplementation(libs.androidx.junit)

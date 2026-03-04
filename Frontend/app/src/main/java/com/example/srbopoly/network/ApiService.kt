@@ -1,5 +1,9 @@
 package com.example.srbopoly.network
 import com.example.srbopoly.data.User
+import com.example.srbopoly.data.Game
+import com.example.srbopoly.data.PlayerRequest
+import com.example.srbopoly.data.PlayerResponse
+import com.example.srbopoly.data.SendChatMessageRequest
 import retrofit2.Response
 import retrofit2.http.Body
 import retrofit2.http.DELETE
@@ -33,4 +37,19 @@ interface ApiService {
 
     @GET("User/GetUsers")
     suspend fun getTopUsers(@Query("top") top: Int): Response<List<User>>
+
+    @GET("Game/GetByUserId/{userId}")
+    suspend fun getGamesByUserId(@Path("userId") userId: Int): Response<List<Game>>
+
+    @POST("Game/CreateGame")
+    suspend fun createGame(@Body maxTurns: Int): Response<Game>
+
+    @POST("Player/CreatePlayer")
+    suspend fun createPlayer(@Body player: PlayerRequest): Response<PlayerResponse>
+
+    @POST("chat/{gameId}")
+    suspend fun sendChatMessage(
+        @Path("gameId") gameId: Int,
+        @Body request: SendChatMessageRequest
+    ): Response<Unit>
 }
