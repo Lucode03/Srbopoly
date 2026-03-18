@@ -1,4 +1,4 @@
-package com.example.srbopoly.features.chat
+package com.example.srbopoly.chat
 
 import androidx.lifecycle.ViewModel
 import androidx.lifecycle.viewModelScope

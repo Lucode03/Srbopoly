@@ -1,4 +1,4 @@
-package com.example.srbopoly.features.chat
+package com.example.srbopoly.chat
 
 import android.util.Log
 import com.example.srbopoly.data.ChatUiModel
@@ -11,7 +11,6 @@ import javax.inject.Singleton
 import com.example.srbopoly.network.NetworkConfig
 import com.microsoft.signalr.HubConnectionState
 import kotlinx.coroutines.channels.BufferOverflow
-import kotlinx.coroutines.future.await
 
 @Singleton
 class SignalRChatRepository @Inject constructor(

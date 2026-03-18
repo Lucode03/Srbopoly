@@ -1,4 +1,4 @@
-package com.example.srbopoly.ui
+package com.example.srbopoly.viewmodels
 
 import androidx.lifecycle.ViewModel
 import androidx.lifecycle.viewModelScope

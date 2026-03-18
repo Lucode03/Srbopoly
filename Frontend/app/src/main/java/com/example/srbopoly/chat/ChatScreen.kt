@@ -1,4 +1,4 @@
-package com.example.srbopoly.features.chat
+package com.example.srbopoly.chat
 
 import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Column
