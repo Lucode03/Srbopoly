@@ -77,6 +77,11 @@ class AuthViewModel @Inject constructor(
             }
         }
     }
+
+    fun signout(){
+        _user.value = null
+    }
+
     fun clearError() {
         _error.value = null
     }

@@ -67,7 +67,11 @@ fun MainScreen(modifier: Modifier = Modifier,
             modifier = modifier.padding(innerPadding)
         ) {
             composable(NavItem.Rankings.route) { RankingsScreen() }
-            composable(NavItem.Home.route) { HomeScreen() }
+            composable(NavItem.Home.route) {
+                HomeScreen(
+                    onSignOut = { authViewModel.signout() },
+                    username=username)
+            }
             composable(NavItem.GameList.route) { GameListScreen() }
         }
     }
