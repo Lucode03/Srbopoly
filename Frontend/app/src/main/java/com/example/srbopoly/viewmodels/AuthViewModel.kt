@@ -14,11 +14,17 @@ import javax.inject.Inject
 class AuthViewModel @Inject constructor(
     private val repository: UserRepository
 ) : ViewModel() {
-    private val _username = MutableStateFlow("")
-    val username: StateFlow<String> = _username.asStateFlow()
+    private val _usernameLogin = MutableStateFlow("")
+    val usernameLogin: StateFlow<String> = _usernameLogin.asStateFlow()
 
-    private val _password = MutableStateFlow("")
-    val password: StateFlow<String> = _password.asStateFlow()
+    private val _passwordLogin = MutableStateFlow("")
+    val passwordLogin: StateFlow<String> = _passwordLogin.asStateFlow()
+
+    private val _usernameSignup = MutableStateFlow("")
+    val usernameSignup: StateFlow<String> = _usernameSignup.asStateFlow()
+
+    private val _passwordSignup = MutableStateFlow("")
+    val passwordSignup: StateFlow<String> = _passwordSignup.asStateFlow()
 
     private val _user = MutableStateFlow<User?>(null)
     val user: StateFlow<User?> = _user.asStateFlow()
@@ -29,15 +35,24 @@ class AuthViewModel @Inject constructor(
     private val _error = MutableStateFlow<String?>(null)
     val error: StateFlow<String?> = _error.asStateFlow()
 
-    fun onUsernameChange(newUsername: String) {
-        _username.value = newUsername
+    fun onUsernameLoginChange(newUsername: String) {
+        _usernameLogin.value = newUsername
     }
-    fun onPasswordChange(password: String) {
-        _password.value = password
+    fun onPasswordLoginChange(password: String) {
+        _passwordLogin.value = password
     }
 
+    fun onUsernameSignupChange(newUsername: String) {
+        _usernameSignup.value = newUsername
+    }
+    fun onPasswordSignupChange(password: String) {
+        _passwordSignup.value = password
+    }
+
+
     fun login() {
-        val username = _username.value.trim()
+        val username = _usernameLogin.value.trim()
+        val password = _passwordLogin.value
         if (username.isBlank()) {
             _error.value = "Unesite korisničko ime"
             return
@@ -46,7 +61,7 @@ class AuthViewModel @Inject constructor(
         viewModelScope.launch {
             _isLoading.value = true
             _error.value = null
-            val result = repository.checkUserExists(username)
+            val result = repository.login(username, password)
             _isLoading.value = false
 
             result.onSuccess { user ->
@@ -58,7 +73,8 @@ class AuthViewModel @Inject constructor(
     }
 
     fun signup() {
-        val username = _username.value.trim()
+        val username = _usernameSignup.value.trim()
+        val password = _passwordSignup.value
         if (username.isBlank()) {
             _error.value = "Unesite korisničko ime"
             return
@@ -67,11 +83,12 @@ class AuthViewModel @Inject constructor(
         viewModelScope.launch {
             _isLoading.value = true
             _error.value = null
-            val result = repository.checkUserExists(username)
+            val result = repository.register(username, password)
             _isLoading.value = false
 
             result.onSuccess { user ->
                 _user.value = user
+                _usernameLogin.value = user.username
             }.onFailure { exception ->
                 _error.value = exception.message
             }

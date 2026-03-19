@@ -38,8 +38,8 @@ fun LoginScreen(
     navController: NavController,
     authViewModel: AuthViewModel = hiltViewModel()
 ) {
-    val username by authViewModel.username.collectAsStateWithLifecycle()
-    val password by authViewModel.password.collectAsStateWithLifecycle()
+    val username by authViewModel.usernameLogin.collectAsStateWithLifecycle()
+    val password by authViewModel.passwordLogin.collectAsStateWithLifecycle()
     val isLoading by authViewModel.isLoading.collectAsStateWithLifecycle()
     val error by authViewModel.error.collectAsStateWithLifecycle()
     val user by authViewModel.user.collectAsStateWithLifecycle()
@@ -83,7 +83,7 @@ fun LoginScreen(
 
             CustomTextField(
                 value = username,
-                onValueChange = { authViewModel.onUsernameChange(it) },
+                onValueChange = { authViewModel.onUsernameLoginChange(it) },
                 label = "Korisničko ime",
                 keyboardOptions = KeyboardOptions(keyboardType = KeyboardType.Email)
             )
@@ -92,7 +92,7 @@ fun LoginScreen(
 
             CustomTextField(
                 value = password,
-                onValueChange = { authViewModel.onPasswordChange(it) },
+                onValueChange = { authViewModel.onPasswordLoginChange(it) },
                 label = "Lozinka",
                 visualTransformation = PasswordVisualTransformation()
             )

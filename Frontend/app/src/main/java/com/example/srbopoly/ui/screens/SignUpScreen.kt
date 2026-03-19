@@ -40,8 +40,8 @@ fun SignUpScreen(modifier: Modifier = Modifier,
                  authViewModel: AuthViewModel
 )
 {
-    val username by authViewModel.username.collectAsStateWithLifecycle()
-    val password by authViewModel.password.collectAsStateWithLifecycle()
+    val username by authViewModel.usernameSignup.collectAsStateWithLifecycle()
+    val password by authViewModel.passwordSignup.collectAsStateWithLifecycle()
     val isLoading by authViewModel.isLoading.collectAsStateWithLifecycle()
     val error by authViewModel.error.collectAsStateWithLifecycle()
     val user by authViewModel.user.collectAsStateWithLifecycle()
@@ -88,7 +88,7 @@ fun SignUpScreen(modifier: Modifier = Modifier,
 
             CustomTextField(
                 value = username,
-                onValueChange = { authViewModel.onUsernameChange(it) },
+                onValueChange = { authViewModel.onUsernameSignupChange(it) },
                 label = "Korisničko ime",
                 keyboardOptions = KeyboardOptions(keyboardType = KeyboardType.Email)
             )
@@ -97,7 +97,7 @@ fun SignUpScreen(modifier: Modifier = Modifier,
 
             CustomTextField(
                 value = password,
-                onValueChange = { authViewModel.onPasswordChange(it) },
+                onValueChange = { authViewModel.onPasswordSignupChange(it) },
                 label = "Lozinka",
                 visualTransformation = PasswordVisualTransformation()
             )

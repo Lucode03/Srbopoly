@@ -35,7 +35,7 @@ fun MainScreen(modifier: Modifier = Modifier,
     val activity = context as? Activity
 
     val user by authViewModel.user.collectAsStateWithLifecycle()
-    val username by authViewModel.username.collectAsStateWithLifecycle()
+    val username by authViewModel.usernameLogin.collectAsStateWithLifecycle()
     val isLoading by authViewModel.isLoading.collectAsStateWithLifecycle()
     val error by authViewModel.error.collectAsStateWithLifecycle()
 
