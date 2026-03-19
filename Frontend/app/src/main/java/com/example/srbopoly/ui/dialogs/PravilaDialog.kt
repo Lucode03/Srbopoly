@@ -154,10 +154,3 @@ fun PravilaDialog(onDismiss: () ->Unit)
         }
     }
 }
-
-@Preview
-@Composable
-fun Previeww()
-{
-    PravilaDialog {  }
-}
