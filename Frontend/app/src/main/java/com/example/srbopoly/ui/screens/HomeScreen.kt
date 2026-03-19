@@ -42,8 +42,8 @@ import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.text.style.TextAlign
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
-import androidx.compose.ui.window.Dialog
 import com.example.srbopoly.R
+import com.example.srbopoly.ui.dialogs.PravilaDialog
 
 
 @OptIn(ExperimentalMaterial3Api::class)
@@ -134,44 +134,7 @@ fun HomeScreen(modifier: Modifier = Modifier, onSignOut:()->Unit, username:Strin
             }
         }
         if (showDialog) {
-            Dialog(onDismissRequest = { showDialog = false }) {
-                Box(
-                    modifier = Modifier
-                        .fillMaxWidth()
-                        .clip(RoundedCornerShape(20.dp))
-                        .background(Color.White.copy(alpha = 0.8f))
-                        .padding(20.dp)
-                ) {
-                    Column(
-                        modifier = Modifier.fillMaxWidth(),
-                        horizontalAlignment = Alignment.CenterHorizontally
-                    ) {
-
-                        Text(
-                            text = "Srbopoly pravila:",
-                            fontSize = 22.sp,
-                            color = Color.Black,
-                            fontWeight = FontWeight.Bold
-                        )
-
-                        Spacer(modifier = Modifier.height(10.dp))
-
-                        Text(
-                            text = "• Pravilo 1\n• Pravilo 2\n• Pravilo 3",
-                            color = Color.Black
-                        )
-
-                        Spacer(modifier = Modifier.height(20.dp))
-
-                        Button(
-                            onClick = { showDialog = false }
-                        ) {
-                            Text("Zatvori")
-                        }
-                    }
-                }
-            }
+            PravilaDialog { showDialog = false }
         }
-
     }
 }
