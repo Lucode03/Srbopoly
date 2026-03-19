@@ -1,6 +1,9 @@
 package com.example.srbopoly.viewmodels
+import android.os.Build
+import androidx.annotation.RequiresApi
 import androidx.lifecycle.ViewModel
 import androidx.lifecycle.viewModelScope
+import com.example.srbopoly.data.SessionManager
 import com.example.srbopoly.data.User
 import com.example.srbopoly.data.repository.UserRepository
 import dagger.hilt.android.lifecycle.HiltViewModel
@@ -10,9 +13,11 @@ import kotlinx.coroutines.flow.asStateFlow
 import kotlinx.coroutines.launch
 import javax.inject.Inject
 
+@RequiresApi(Build.VERSION_CODES.O)
 @HiltViewModel
 class AuthViewModel @Inject constructor(
-    private val repository: UserRepository
+    private val repository: UserRepository,
+    private val sessionManager: SessionManager
 ) : ViewModel() {
     private val _usernameLogin = MutableStateFlow("")
     val usernameLogin: StateFlow<String> = _usernameLogin.asStateFlow()
@@ -32,6 +37,8 @@ class AuthViewModel @Inject constructor(
     private val _isLoading = MutableStateFlow(false)
     val isLoading: StateFlow<Boolean> = _isLoading.asStateFlow()
 
+    val isSessionLoaded = MutableStateFlow(false)
+
     private val _error = MutableStateFlow<String?>(null)
     val error: StateFlow<String?> = _error.asStateFlow()
 
@@ -50,6 +57,18 @@ class AuthViewModel @Inject constructor(
     }
 
 
+    init {
+        viewModelScope.launch {
+            sessionManager.userFlow.collect { session ->
+                _user.value = session?.let {
+                    _usernameLogin.value = it.username
+                    User(it.id, it.username, it.points)
+                }
+                isSessionLoaded.value = true
+            }
+        }
+    }
+
     fun login() {
         val username = _usernameLogin.value.trim()
         val password = _passwordLogin.value
@@ -66,6 +85,7 @@ class AuthViewModel @Inject constructor(
 
             result.onSuccess { user ->
                 _user.value = user
+                sessionManager.saveUser(user.id, user.username, user.points)
             }.onFailure { exception ->
                 _error.value = exception.message
             }
@@ -89,6 +109,7 @@ class AuthViewModel @Inject constructor(
             result.onSuccess { user ->
                 _user.value = user
                 _usernameLogin.value = user.username
+                sessionManager.saveUser(user.id, user.username, user.points)
             }.onFailure { exception ->
                 _error.value = exception.message
             }
@@ -96,7 +117,10 @@ class AuthViewModel @Inject constructor(
     }
 
     fun signout(){
-        _user.value = null
+        viewModelScope.launch {
+            sessionManager.clear()
+            _user.value = null
+        }
     }
 
     fun clearError() {
