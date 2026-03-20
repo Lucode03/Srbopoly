@@ -12,6 +12,7 @@ import androidx.compose.runtime.getValue
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.platform.LocalContext
 import androidx.lifecycle.compose.collectAsStateWithLifecycle
+import androidx.lifecycle.viewmodel.compose.viewModel
 import androidx.navigation.NavController
 import androidx.navigation.compose.NavHost
 import androidx.navigation.compose.composable
@@ -19,9 +20,12 @@ import androidx.navigation.compose.rememberNavController
 import com.example.srbopoly.ui.NavItem
 import com.example.srbopoly.ui.BottomNavigationBar
 import com.example.srbopoly.ui.screens.GameListScreen
+import com.example.srbopoly.ui.screens.GameScreen
 import com.example.srbopoly.ui.screens.HomeScreen
 import com.example.srbopoly.ui.screens.RankingsScreen
+import com.example.srbopoly.ui.screens.SettingsScreen
 import com.example.srbopoly.viewmodels.AuthViewModel
+import com.example.srbopoly.viewmodels.GameViewModel
 
 @RequiresApi(Build.VERSION_CODES.O)
 @Composable
@@ -61,6 +65,7 @@ fun MainScreen(modifier: Modifier = Modifier,
         }
     )
     { innerPadding ->
+        val gameViewModel: GameViewModel = viewModel()
         NavHost(
             navController = mainNavController,
             startDestination = NavItem.Home.route,
@@ -70,9 +75,20 @@ fun MainScreen(modifier: Modifier = Modifier,
             composable(NavItem.Home.route) {
                 HomeScreen(
                     onSignOut = { authViewModel.signout() },
-                    username=username)
+                    username = username,
+                    onStartGame = {
+                        mainNavController.navigate("settings")
+                    }
+                )
             }
             composable(NavItem.GameList.route) { GameListScreen() }
+            composable("settings") {
+                SettingsScreen(mainNavController,gameViewModel)
+            }
+
+            composable("game") {
+                GameScreen(mainNavController,gameViewModel)
+            }
         }
     }
 }

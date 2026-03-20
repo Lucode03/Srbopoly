@@ -1,5 +1,7 @@
 package com.example.srbopoly.ui.screens
 
+import android.os.Build
+import androidx.annotation.RequiresApi
 import androidx.compose.foundation.clickable
 import androidx.compose.foundation.interaction.MutableInteractionSource
 import androidx.compose.foundation.layout.Arrangement
@@ -32,6 +34,7 @@ import androidx.navigation.NavController
 import com.example.srbopoly.ui.CustomTextField
 import com.example.srbopoly.viewmodels.AuthViewModel
 
+@RequiresApi(Build.VERSION_CODES.O)
 @Composable
 fun LoginScreen(
     modifier: Modifier=Modifier,

@@ -48,7 +48,8 @@ import com.example.srbopoly.ui.dialogs.PravilaDialog
 
 @OptIn(ExperimentalMaterial3Api::class)
 @Composable
-fun HomeScreen(modifier: Modifier = Modifier, onSignOut:()->Unit, username:String)
+fun HomeScreen(modifier: Modifier = Modifier, onSignOut:()->Unit,
+               username:String, onStartGame:()->Unit)
 {
     var showDialog by remember { mutableStateOf(false) }
 
@@ -114,7 +115,7 @@ fun HomeScreen(modifier: Modifier = Modifier, onSignOut:()->Unit, username:Strin
             Spacer(modifier = Modifier.height(30.dp))
 
             Button(
-                onClick = { /* start a game */ },
+                onClick = { onStartGame() },
                 shape = RoundedCornerShape(20.dp),
                 elevation = ButtonDefaults.buttonElevation(
                     defaultElevation = 10.dp
