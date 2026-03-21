@@ -12,20 +12,24 @@ import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.height
 import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.layout.size
+import androidx.compose.foundation.layout.width
 import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.foundation.text.KeyboardOptions
 import androidx.compose.material3.Button
+import androidx.compose.material3.ButtonDefaults
 import androidx.compose.material3.HorizontalDivider
 import androidx.compose.material3.OutlinedTextField
 import androidx.compose.material3.RadioButton
 import androidx.compose.material3.Text
 import androidx.compose.runtime.Composable
+import androidx.compose.runtime.LaunchedEffect
 import androidx.compose.runtime.getValue
 import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.remember
 import androidx.compose.runtime.setValue
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
+import androidx.compose.ui.draw.alpha
 import androidx.compose.ui.draw.clip
 import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.res.painterResource
@@ -38,17 +42,27 @@ import androidx.lifecycle.viewmodel.compose.viewModel
 import androidx.navigation.NavController
 import androidx.navigation.compose.rememberNavController
 import com.example.srbopoly.classes.getDiceImage
+import com.example.srbopoly.classes.getFigure
 import com.example.srbopoly.viewmodels.GameViewModel
 
 @Composable
 fun SettingsScreen(navController: NavController,viewModel: GameViewModel,myId: Int=1) {
 
-    val colors = listOf("Crvena", "Plava", "Zelena", "Žuta", "Bela", "Crna")
+    val colors = listOf("Crvena", "Plava", "Zelena", "Žuta", "Narandžasta", "Bela")
 
     var maxMovesText by remember { mutableStateOf(viewModel.gameState.value.maxMoves.toString()) }
 
     val players by viewModel.players
     val myPlayer = players.find { it.id == myId }
+
+    LaunchedEffect(players) {
+        //treba da se salje serveru
+        if (players.isNotEmpty() && players.all { it.isReady }) {
+            navController.navigate("game") {
+                popUpTo("settings") { inclusive = true }
+            }
+        }
+    }
 
     Column(
         modifier = Modifier.padding(16.dp)
@@ -67,12 +81,25 @@ fun SettingsScreen(navController: NavController,viewModel: GameViewModel,myId: I
         Text(text="Boja figurice:",
             fontSize = 16.sp)
         colors.forEach { color ->
+            val isTaken = viewModel.isColorTaken(color, myId)
+
             Row(
-                verticalAlignment = Alignment.CenterVertically
+                verticalAlignment = Alignment.CenterVertically,
+                modifier = Modifier.alpha(if (isTaken) 0.5f else 1f)
             ) {
                 RadioButton(
                     selected = myPlayer?.color == color,
-                    onClick = { viewModel.setPlayerColor(myId,color) }
+                    onClick = { if (!isTaken) {
+                        viewModel.setPlayerColor(myId, color)
+                        }
+                    },
+                    enabled = !isTaken
+                )
+
+                Image(
+                    painter = painterResource(getFigure(color)),
+                    contentDescription = color,
+                    modifier = Modifier.size(24.dp)
                 )
 
                 Text(color)
@@ -81,26 +108,37 @@ fun SettingsScreen(navController: NavController,viewModel: GameViewModel,myId: I
 
         Spacer(modifier = Modifier.height(16.dp))
 
-        Row(verticalAlignment = Alignment.CenterVertically) {
-            Text(text="Maksimalan broj poteza:",
-                fontSize = 16.sp
-            )
-            OutlinedTextField(
-                value = maxMovesText,
-                onValueChange = {input ->
-                    if (input.all { it.isDigit() }) {
-                        maxMovesText = input
+        if (myPlayer != null) {
+            if(myPlayer.isHost)
 
-                        val number = input.toIntOrNull()
-                        if (number != null) {
-                            viewModel.setMaxMoves(number)
-                        }
-                    }
-                },
-                keyboardOptions = KeyboardOptions(keyboardType = KeyboardType.Number),
-                maxLines = 1,
-                modifier = Modifier.padding(10.dp)
-            )
+                Row(verticalAlignment = Alignment.CenterVertically) {
+                    Text(text="Maksimalan broj poteza:",
+                        fontSize = 16.sp
+                    )
+                    OutlinedTextField(
+                        value = maxMovesText,
+                        onValueChange = {input ->
+                            if (input.all { it.isDigit() }) {
+                                maxMovesText = input
+
+                                val number = input.toIntOrNull()
+                                if (number != null) {
+                                    viewModel.setMaxMoves(number)
+                                }
+                            }
+                        },
+                        keyboardOptions = KeyboardOptions(keyboardType = KeyboardType.Number),
+                        maxLines = 1,
+                        modifier = Modifier.padding(10.dp)
+                    )
+                }
+            else{
+                Row(verticalAlignment = Alignment.CenterVertically) {
+                    Text(text="Maksimalan broj poteza: $maxMovesText",
+                        fontSize = 16.sp
+                    )
+                }
+            }
         }
 
         Spacer(modifier = Modifier.height(16.dp))
@@ -147,7 +185,10 @@ fun SettingsScreen(navController: NavController,viewModel: GameViewModel,myId: I
             }
             Spacer(modifier = Modifier.height(8.dp))
             Text(
-                text = "Zbir: ${player.diceResult}",
+                text = if(player.diceResult==0)
+                    "Bacite kockice"
+                    else
+                        "Zbir: ${player.diceResult}",
                 fontSize = 16.sp,
                 textAlign = TextAlign.Center,
                 modifier = Modifier.fillMaxWidth()
@@ -163,16 +204,62 @@ fun SettingsScreen(navController: NavController,viewModel: GameViewModel,myId: I
             Button(
                 enabled = myPlayer?.diceResult!=0,
                 onClick = {
-                navController.navigate("game") {
-                    popUpTo("settings") { inclusive = true }
-                }
+                    viewModel.toggleReady(myId)
+//                navController.navigate("game") {
+//                    popUpTo("settings") { inclusive = true }
+//                }
                 },
+                colors = ButtonDefaults.buttonColors(
+                    containerColor = if (myPlayer?.isReady == true) Color.Green else Color.Gray
+                ),
                 modifier = Modifier.align(Alignment.Center)
             ) {
-                Text("Pokreni igru")
+                Text(if (myPlayer?.isReady == true) "Spreman" else "Nisam spreman")
             }
         }
 
+        players.forEach { player ->
+            Row(verticalAlignment = Alignment.CenterVertically) {
+
+
+                Text(
+                    text="Igrač ${player.id}",
+                    fontSize = 16.sp
+                )
+
+                Spacer(modifier = Modifier.width(8.dp))
+
+                Image(
+                    painter = painterResource(getFigure(player.color)),
+                    contentDescription = player.color,
+                    modifier = Modifier.size(24.dp)
+                )
+                Spacer(modifier = Modifier.width(8.dp))
+
+                Text(
+                    text = if(player.diceResult==0)
+                        "Baca kockice"
+                    else
+                        "Zbir: ${player.diceResult}",
+                    fontSize = 16.sp
+                )
+
+                Spacer(modifier = Modifier.width(8.dp))
+
+                Text(
+                    text = if (player.isReady) "Spreman" else "Čeka...",
+                    color = if (player.isReady) Color.Green else Color.Gray
+                )
+
+                Spacer(modifier = Modifier.width(8.dp))
+
+                if (player.isHost) {
+                    Text(" 👑",
+                        fontSize = 16.sp,
+                        color = Color.Yellow)
+                }
+            }
+        }
     }
 }
 

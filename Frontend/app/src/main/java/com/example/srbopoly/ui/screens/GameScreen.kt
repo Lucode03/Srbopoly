@@ -18,6 +18,8 @@ fun GameScreen(navController: NavController,viewModel: GameViewModel) {
 
         Button(
             onClick = {
+
+                viewModel.resetGame()
                 navController.navigate("home"){
                     popUpTo("game") { inclusive = true }
                 }
