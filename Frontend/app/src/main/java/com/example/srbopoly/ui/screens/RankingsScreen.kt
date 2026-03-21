@@ -23,17 +23,17 @@ import androidx.compose.ui.res.painterResource
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.unit.dp
 import com.example.srbopoly.R
-import com.example.srbopoly.classes.UserStats
+import com.example.srbopoly.data.User
 
 @Composable
-fun RankingsScreen(modifier: Modifier = Modifier) {
-    val rankings = remember { mutableStateListOf<UserStats>(
-        UserStats("5","Petarx",50),
-        UserStats("6","Nikk",120),
-        UserStats("7","Illo",110),
-        UserStats("8","Jack",10),
-        UserStats("9","FullAR",1320),
-        UserStats("10","RL",1120)) }
+fun RankingsScreen(modifier: Modifier = Modifier,user:User) {
+    val rankings = remember { mutableStateListOf(
+        User(5,"Petarx",50),
+        User(6,"Nikk",120),
+        User(7,"Illo",110),
+        User(8,"Jack",10),
+        User(11,"FullAR",1320),
+        User(10,"RL",1120)) }+user
 
     Box(modifier = modifier.fillMaxSize())
     {
@@ -49,7 +49,7 @@ fun RankingsScreen(modifier: Modifier = Modifier) {
             horizontalAlignment = Alignment.CenterHorizontally
         )
         {
-            itemsIndexed(rankings.sortedByDescending { it.stat }) { index, user ->
+            itemsIndexed(rankings.sortedByDescending { it.points }) { index, userRanked ->
                 val backgroundColor = when (index) {
                     0 -> Color(0xFFFFD700)
                     1 -> Color(0xFFC0C0C0)
@@ -65,14 +65,14 @@ fun RankingsScreen(modifier: Modifier = Modifier) {
                     horizontalArrangement = Arrangement.SpaceBetween
                 ) {
                     Text(
-                        "${index + 1}. ${user.username}",
+                        "${index + 1}. ${userRanked.username}",
                         fontWeight = FontWeight.Bold,
-//                        color = if (user.uid == FirebaseAuth.getInstance().currentUser!!.uid) Color.Blue else Color.Black
+                        color = if (userRanked.id == user.id) Color.Blue else Color.Black
                     )
                     Text(
-                        "${user.stat}",
+                        "\uD83C\uDFC5 ${userRanked.points}",
                         fontWeight = FontWeight.Bold,
-//                        color = if (user.uid == FirebaseAuth.getInstance().currentUser!!.uid) Color.Blue else Color.Black
+                        color = if (userRanked.id == user.id) Color.Blue else Color.Black
                     )
                 }
             }

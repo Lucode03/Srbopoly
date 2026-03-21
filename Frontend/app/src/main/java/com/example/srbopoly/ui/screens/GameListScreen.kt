@@ -32,11 +32,12 @@ import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
 import com.example.srbopoly.R
 import com.example.srbopoly.classes.GameStats
+import com.example.srbopoly.data.User
 
 @Composable
-fun GameListScreen(modifier: Modifier = Modifier)
+fun GameListScreen(modifier: Modifier = Modifier,user: User)
 {
-    val games = remember { mutableStateListOf<GameStats>(
+    val games = remember { mutableStateListOf(
         GameStats("1",50,24,"Ivan", listOf("Ivan","Petar","Aca")),
         GameStats("2",120,53,"Petar",listOf("Zeika","ivv","Petar","Aca")),
         GameStats("3",40,12,"Nikola",listOf("Iggor","Nikola","Nikk")),
@@ -143,5 +144,5 @@ fun GameCard(game: GameStats, onClick: () -> Unit) {
 @Composable
 fun Previeww()
 {
-    GameListScreen(modifier = Modifier)
+    GameListScreen(modifier = Modifier, user = User(1,"username"))
 }

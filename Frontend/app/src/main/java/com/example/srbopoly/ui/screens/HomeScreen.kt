@@ -1,7 +1,7 @@
 package com.example.srbopoly.ui.screens
 
+import androidx.compose.animation.core.animateDpAsState
 import androidx.compose.foundation.Image
-import androidx.compose.foundation.background
 import androidx.compose.foundation.border
 import androidx.compose.foundation.clickable
 import androidx.compose.foundation.layout.Arrangement
@@ -17,7 +17,6 @@ import androidx.compose.foundation.layout.width
 import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.automirrored.filled.ExitToApp
-import androidx.compose.material.icons.filled.Info
 import androidx.compose.material3.Button
 import androidx.compose.material3.ButtonDefaults
 import androidx.compose.material3.ExperimentalMaterial3Api
@@ -40,16 +39,18 @@ import androidx.compose.ui.layout.ContentScale
 import androidx.compose.ui.res.painterResource
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.text.style.TextAlign
+import androidx.compose.ui.tooling.preview.Preview
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
 import com.example.srbopoly.R
+import com.example.srbopoly.data.User
 import com.example.srbopoly.ui.dialogs.PravilaDialog
 
 
 @OptIn(ExperimentalMaterial3Api::class)
 @Composable
 fun HomeScreen(modifier: Modifier = Modifier, onSignOut:()->Unit,
-               username:String, onStartGame:()->Unit)
+               user: User, onStartGame:()->Unit)
 {
     var showDialog by remember { mutableStateOf(false) }
 
@@ -63,29 +64,32 @@ fun HomeScreen(modifier: Modifier = Modifier, onSignOut:()->Unit,
         )
         TopAppBar(
             title = {
-                Text(
-                    text = username,
-                    color = Color.Black,
-                    fontWeight = FontWeight.Bold,
-                    fontSize = 30.sp,
-                    textAlign = TextAlign.Center,
-                    modifier = Modifier.fillMaxWidth()
-                )
-            },
-            actions = {
-                TextButton(onClick = onSignOut) {
-                    Icon(
-                        Icons.AutoMirrored.Filled.ExitToApp,
-                        contentDescription = "Odjavite se",
-                        modifier=Modifier.size(40.dp),
-                        Color.Black
+                Column()
+                {
+                    Text(
+                        text = user.username,
+                        color = Color.Black,
+                        fontWeight = FontWeight.Bold,
+                        fontSize = 28.sp,
+                        textAlign = TextAlign.Center,
+                        modifier = Modifier.fillMaxWidth()
                     )
                 }
+
+            },
+            actions = {
+                Icon(
+                    Icons.AutoMirrored.Filled.ExitToApp,
+                    contentDescription = "Odjavite se",
+                    modifier=Modifier.size(40.dp).clickable { onSignOut() },
+                    Color.Black
+                )
             },
             colors = TopAppBarDefaults.topAppBarColors(
                 containerColor = Color(0xFFD9D9D9),
                 titleContentColor = Color.White
-            )
+            ),
+            expandedHeight= 40.dp
         )
         Column(
             modifier = Modifier
@@ -94,6 +98,18 @@ fun HomeScreen(modifier: Modifier = Modifier, onSignOut:()->Unit,
             horizontalAlignment = Alignment.CenterHorizontally,
             verticalArrangement = Arrangement.Center
         ) {
+
+            Text(
+                text = "\uD83E\uDE99 broj_poena",
+                color = Color.Black,
+                fontWeight = FontWeight.Bold,
+                fontSize = 24.sp,
+                textAlign = TextAlign.Center,
+                modifier = Modifier.fillMaxWidth()
+            )
+
+
+            Spacer(modifier = Modifier.height(60.dp))
 
             Image(
                 painter = painterResource(id = R.drawable.game_logo),
@@ -114,12 +130,14 @@ fun HomeScreen(modifier: Modifier = Modifier, onSignOut:()->Unit,
 
             Spacer(modifier = Modifier.height(30.dp))
 
+            val elevation by animateDpAsState(
+                targetValue = 10.dp
+            )
+
             Button(
                 onClick = { onStartGame() },
                 shape = RoundedCornerShape(20.dp),
-                elevation = ButtonDefaults.buttonElevation(
-                    defaultElevation = 10.dp
-                ),
+                elevation = ButtonDefaults.buttonElevation(elevation),
                 colors = ButtonDefaults.buttonColors(
                     containerColor = Color(0xFF001FE1),
                     contentColor = Color.White
@@ -138,4 +156,12 @@ fun HomeScreen(modifier: Modifier = Modifier, onSignOut:()->Unit,
             PravilaDialog { showDialog = false }
         }
     }
+}
+
+@Preview
+@Composable
+fun HomeScreenPrev()
+{
+    HomeScreen(modifier = Modifier, onSignOut={},
+    user=User(1,"Username"), onStartGame={})
 }

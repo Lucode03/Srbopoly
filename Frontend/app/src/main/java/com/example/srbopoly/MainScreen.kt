@@ -39,8 +39,6 @@ fun MainScreen(modifier: Modifier = Modifier,
     val activity = context as? Activity
 
     val user by authViewModel.user.collectAsStateWithLifecycle()
-    val username by authViewModel.usernameLogin.collectAsStateWithLifecycle()
-    val isLoading by authViewModel.isLoading.collectAsStateWithLifecycle()
     val error by authViewModel.error.collectAsStateWithLifecycle()
 
     LaunchedEffect(user) {
@@ -69,19 +67,23 @@ fun MainScreen(modifier: Modifier = Modifier,
         NavHost(
             navController = mainNavController,
             startDestination = NavItem.Home.route,
-            modifier = modifier.padding(innerPadding)
+            modifier = modifier.padding(
+                bottom = innerPadding.calculateBottomPadding()
+            )
         ) {
-            composable(NavItem.Rankings.route) { RankingsScreen() }
+            composable(NavItem.Rankings.route) { user?.let { it1 -> RankingsScreen(user= it1) } }
             composable(NavItem.Home.route) {
-                HomeScreen(
-                    onSignOut = { authViewModel.signout() },
-                    username = username,
-                    onStartGame = {
-                        mainNavController.navigate("settings")
-                    }
-                )
+                user?.let { it1 ->
+                    HomeScreen(
+                        onSignOut = { authViewModel.signout() },
+                        user = it1,
+                        onStartGame = {
+                            mainNavController.navigate("settings")
+                        }
+                    )
+                }
             }
-            composable(NavItem.GameList.route) { GameListScreen() }
+            composable(NavItem.GameList.route) { user?.let { it1 -> GameListScreen(user = it1) } }
             composable("settings") {
                 SettingsScreen(mainNavController,gameViewModel)
             }

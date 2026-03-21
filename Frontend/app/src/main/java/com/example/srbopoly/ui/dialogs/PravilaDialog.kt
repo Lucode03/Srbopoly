@@ -16,8 +16,10 @@ import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.layout.size
 import androidx.compose.foundation.pager.HorizontalPager
 import androidx.compose.foundation.pager.rememberPagerState
+import androidx.compose.foundation.rememberScrollState
 import androidx.compose.foundation.shape.CircleShape
 import androidx.compose.foundation.shape.RoundedCornerShape
+import androidx.compose.foundation.verticalScroll
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.filled.Clear
 import androidx.compose.material3.Button
@@ -39,6 +41,7 @@ import androidx.compose.ui.tooling.preview.Preview
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
 import androidx.compose.ui.window.Dialog
+import com.example.srbopoly.ui.screens.HomeScreen
 import kotlinx.coroutines.CoroutineScope
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.launch
@@ -47,10 +50,15 @@ import kotlinx.coroutines.launch
 fun PravilaDialog(onDismiss: () ->Unit)
 {
     val rules = listOf(
-        "Pravilo 1: Uradi ovo",
-        "Pravilo 2: Nemoj ovo",
-        "Pravilo 3: Pobedi igru 😄"
+        "Opšte informacije" to "U jednoj partiji učestvuju 2 do 4 igrača. Cilj igre je da ostanete poslednji igrač sa novcem.",
+        "Pre početka partije" to "Igrači mogu podesiti maksimalan broj poteza (minimum 50 po igraču). Svaki igrač bira jedinstvenu boju figurice. Svi igrači bacaju dve kockice da odrede redosled igranja. Najveći zbir igra prvi.",
+        "Potez igrača" to "Na početku poteza igrač baca dve kockice i pomera se za njihov zbir. Igrač ima 20 sekundi za bacanje kockica i 120 sekundi za završetak poteza. Potez se može završiti ranije.",
+        "Nekretnine" to "Kada igrač stane na određeno polje nekretnina, može ga kupiti za određenu sumu, ako ga nije pre njega kupio drugi igrač. Ako jeste onda praća određenu sumu za stajanje na to polje. Ako igrač poseduje sva polja iste grupe, može graditi kuće i hotele na tim poljima.",
+        "Tabla" to "Tabla se sastoji od: 22 kupovna polja (4 premijum, 18 standardnih), 5 pola sa izvlačenjem kartica, 4 ugla (Start, Zatvor, Idi u zatvor, Parking), 2 polja sa porezom, 5 nacionalnih parkova, 1 vodovod i 1 elektrodistribucija.",
+        "Pobednik" to "Pobednik je igrač koji poslednji ostane sa novcem.",
+        "Na kraju" to "Srećno!"
     )
+
 
     val pagerState = rememberPagerState(pageCount = { rules.size })
     val scope = rememberCoroutineScope()
@@ -91,17 +99,32 @@ fun PravilaDialog(onDismiss: () ->Unit)
 
                 HorizontalPager(
                     state = pagerState,
-                    modifier = Modifier.height(150.dp)
+                    modifier = Modifier.height(250.dp)
                 ) { page ->
 
-                    Box(
-                        modifier = Modifier.fillMaxSize(),
-                        contentAlignment = Alignment.Center
+                    val (title, description) = rules[page]
+
+                    Column(
+                        modifier = Modifier
+                            .fillMaxSize()
+                            .verticalScroll(rememberScrollState()),
+                        horizontalAlignment = Alignment.CenterHorizontally,
+                        verticalArrangement = Arrangement.Top
                     ) {
                         Text(
-                            text = "• ${rules[page]}",
+                            text = title,
+                            fontSize = 20.sp,
+                            fontWeight = FontWeight.Bold,
                             color = Color.White,
-                            fontSize = 18.sp,
+                            textAlign = TextAlign.Center
+                        )
+
+                        Spacer(modifier = Modifier.height(12.dp))
+
+                        Text(
+                            text = description,
+                            fontSize = 16.sp,
+                            color = Color.White,
                             textAlign = TextAlign.Center
                         )
                     }
