@@ -2,6 +2,7 @@ package com.example.srbopoly.ui.screens
 
 import androidx.compose.animation.core.animateDpAsState
 import androidx.compose.foundation.Image
+import androidx.compose.foundation.background
 import androidx.compose.foundation.border
 import androidx.compose.foundation.clickable
 import androidx.compose.foundation.layout.Arrangement
@@ -22,7 +23,6 @@ import androidx.compose.material3.ButtonDefaults
 import androidx.compose.material3.ExperimentalMaterial3Api
 import androidx.compose.material3.Icon
 import androidx.compose.material3.Text
-import androidx.compose.material3.TextButton
 import androidx.compose.material3.TopAppBar
 import androidx.compose.material3.TopAppBarDefaults
 import androidx.compose.runtime.Composable
@@ -44,16 +44,18 @@ import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
 import com.example.srbopoly.R
 import com.example.srbopoly.data.User
+import com.example.srbopoly.ui.dialogs.JoinGameDialog
 import com.example.srbopoly.ui.dialogs.PravilaDialog
 
 
 @OptIn(ExperimentalMaterial3Api::class)
 @Composable
 fun HomeScreen(modifier: Modifier = Modifier, onSignOut:()->Unit,
-               user: User, onStartGame:()->Unit)
+               user: User, onStartGame:()->Unit,onJoinGame:(String)->Unit)
 {
-    var showDialog by remember { mutableStateOf(false) }
+    var showPravilaDialog by remember { mutableStateOf(false) }
 
+    var showJoinDialog by remember { mutableStateOf(false) }
     Box(modifier = modifier.fillMaxSize())
     {
         Image(
@@ -99,14 +101,23 @@ fun HomeScreen(modifier: Modifier = Modifier, onSignOut:()->Unit,
             verticalArrangement = Arrangement.Center
         ) {
 
-            Text(
-                text = "\uD83E\uDE99 broj_poena",
-                color = Color.Black,
-                fontWeight = FontWeight.Bold,
-                fontSize = 24.sp,
-                textAlign = TextAlign.Center,
-                modifier = Modifier.fillMaxWidth()
+            Box(modifier = Modifier.fillMaxWidth(0.5f)
+                .height(50.dp)
+                .border(2.dp,Color(0xFFE5BD00),RoundedCornerShape(20.dp))
+                .background(Color(0xFFFFE757),RoundedCornerShape(20.dp)),
+                contentAlignment = Alignment.Center
             )
+            {
+                Text(
+                    text = "\uD83C\uDFC5 ${user.points}",
+                    color = Color.Black,
+                    fontWeight = FontWeight.Bold,
+                    fontSize = 24.sp,
+                    textAlign = TextAlign.Center,
+                    modifier = Modifier.fillMaxWidth()
+                )
+            }
+
 
 
             Spacer(modifier = Modifier.height(60.dp))
@@ -124,7 +135,7 @@ fun HomeScreen(modifier: Modifier = Modifier, onSignOut:()->Unit,
                     .clip(RoundedCornerShape(20.dp))
                     .border(3.dp,Color(0xFF001FE1),RoundedCornerShape(20.dp))
                     .clickable {
-                        showDialog = true
+                        showPravilaDialog = true
                     }
             )
 
@@ -151,9 +162,36 @@ fun HomeScreen(modifier: Modifier = Modifier, onSignOut:()->Unit,
                     fontSize = 20.sp
                 )
             }
+            Spacer(modifier = Modifier.height(30.dp))
+            Button(
+                onClick = { showJoinDialog = true },
+                shape = RoundedCornerShape(20.dp),
+                elevation = ButtonDefaults.buttonElevation(elevation),
+                colors = ButtonDefaults.buttonColors(
+                    containerColor = Color(0xFF001FE1),
+                    contentColor = Color.White
+                ),
+                modifier = Modifier
+                    .width(250.dp)
+                    .height(60.dp)
+            ) {
+                Text(
+                    text = "Pridruži se igri",
+                    fontSize = 20.sp
+                )
+            }
         }
-        if (showDialog) {
-            PravilaDialog { showDialog = false }
+        if (showPravilaDialog) {
+            PravilaDialog { showPravilaDialog = false }
+        }
+        if (showJoinDialog) {
+            JoinGameDialog(
+                onDismiss = { showJoinDialog = false },
+                onJoin = { code ->
+                    showJoinDialog = false
+                    onJoinGame(code)
+                }
+            )
         }
     }
 }
@@ -163,5 +201,5 @@ fun HomeScreen(modifier: Modifier = Modifier, onSignOut:()->Unit,
 fun HomeScreenPrev()
 {
     HomeScreen(modifier = Modifier, onSignOut={},
-    user=User(1,"Username"), onStartGame={})
+    user=User(1,"Username",142), onStartGame={},{})
 }

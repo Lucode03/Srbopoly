@@ -79,6 +79,9 @@ fun MainScreen(modifier: Modifier = Modifier,
                         user = it1,
                         onStartGame = {
                             mainNavController.navigate("settings")
+                        },
+                        onJoinGame = {
+                            mainNavController.navigate("game")
                         }
                     )
                 }
