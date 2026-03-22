@@ -8,3 +8,12 @@ data class PlayerRequest(
     val color: Int = 0,
     val isInJail: Boolean = false
 )
+
+data class JoinGameRequest(
+    val userId: Int,
+    val accesscode: String,
+    val balance: Int = 10000,
+    val position: Int = 0,
+    val color: Int = 0,
+    val isInJail: Boolean = false
+)

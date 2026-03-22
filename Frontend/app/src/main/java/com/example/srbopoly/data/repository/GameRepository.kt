@@ -1,15 +1,18 @@
 package com.example.srbopoly.data.repository
 
 import com.example.srbopoly.data.Game
+import com.example.srbopoly.data.JoinGameRequest
 import com.example.srbopoly.data.PlayerRequest
 import com.example.srbopoly.data.PlayerResponse
 import com.example.srbopoly.network.ApiService
+import com.example.srbopoly.network.apiServices.ApiServiceGame
 import javax.inject.Inject
 import javax.inject.Singleton
 
 @Singleton
 class GameRepository @Inject constructor(
-    private val api: ApiService
+    private val api: ApiService,
+    private val gameApi: ApiServiceGame
 ) {
     suspend fun getGamesForUser(userId: Int): Result<List<Game>> {
         return try {
@@ -51,4 +54,22 @@ class GameRepository @Inject constructor(
         } catch (e: Exception) { Result.failure(e) }
     }
 
+    suspend fun joinGameByCode(userId: Int, accessCode: String): Result<PlayerResponse> {
+        return try {
+            val request = JoinGameRequest(
+                accesscode = accessCode,
+                userId = userId
+            )
+                val response = gameApi.joinGame(request)
+
+            if (response.isSuccessful && response.body() != null) {
+                Result.success(response.body()!!)
+            } else {
+                val errorMsg = response.errorBody()?.string() ?: "Greška pri pridruživanju igri"
+                Result.failure(Exception(errorMsg))
+            }
+        } catch (e: Exception) {
+            Result.failure(e)
+        }
+    }
 }

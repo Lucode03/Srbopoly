@@ -20,12 +20,15 @@ import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.automirrored.filled.ExitToApp
 import androidx.compose.material3.Button
 import androidx.compose.material3.ButtonDefaults
+import androidx.compose.material3.CircularProgressIndicator
 import androidx.compose.material3.ExperimentalMaterial3Api
 import androidx.compose.material3.Icon
 import androidx.compose.material3.Text
 import androidx.compose.material3.TopAppBar
 import androidx.compose.material3.TopAppBarDefaults
 import androidx.compose.runtime.Composable
+import androidx.compose.runtime.LaunchedEffect
+import androidx.compose.runtime.collectAsState
 import androidx.compose.runtime.getValue
 import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.remember
@@ -42,20 +45,44 @@ import androidx.compose.ui.text.style.TextAlign
 import androidx.compose.ui.tooling.preview.Preview
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
+import androidx.hilt.navigation.compose.hiltViewModel
 import com.example.srbopoly.R
 import com.example.srbopoly.data.User
 import com.example.srbopoly.ui.dialogs.JoinGameDialog
 import com.example.srbopoly.ui.dialogs.PravilaDialog
+import com.example.srbopoly.viewmodels.MainScreenViewModel
+import com.example.srbopoly.viewmodels.UserScreenViewModel
 
 
 @OptIn(ExperimentalMaterial3Api::class)
 @Composable
 fun HomeScreen(modifier: Modifier = Modifier, onSignOut:()->Unit,
-               user: User, onStartGame:()->Unit,onJoinGame:(String)->Unit)
+               user: User, onStartGame:(gameCode: String)->Unit,onJoinGame:(String)->Unit,
+               viewModel: MainScreenViewModel = hiltViewModel())
 {
+
+    val gameCode by viewModel.gameCode.collectAsState()
+    val joinedGameCode by viewModel.joinedGameCode.collectAsState()
+    val isLoading by viewModel.isLoading.collectAsState()
+    val error by viewModel.error.collectAsState()
+
     var showPravilaDialog by remember { mutableStateOf(false) }
 
     var showJoinDialog by remember { mutableStateOf(false) }
+
+    LaunchedEffect(gameCode) {
+        gameCode?.takeIf { it.isNotEmpty() }?.let {
+            onStartGame(it)
+        }
+    }
+
+    LaunchedEffect(joinedGameCode) {
+        joinedGameCode?.takeIf { it.isNotEmpty() }?.let {
+            onJoinGame(it)
+        }
+    }
+
+
     Box(modifier = modifier.fillMaxSize())
     {
         Image(
@@ -145,22 +172,29 @@ fun HomeScreen(modifier: Modifier = Modifier, onSignOut:()->Unit,
                 targetValue = 10.dp
             )
 
-            Button(
-                onClick = { onStartGame() },
-                shape = RoundedCornerShape(20.dp),
-                elevation = ButtonDefaults.buttonElevation(elevation),
-                colors = ButtonDefaults.buttonColors(
-                    containerColor = Color(0xFF001FE1),
-                    contentColor = Color.White
-                ),
-                modifier = Modifier
-                    .width(250.dp)
-                    .height(60.dp)
-            ) {
-                Text(
-                    text = "Nova igra",
-                    fontSize = 20.sp
-                )
+            if(isLoading)
+                CircularProgressIndicator()
+            else
+            {
+                Button(
+                    onClick = {
+                        viewModel.createNewGame(user.id)
+                    },
+                    shape = RoundedCornerShape(20.dp),
+                    elevation = ButtonDefaults.buttonElevation(elevation),
+                    colors = ButtonDefaults.buttonColors(
+                        containerColor = Color(0xFF001FE1),
+                        contentColor = Color.White
+                    ),
+                    modifier = Modifier
+                        .width(250.dp)
+                        .height(60.dp)
+                ) {
+                    Text(
+                        text = "Nova igra",
+                        fontSize = 20.sp
+                    )
+                }
             }
             Spacer(modifier = Modifier.height(30.dp))
             Button(
@@ -189,7 +223,7 @@ fun HomeScreen(modifier: Modifier = Modifier, onSignOut:()->Unit,
                 onDismiss = { showJoinDialog = false },
                 onJoin = { code ->
                     showJoinDialog = false
-                    onJoinGame(code)
+                    viewModel.joinExistingGame(user.id, code)
                 }
             )
         }

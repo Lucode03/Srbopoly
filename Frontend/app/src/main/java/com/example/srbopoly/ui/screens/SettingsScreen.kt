@@ -46,7 +46,7 @@ import com.example.srbopoly.classes.getFigure
 import com.example.srbopoly.viewmodels.GameViewModel
 
 @Composable
-fun SettingsScreen(navController: NavController,viewModel: GameViewModel,myId: Int=1) {
+fun SettingsScreen(navController: NavController,viewModel: GameViewModel,myId: Int=1, gameCode: String) {
 
     val colors = listOf("Crvena", "Plava", "Zelena", "Žuta", "Narandžasta", "Bela")
 
@@ -74,6 +74,14 @@ fun SettingsScreen(navController: NavController,viewModel: GameViewModel,myId: I
             textAlign = TextAlign.Center
             )
 
+        Spacer(modifier = Modifier.height(4.dp))
+        Text(
+            text = "Kod igre: $gameCode",
+            fontSize = 16.sp,
+            modifier = Modifier.fillMaxWidth(),
+            textAlign = TextAlign.Center,
+            color = Color.Gray
+        )
         Spacer(modifier = Modifier.height(8.dp))
         HorizontalDivider(color=Color.Blue)
         Spacer(modifier = Modifier.height(16.dp))
@@ -267,5 +275,5 @@ fun SettingsScreen(navController: NavController,viewModel: GameViewModel,myId: I
 @Composable
 fun SettingsScreenPreview() {
     val mainNavController = rememberNavController()
-    SettingsScreen(mainNavController, viewModel = viewModel())
+    SettingsScreen(mainNavController, viewModel = viewModel(), gameCode = "123456")
 }

@@ -58,7 +58,7 @@ fun JoinGameDialog(
 
                 OutlinedTextField(
                     value = code,
-                    onValueChange = { code = it.uppercase() },
+                    onValueChange = { code = it/*.uppercase()*/ },
                     placeholder = { Text("npr. 123456") },
                     singleLine = true
                 )
