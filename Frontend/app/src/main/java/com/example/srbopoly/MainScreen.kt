@@ -6,7 +6,6 @@ import androidx.activity.compose.BackHandler
 import androidx.annotation.RequiresApi
 import androidx.compose.foundation.layout.padding
 import androidx.compose.material3.Scaffold
-import androidx.compose.material3.SnackbarDuration
 import androidx.compose.material3.SnackbarHost
 import androidx.compose.material3.SnackbarHostState
 import androidx.compose.runtime.Composable
@@ -88,7 +87,7 @@ fun MainScreen(modifier: Modifier = Modifier,
             composable(NavItem.Home.route) {
                 user?.let { it1 ->
                     HomeScreen(
-                        onSignOut = { authViewModel.signout() },
+                        onLogOut = { authViewModel.signout() },
                         user = it1,
                         onStartGame = { code ->
                             mainNavController.navigate("settings/$code")
