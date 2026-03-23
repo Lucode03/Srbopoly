@@ -15,9 +15,14 @@ import androidx.compose.foundation.layout.size
 import androidx.compose.foundation.layout.width
 import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.foundation.text.KeyboardOptions
+import androidx.compose.material.icons.Icons
+import androidx.compose.material.icons.automirrored.filled.ArrowBack
+import androidx.compose.material.icons.automirrored.filled.ExitToApp
 import androidx.compose.material3.Button
 import androidx.compose.material3.ButtonDefaults
 import androidx.compose.material3.HorizontalDivider
+import androidx.compose.material3.Icon
+import androidx.compose.material3.IconButton
 import androidx.compose.material3.OutlinedTextField
 import androidx.compose.material3.RadioButton
 import androidx.compose.material3.Text
@@ -43,6 +48,7 @@ import androidx.navigation.NavController
 import androidx.navigation.compose.rememberNavController
 import com.example.srbopoly.classes.getDiceImage
 import com.example.srbopoly.classes.getFigure
+import com.example.srbopoly.ui.dialogs.ExitDialog
 import com.example.srbopoly.viewmodels.GameViewModel
 
 @Composable
@@ -55,6 +61,7 @@ fun SettingsScreen(navController: NavController,viewModel: GameViewModel,myId: I
     val players by viewModel.players
     val myPlayer = players.find { it.id == myId }
 
+    var showExitDialog by remember { mutableStateOf(false) }
     LaunchedEffect(players) {
         //treba da se salje serveru
         if (players.isNotEmpty() && players.all { it.isReady }) {
@@ -63,17 +70,36 @@ fun SettingsScreen(navController: NavController,viewModel: GameViewModel,myId: I
             }
         }
     }
-
+    if (showExitDialog) {
+        ExitDialog(
+            onDismiss = {showExitDialog=false},
+            onYes = {
+                showExitDialog=false
+                navController.navigate("home")
+            },
+            onNo = {showExitDialog=false},
+            text = "Izgubićete sva podešavanja za ovu igru!"
+        )
+    }
     Column(
         modifier = Modifier.padding(16.dp)
     ) {
 
-        Text(text="Podešavanja",
-            fontSize = 22.sp,
-            modifier = Modifier.fillMaxWidth(),
-            textAlign = TextAlign.Center
+        Box {
+            Icon(
+                imageVector = Icons.AutoMirrored.Filled.ArrowBack,
+                contentDescription = "Izlaz",
+                modifier = Modifier.clickable { showExitDialog = true  }
+                    .align(Alignment.CenterStart)
             )
 
+            Text(
+                text = "Podešavanja",
+                fontSize = 22.sp,
+                modifier = Modifier.fillMaxWidth(),
+                textAlign = TextAlign.Center
+            )
+        }
         Spacer(modifier = Modifier.height(4.dp))
         Text(
             text = "Kod igre: $gameCode",

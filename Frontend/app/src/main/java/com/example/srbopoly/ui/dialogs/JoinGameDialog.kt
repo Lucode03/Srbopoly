@@ -58,7 +58,12 @@ fun JoinGameDialog(
 
                 OutlinedTextField(
                     value = code,
-                    onValueChange = { code = it/*.uppercase()*/ },
+                    onValueChange = {
+                        val filteredCode = it.filter { char -> char.isLetterOrDigit() }
+                            .take(6)
+
+                        code = filteredCode
+                    },
                     placeholder = { Text("npr. 123456") },
                     singleLine = true
                 )
@@ -78,8 +83,7 @@ fun JoinGameDialog(
 
                     Button(
                         onClick = { onJoin(code) },
-                        enabled = code.isNotBlank()
-                        //dodaj za ogranicenja kada bude praavi kod
+                        enabled = code.length == 6
                     ) {
                         Text("Pridruži se",
                             fontSize = 16.sp

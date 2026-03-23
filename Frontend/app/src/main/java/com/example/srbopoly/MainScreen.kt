@@ -6,9 +6,13 @@ import androidx.activity.compose.BackHandler
 import androidx.annotation.RequiresApi
 import androidx.compose.foundation.layout.padding
 import androidx.compose.material3.Scaffold
+import androidx.compose.material3.SnackbarDuration
+import androidx.compose.material3.SnackbarHost
+import androidx.compose.material3.SnackbarHostState
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.LaunchedEffect
 import androidx.compose.runtime.getValue
+import androidx.compose.runtime.remember
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.platform.LocalContext
 import androidx.lifecycle.compose.collectAsStateWithLifecycle
@@ -41,6 +45,9 @@ fun MainScreen(modifier: Modifier = Modifier,
     val user by authViewModel.user.collectAsStateWithLifecycle()
     val error by authViewModel.error.collectAsStateWithLifecycle()
 
+
+    val snackbarHostState = remember { SnackbarHostState() }
+
     LaunchedEffect(user) {
         if (user==null)
             navController.navigate("login")
@@ -48,7 +55,14 @@ fun MainScreen(modifier: Modifier = Modifier,
 
     LaunchedEffect(error) {
         error?.let {
+            val message = when {
+                it.contains("401") -> "Pogrešni podaci za prijavu"
+                it.contains("network") -> "Nema internet veze"
+                else -> it
+            }
 
+            snackbarHostState.showSnackbar(message)
+            authViewModel.clearError()
         }
     }
 
@@ -58,6 +72,7 @@ fun MainScreen(modifier: Modifier = Modifier,
         }
     }
     Scaffold(
+        snackbarHost = { SnackbarHost(snackbarHostState) },
         bottomBar = {
             BottomNavigationBar(mainNavController)
         }
@@ -67,9 +82,7 @@ fun MainScreen(modifier: Modifier = Modifier,
         NavHost(
             navController = mainNavController,
             startDestination = NavItem.Home.route,
-            modifier = modifier.padding(
-                bottom = innerPadding.calculateBottomPadding()
-            )
+            modifier = modifier.padding( innerPadding)
         ) {
             composable(NavItem.Rankings.route) { user?.let { it1 -> RankingsScreen(user= it1) } }
             composable(NavItem.Home.route) {

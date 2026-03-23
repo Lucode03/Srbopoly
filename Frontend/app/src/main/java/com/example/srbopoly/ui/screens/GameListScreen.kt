@@ -6,6 +6,7 @@ import androidx.compose.foundation.clickable
 import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.Column
+import androidx.compose.foundation.layout.PaddingValues
 import androidx.compose.foundation.layout.Spacer
 import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.foundation.layout.fillMaxWidth
@@ -44,7 +45,9 @@ fun GameListScreen(modifier: Modifier = Modifier,user: User)
         GameStats("4",80,3,"Luka321",listOf("Luka321","Zemni","Aca")),
     ) }
 
-    Box(modifier = modifier.fillMaxSize())
+    Box(
+        modifier = modifier.fillMaxSize()
+       )
     {
         Image(
             painter = painterResource(id = R.drawable.main_background),
@@ -53,7 +56,13 @@ fun GameListScreen(modifier: Modifier = Modifier,user: User)
             contentScale = ContentScale.Crop
         )
         LazyColumn(
-            modifier = modifier.fillMaxSize(),
+            modifier = modifier.fillMaxSize()
+                .padding(
+                    horizontal = 26.dp
+                ),
+            contentPadding = PaddingValues(
+                bottom = 10.dp,
+                top = 30.dp),
             verticalArrangement = Arrangement.Center,
             horizontalAlignment = Alignment.CenterHorizontally
         )
@@ -75,7 +84,6 @@ fun GameCard(game: GameStats, onClick: () -> Unit) {
     Card(
         modifier = Modifier
             .fillMaxWidth()
-            .padding(horizontal = 16.dp)
             .border(
                 width = 3.dp,
                 color = Color(0xFF0D47A1),

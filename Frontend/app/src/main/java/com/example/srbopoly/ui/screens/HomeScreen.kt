@@ -51,7 +51,6 @@ import com.example.srbopoly.data.User
 import com.example.srbopoly.ui.dialogs.JoinGameDialog
 import com.example.srbopoly.ui.dialogs.PravilaDialog
 import com.example.srbopoly.viewmodels.MainScreenViewModel
-import com.example.srbopoly.viewmodels.UserScreenViewModel
 
 
 @OptIn(ExperimentalMaterial3Api::class)
