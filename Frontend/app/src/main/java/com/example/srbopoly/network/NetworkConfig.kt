@@ -5,5 +5,5 @@ import javax.inject.Singleton
 
 @Singleton
 class NetworkConfig @Inject constructor() {
-    val baseUrl: String = "https://backedn-production-5c09.up.railway.app/"
+    val baseUrl: String = "https://perzistencija-production.up.railway.app/"
 }
