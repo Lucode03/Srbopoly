@@ -48,16 +48,16 @@ import androidx.compose.ui.unit.sp
 import androidx.hilt.navigation.compose.hiltViewModel
 import com.example.srbopoly.R
 import com.example.srbopoly.data.User
+import com.example.srbopoly.ui.dialogs.ExitDialog
 import com.example.srbopoly.ui.dialogs.JoinGameDialog
 import com.example.srbopoly.ui.dialogs.PravilaDialog
 import com.example.srbopoly.viewmodels.MainScreenViewModel
-import com.example.srbopoly.viewmodels.UserScreenViewModel
 
 
 @OptIn(ExperimentalMaterial3Api::class)
 @Composable
-fun HomeScreen(modifier: Modifier = Modifier, onSignOut:()->Unit,
-               user: User, onStartGame:(gameCode: String)->Unit,onJoinGame:(String)->Unit,
+fun HomeScreen(modifier: Modifier = Modifier, onLogOut:()->Unit,
+               user: User, onStartGame:(gameCode: String)->Unit, onJoinGame:(String)->Unit,
                viewModel: MainScreenViewModel = hiltViewModel())
 {
 
@@ -69,6 +69,8 @@ fun HomeScreen(modifier: Modifier = Modifier, onSignOut:()->Unit,
     var showPravilaDialog by remember { mutableStateOf(false) }
 
     var showJoinDialog by remember { mutableStateOf(false) }
+
+    var showLogOutDialog by remember { mutableStateOf(false) }
 
     LaunchedEffect(gameCode) {
         gameCode?.takeIf { it.isNotEmpty() }?.let {
@@ -82,6 +84,17 @@ fun HomeScreen(modifier: Modifier = Modifier, onSignOut:()->Unit,
         }
     }
 
+    if (showLogOutDialog) {
+        ExitDialog(
+            onDismiss = {showLogOutDialog=false},
+            onYes = {
+                showLogOutDialog=false
+                onLogOut()
+            },
+            onNo = {showLogOutDialog=false},
+            text = "Bićete odjavljeni sa uređaja!"
+        )
+    }
 
     Box(modifier = modifier.fillMaxSize())
     {
@@ -110,7 +123,7 @@ fun HomeScreen(modifier: Modifier = Modifier, onSignOut:()->Unit,
                 Icon(
                     Icons.AutoMirrored.Filled.ExitToApp,
                     contentDescription = "Odjavite se",
-                    modifier=Modifier.size(40.dp).clickable { onSignOut() },
+                    modifier=Modifier.size(40.dp).clickable { showLogOutDialog=true },
                     Color.Black
                 )
             },
@@ -234,6 +247,6 @@ fun HomeScreen(modifier: Modifier = Modifier, onSignOut:()->Unit,
 @Composable
 fun HomeScreenPrev()
 {
-    HomeScreen(modifier = Modifier, onSignOut={},
+    HomeScreen(modifier = Modifier, onLogOut={},
     user=User(1,"Username",142), onStartGame={},{})
 }
