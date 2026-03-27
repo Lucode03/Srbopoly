@@ -18,12 +18,12 @@ class MainScreenViewModel @Inject constructor(
     private val _gameCode = MutableStateFlow<String?>(null)
     val gameCode: StateFlow<String?> = _gameCode.asStateFlow()
 
-
     private val _joinedGameCode = MutableStateFlow<String?>(null)
     val joinedGameCode: StateFlow<String?> = _joinedGameCode.asStateFlow()
 
     private val _isLoading = MutableStateFlow(false)
     val isLoading: StateFlow<Boolean> = _isLoading.asStateFlow()
+
     private val _error = MutableStateFlow<String?>(null)
     val error: StateFlow<String?> = _error.asStateFlow()
 
@@ -77,5 +77,8 @@ class MainScreenViewModel @Inject constructor(
 
     fun resetJoinedGameCode() {
         _joinedGameCode.value = null
+    }
+    fun clearError(){
+        _error.value=null
     }
 }

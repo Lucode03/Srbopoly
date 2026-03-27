@@ -17,12 +17,10 @@ import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.foundation.text.KeyboardOptions
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.automirrored.filled.ArrowBack
-import androidx.compose.material.icons.automirrored.filled.ExitToApp
 import androidx.compose.material3.Button
 import androidx.compose.material3.ButtonDefaults
 import androidx.compose.material3.HorizontalDivider
 import androidx.compose.material3.Icon
-import androidx.compose.material3.IconButton
 import androidx.compose.material3.OutlinedTextField
 import androidx.compose.material3.RadioButton
 import androidx.compose.material3.Text
@@ -47,7 +45,7 @@ import androidx.lifecycle.viewmodel.compose.viewModel
 import androidx.navigation.NavController
 import androidx.navigation.compose.rememberNavController
 import com.example.srbopoly.classes.getDiceImage
-import com.example.srbopoly.classes.getFigure
+import com.example.srbopoly.data.getFigure
 import com.example.srbopoly.ui.dialogs.ExitDialog
 import com.example.srbopoly.viewmodels.GameViewModel
 
@@ -58,7 +56,7 @@ fun SettingsScreen(navController: NavController,viewModel: GameViewModel,myId: I
 
     var maxMovesText by remember { mutableStateOf(viewModel.gameState.value.maxMoves.toString()) }
 
-    val players by viewModel.players
+    val players by viewModel.playersSettings
     val myPlayer = players.find { it.id == myId }
 
     var showExitDialog by remember { mutableStateOf(false) }

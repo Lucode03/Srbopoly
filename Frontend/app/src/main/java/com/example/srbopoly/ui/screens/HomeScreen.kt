@@ -1,5 +1,6 @@
 package com.example.srbopoly.ui.screens
 
+import android.annotation.SuppressLint
 import androidx.compose.animation.core.animateDpAsState
 import androidx.compose.foundation.Image
 import androidx.compose.foundation.background
@@ -23,6 +24,9 @@ import androidx.compose.material3.ButtonDefaults
 import androidx.compose.material3.CircularProgressIndicator
 import androidx.compose.material3.ExperimentalMaterial3Api
 import androidx.compose.material3.Icon
+import androidx.compose.material3.Scaffold
+import androidx.compose.material3.SnackbarHost
+import androidx.compose.material3.SnackbarHostState
 import androidx.compose.material3.Text
 import androidx.compose.material3.TopAppBar
 import androidx.compose.material3.TopAppBarDefaults
@@ -53,7 +57,7 @@ import com.example.srbopoly.ui.dialogs.JoinGameDialog
 import com.example.srbopoly.ui.dialogs.PravilaDialog
 import com.example.srbopoly.viewmodels.MainScreenViewModel
 
-
+@SuppressLint("UnusedMaterial3ScaffoldPaddingParameter")
 @OptIn(ExperimentalMaterial3Api::class)
 @Composable
 fun HomeScreen(modifier: Modifier = Modifier, onLogOut:()->Unit,
@@ -65,6 +69,7 @@ fun HomeScreen(modifier: Modifier = Modifier, onLogOut:()->Unit,
     val joinedGameCode by viewModel.joinedGameCode.collectAsState()
     val isLoading by viewModel.isLoading.collectAsState()
     val error by viewModel.error.collectAsState()
+    val snackbarHostState = remember { SnackbarHostState() }
 
     var showPravilaDialog by remember { mutableStateOf(false) }
 
@@ -95,7 +100,12 @@ fun HomeScreen(modifier: Modifier = Modifier, onLogOut:()->Unit,
             text = "Bićete odjavljeni sa uređaja!"
         )
     }
-
+    LaunchedEffect(error) {
+        error?.let {
+            snackbarHostState.showSnackbar(it)
+            viewModel.clearError()
+        }
+    }
     Box(modifier = modifier.fillMaxSize())
     {
         Image(
@@ -123,7 +133,7 @@ fun HomeScreen(modifier: Modifier = Modifier, onLogOut:()->Unit,
                 Icon(
                     Icons.AutoMirrored.Filled.ExitToApp,
                     contentDescription = "Odjavite se",
-                    modifier=Modifier.size(40.dp).clickable { showLogOutDialog=true },
+                    modifier = Modifier.size(40.dp).clickable { showLogOutDialog = true },
                     Color.Black
                 )
             },
@@ -131,7 +141,7 @@ fun HomeScreen(modifier: Modifier = Modifier, onLogOut:()->Unit,
                 containerColor = Color(0xFFD9D9D9),
                 titleContentColor = Color.White
             ),
-            expandedHeight= 40.dp
+            expandedHeight = 40.dp
         )
         Column(
             modifier = Modifier
@@ -141,10 +151,11 @@ fun HomeScreen(modifier: Modifier = Modifier, onLogOut:()->Unit,
             verticalArrangement = Arrangement.Center
         ) {
 
-            Box(modifier = Modifier.fillMaxWidth(0.5f)
-                .height(50.dp)
-                .border(2.dp,Color(0xFFE5BD00),RoundedCornerShape(20.dp))
-                .background(Color(0xFFFFE757),RoundedCornerShape(20.dp)),
+            Box(
+                modifier = Modifier.fillMaxWidth(0.5f)
+                    .height(50.dp)
+                    .border(2.dp, Color(0xFFE5BD00), RoundedCornerShape(20.dp))
+                    .background(Color(0xFFFFE757), RoundedCornerShape(20.dp)),
                 contentAlignment = Alignment.Center
             )
             {
@@ -173,7 +184,7 @@ fun HomeScreen(modifier: Modifier = Modifier, onLogOut:()->Unit,
                         clip = false
                     )
                     .clip(RoundedCornerShape(20.dp))
-                    .border(3.dp,Color(0xFF001FE1),RoundedCornerShape(20.dp))
+                    .border(3.dp, Color(0xFF001FE1), RoundedCornerShape(20.dp))
                     .clickable {
                         showPravilaDialog = true
                     }
@@ -185,10 +196,9 @@ fun HomeScreen(modifier: Modifier = Modifier, onLogOut:()->Unit,
                 targetValue = 10.dp
             )
 
-            if(isLoading)
+            if (isLoading)
                 CircularProgressIndicator()
-            else
-            {
+            else {
                 Button(
                     onClick = {
                         viewModel.createNewGame(user.id)
@@ -228,6 +238,10 @@ fun HomeScreen(modifier: Modifier = Modifier, onLogOut:()->Unit,
                 )
             }
         }
+        SnackbarHost(
+            hostState = snackbarHostState,
+            modifier = Modifier.align(Alignment.BottomCenter)
+        )
         if (showPravilaDialog) {
             PravilaDialog { showPravilaDialog = false }
         }
@@ -241,6 +255,7 @@ fun HomeScreen(modifier: Modifier = Modifier, onLogOut:()->Unit,
             )
         }
     }
+
 }
 
 @Preview
