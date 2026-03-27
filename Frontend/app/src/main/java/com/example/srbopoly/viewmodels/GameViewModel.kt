@@ -19,7 +19,7 @@ class GameViewModel : ViewModel() {
     )
     val playersSettings: State<List<PlayerState>> = _playersSettings
 
-    private val _players = mutableStateOf(gi
+    private val _players = mutableStateOf(
         listOf(
             Player("Igrac 1",1000, 10,"Crvena"),
             Player("Igrac 2",1000,22, "Plava"),
