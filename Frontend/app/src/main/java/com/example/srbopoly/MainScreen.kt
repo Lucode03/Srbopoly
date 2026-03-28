@@ -93,8 +93,8 @@ fun MainScreen(modifier: Modifier = Modifier,
                         onStartGame = { code ->
                             mainNavController.navigate("settings/$code")
                         },
-                        onJoinGame = {
-                            mainNavController.navigate("game")
+                        onJoinGame = { code ->
+                            mainNavController.navigate("settings/$code")
                         }
                     )
                 }
@@ -103,7 +103,7 @@ fun MainScreen(modifier: Modifier = Modifier,
             composable("settings/{gameCode}") { backStackEntry ->
                 val gameCode = backStackEntry.arguments?.getString("gameCode") ?: ""
                 user?.let { it
-                    SettingsScreen(mainNavController,gameViewModel, myId = it.id, gameCode = gameCode)
+                    SettingsScreen(mainNavController, myId = it.id, gameCode = gameCode)
                 }
             }
 

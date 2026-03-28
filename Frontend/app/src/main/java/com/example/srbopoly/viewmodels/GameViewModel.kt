@@ -101,18 +101,6 @@ class GameViewModel @Inject constructor(
         )
     }
 
-    fun leaveLobby(accessCode: String, userId: Int) {
-        viewModelScope.launch {
-            val result = lobbyRepository.leaveLobby(accessCode, userId)
-
-            result.onSuccess {
-                Log.d("GameRepository","Uspesno je napustio igru $accessCode igrac: $userId")
-            }.onFailure { exception ->
-
-            }
-        }
-    }
-
     fun areAllPlayersReady(): Boolean {
         return _playersSettings.value.all { it.isReady }
     }

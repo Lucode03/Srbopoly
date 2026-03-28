@@ -8,13 +8,16 @@ import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.Row
 import androidx.compose.foundation.layout.Spacer
+import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.height
 import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.layout.size
 import androidx.compose.foundation.layout.width
+import androidx.compose.foundation.rememberScrollState
 import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.foundation.text.KeyboardOptions
+import androidx.compose.foundation.verticalScroll
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.automirrored.filled.ArrowBack
 import androidx.compose.material3.Button
@@ -26,6 +29,7 @@ import androidx.compose.material3.RadioButton
 import androidx.compose.material3.Text
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.LaunchedEffect
+import androidx.compose.runtime.collectAsState
 import androidx.compose.runtime.getValue
 import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.remember
@@ -41,6 +45,7 @@ import androidx.compose.ui.text.style.TextAlign
 import androidx.compose.ui.tooling.preview.Preview
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
+import androidx.hilt.navigation.compose.hiltViewModel
 import androidx.lifecycle.viewmodel.compose.viewModel
 import androidx.navigation.NavController
 import androidx.navigation.compose.rememberNavController
@@ -48,32 +53,46 @@ import com.example.srbopoly.classes.getDiceImage
 import com.example.srbopoly.data.getFigure
 import com.example.srbopoly.ui.dialogs.ExitDialog
 import com.example.srbopoly.viewmodels.GameViewModel
+import com.example.srbopoly.viewmodels.LobbyViewModel
 
 @Composable
-fun SettingsScreen(navController: NavController,viewModel: GameViewModel,myId: Int=1, gameCode: String) {
+fun SettingsScreen(navController: NavController,/*viewModel: GameViewModel,*/myId: Int=1, gameCode: String, lobbyViewModel: LobbyViewModel = hiltViewModel()) {
 
     val colors = listOf("Crvena", "Plava", "Zelena", "Žuta", "Narandžasta", "Bela")
 
-    var maxMovesText by remember { mutableStateOf(viewModel.gameState.value.maxMoves.toString()) }
+    var maxMovesText by remember { mutableStateOf(lobbyViewModel.maxMoves.value.toString()) }
 
-    val players by viewModel.playersSettings
-    val myPlayer = players.find { it.id == myId }
+    val maxMoves by lobbyViewModel.maxMoves.collectAsState()
+    val lobby by lobbyViewModel.currentLobby.collectAsState()
+    val dice1 by lobbyViewModel.dice1.collectAsState()
+    val dice2 by lobbyViewModel.dice2.collectAsState()
+
+    val myPlayer = lobby?.players?.find { it.userId == myId }
+    val isHost = lobby?.hostUserId == myId
 
     var showExitDialog by remember { mutableStateOf(false) }
-    LaunchedEffect(players) {
-        //treba da se salje serveru
-        if (players.isNotEmpty() && players.all { it.isReady }) {
+    val scrollState = rememberScrollState()
+
+    LaunchedEffect(gameCode) {
+        lobbyViewModel.initLobby(gameCode)
+    }
+
+    LaunchedEffect(lobby) {
+        val players = lobby?.players ?: emptyList()
+        if (players.size >= 2 && players.all { it.isReady }) {
             navController.navigate("game") {
                 popUpTo("settings") { inclusive = true }
             }
         }
     }
+
     if (showExitDialog) {
         ExitDialog(
             onDismiss = {showExitDialog=false},
             onYes = {
                 showExitDialog=false
-                viewModel.leaveLobby(gameCode,  myId)
+
+                lobbyViewModel.leaveLobby(gameCode,  myId)
                 navController.navigate("home")
             },
             onNo = {showExitDialog=false},
@@ -81,7 +100,10 @@ fun SettingsScreen(navController: NavController,viewModel: GameViewModel,myId: I
         )
     }
     Column(
-        modifier = Modifier.padding(16.dp)
+        modifier = Modifier
+            .fillMaxSize()
+            .padding(16.dp)
+            .verticalScroll(scrollState)
     ) {
 
         Box {
@@ -113,36 +135,32 @@ fun SettingsScreen(navController: NavController,viewModel: GameViewModel,myId: I
 
         Text(text="Boja figurice:",
             fontSize = 16.sp)
-        colors.forEach { color ->
-            val isTaken = viewModel.isColorTaken(color, myId)
+        Text(text = "Izaberi boju:", fontSize = 16.sp)
+        colors.forEachIndexed { index, colorName ->
+            val isTaken = lobby?.players?.any { it.color == index && it.userId != myId } ?: false
 
             Row(
                 verticalAlignment = Alignment.CenterVertically,
                 modifier = Modifier.alpha(if (isTaken) 0.5f else 1f)
             ) {
                 RadioButton(
-                    selected = myPlayer?.color == color,
-                    onClick = { if (!isTaken) {
-                        viewModel.setPlayerColor(myId, color)
-                        }
-                    },
+                    selected = myPlayer?.color == index,
+                    onClick = { if (!isTaken) lobbyViewModel.setPlayerColor(gameCode, myId, index) },
                     enabled = !isTaken
                 )
-
                 Image(
-                    painter = painterResource(getFigure(color)),
-                    contentDescription = color,
+                    painter = painterResource(getFigure(colorName)),
+                    contentDescription = colorName,
                     modifier = Modifier.size(24.dp)
                 )
-
-                Text(color)
+                Text(text = colorName, modifier = Modifier.padding(start = 8.dp))
             }
         }
 
         Spacer(modifier = Modifier.height(16.dp))
 
         if (myPlayer != null) {
-            if(myPlayer.isHost)
+            if(isHost)
 
                 Row(verticalAlignment = Alignment.CenterVertically) {
                     Text(text="Maksimalan broj poteza:",
@@ -156,7 +174,7 @@ fun SettingsScreen(navController: NavController,viewModel: GameViewModel,myId: I
 
                                 val number = input.toIntOrNull()
                                 if (number != null) {
-                                    viewModel.setMaxMoves(number)
+                                    lobbyViewModel.setMaxMoves(number)
                                 }
                             }
                         },
@@ -183,8 +201,8 @@ fun SettingsScreen(navController: NavController,viewModel: GameViewModel,myId: I
         myPlayer?.let { player ->
             Box(modifier = Modifier.fillMaxWidth()
                 .clickable (
-                    enabled = viewModel.gameState.value.maxMoves >= 50 && myPlayer.diceResult==0,
-                    onClick = { viewModel.rollDice(myId) }
+                    enabled = maxMoves >= 50 && myPlayer.rolledNumber==0,
+                    onClick = { lobbyViewModel.rollDice(gameCode, myId) }
                 ),
                 contentAlignment = Alignment.Center
             ) {
@@ -193,7 +211,7 @@ fun SettingsScreen(navController: NavController,viewModel: GameViewModel,myId: I
                     verticalAlignment = Alignment.CenterVertically
                 ) {
                     Image(
-                        painter = painterResource(getDiceImage(player.dice1)),
+                        painter = painterResource(getDiceImage(dice1)),
                         contentDescription = "Dice 1",
                         modifier = Modifier.size(64.dp)
                             .clip(RoundedCornerShape(12.dp))
@@ -204,7 +222,7 @@ fun SettingsScreen(navController: NavController,viewModel: GameViewModel,myId: I
                             )
                     )
                     Image(
-                        painter = painterResource(getDiceImage(player.dice2)),
+                        painter = painterResource(getDiceImage(dice2)),
                         contentDescription = "Dice 2",
                         modifier = Modifier.size(64.dp)
                             .clip(RoundedCornerShape(12.dp))
@@ -218,10 +236,10 @@ fun SettingsScreen(navController: NavController,viewModel: GameViewModel,myId: I
             }
             Spacer(modifier = Modifier.height(8.dp))
             Text(
-                text = if(player.diceResult==0)
+                text = if(player.rolledNumber==0)
                     "Bacite kockice"
                     else
-                        "Zbir: ${player.diceResult}",
+                        "Zbir: ${player.rolledNumber}",
                 fontSize = 16.sp,
                 textAlign = TextAlign.Center,
                 modifier = Modifier.fillMaxWidth()
@@ -235,9 +253,9 @@ fun SettingsScreen(navController: NavController,viewModel: GameViewModel,myId: I
         Box(modifier = Modifier.fillMaxWidth())
         {
             Button(
-                enabled = myPlayer?.diceResult!=0,
+                enabled = myPlayer?.rolledNumber!=0,
                 onClick = {
-                    viewModel.toggleReady(myId)
+                    lobbyViewModel.toggleReady(gameCode,myId)
 //                navController.navigate("game") {
 //                    popUpTo("settings") { inclusive = true }
 //                }
@@ -251,7 +269,18 @@ fun SettingsScreen(navController: NavController,viewModel: GameViewModel,myId: I
             }
         }
 
-        players.forEach { player ->
+        lobby?.players?.forEach { player ->
+            Row(
+                modifier = Modifier.fillMaxWidth().padding(vertical = 4.dp),
+                verticalAlignment = Alignment.CenterVertically
+            ) {
+                Text(text = player.username, modifier = Modifier.weight(1f))
+                if (player.isReady) Text("SPREMAN", color = Color.Green, fontSize = 12.sp)
+                if (player.userId == lobby?.hostUserId) Text(" 👑")
+            }
+        }
+
+        lobby?.players?.forEach { player ->
             Row(verticalAlignment = Alignment.CenterVertically) {
 
 
@@ -263,17 +292,17 @@ fun SettingsScreen(navController: NavController,viewModel: GameViewModel,myId: I
                 Spacer(modifier = Modifier.width(8.dp))
 
                 Image(
-                    painter = painterResource(getFigure(player.color)),
-                    contentDescription = player.color,
+                    painter = painterResource(getFigure(colors[player.color])),
+                    contentDescription = colors[player.color],
                     modifier = Modifier.size(24.dp)
                 )
                 Spacer(modifier = Modifier.width(8.dp))
 
                 Text(
-                    text = if(player.diceResult==0)
+                    text = if(player.rolledNumber == 0)
                         "Baca kockice"
                     else
-                        "Zbir: ${player.diceResult}",
+                        "Zbir: ${player.rolledNumber}",
                     fontSize = 16.sp
                 )
 
@@ -286,7 +315,7 @@ fun SettingsScreen(navController: NavController,viewModel: GameViewModel,myId: I
 
                 Spacer(modifier = Modifier.width(8.dp))
 
-                if (player.isHost) {
+                if (isHost) {
                     Text(" 👑",
                         fontSize = 16.sp,
                         color = Color.Yellow)
@@ -300,5 +329,5 @@ fun SettingsScreen(navController: NavController,viewModel: GameViewModel,myId: I
 @Composable
 fun SettingsScreenPreview() {
     val mainNavController = rememberNavController()
-    SettingsScreen(mainNavController, viewModel = viewModel(), gameCode = "123456")
+    SettingsScreen(mainNavController, gameCode = "123456")
 }
