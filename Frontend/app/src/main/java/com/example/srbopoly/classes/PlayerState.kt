@@ -22,14 +22,3 @@ fun getDiceImage(value: Int): Int {
         else -> R.drawable.kocka0
     }
 }
-fun getFigure(color: String): Int {
-    return when (color) {
-        "Crvena" -> R.drawable.figure_red
-        "Plava" -> R.drawable.figure_blue
-        "Zelena" -> R.drawable.figure_green
-        "Žuta" -> R.drawable.figure_yellow
-        "Narandžasta" -> R.drawable.figure_orange
-        "Bela" -> R.drawable.figure_white
-        else -> R.drawable.figure_white
-    }
-}
