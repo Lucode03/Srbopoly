@@ -1,5 +1,6 @@
 using LobbyService.Services.LobbyCode;
 using LobbyService;
+using LobbyService.Hubs;
 
 var builder = WebApplication.CreateBuilder(args);
 
@@ -10,8 +11,20 @@ builder.Services.AddSwaggerGen();
 
 builder.Services.AddControllers();
 
+builder.Services.AddSignalR();
+
 builder.Services.AddSingleton<LobbyCodeService>();
+builder.Services.AddSingleton<ILobbyActionService, LobbyActionManager>();
 builder.Services.AddSingleton<ILobbyService, LobbyManager>();
+
+builder.Services.AddCors(options => {
+    options.AddPolicy("AllowAll", policy => {
+        policy.WithOrigins("http://10.0.2.2", "http://localhost")
+              .AllowAnyHeader()
+              .AllowAnyMethod()
+              .AllowCredentials();
+    });
+});
 
 var app = builder.Build();
 
@@ -22,7 +35,10 @@ if (app.Environment.IsDevelopment())
     app.UseSwaggerUI();
 }
 
+app.UseCors("AllowAll");
+
 //app.UseHttpsRedirection();
 app.MapControllers();
+app.MapHub<LobbyHub>("/lobbyHub");
 
 app.Run();
