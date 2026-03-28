@@ -1,13 +1,22 @@
 package com.example.srbopoly.viewmodels
 
+import android.util.Log
 import androidx.compose.runtime.mutableStateOf
 import androidx.lifecycle.ViewModel
 import com.example.srbopoly.classes.GameState
 import androidx.compose.runtime.State
+import androidx.lifecycle.viewModelScope
 import com.example.srbopoly.classes.PlayerState
 import com.example.srbopoly.data.Player
+import com.example.srbopoly.data.repository.LobbyRepository
+import dagger.hilt.android.lifecycle.HiltViewModel
+import kotlinx.coroutines.launch
+import javax.inject.Inject
 
-class GameViewModel : ViewModel() {
+@HiltViewModel
+class GameViewModel @Inject constructor(
+    private val lobbyRepository: LobbyRepository
+): ViewModel() {
 
     private val _playersSettings = mutableStateOf(
         listOf(
@@ -90,6 +99,18 @@ class GameViewModel : ViewModel() {
             maxMoves = 50,
             currentPlayerId = null
         )
+    }
+
+    fun leaveLobby(accessCode: String, userId: Int) {
+        viewModelScope.launch {
+            val result = lobbyRepository.leaveLobby(accessCode, userId)
+
+            result.onSuccess {
+                Log.d("GameRepository","Uspesno je napustio igru $accessCode igrac: $userId")
+            }.onFailure { exception ->
+
+            }
+        }
     }
 
     fun areAllPlayersReady(): Boolean {

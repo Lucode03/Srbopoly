@@ -201,7 +201,7 @@ fun HomeScreen(modifier: Modifier = Modifier, onLogOut:()->Unit,
             else {
                 Button(
                     onClick = {
-                        viewModel.createNewGame(user.id)
+                        viewModel.createNewGame(user.id, user.username)
                     },
                     shape = RoundedCornerShape(20.dp),
                     elevation = ButtonDefaults.buttonElevation(elevation),
@@ -250,7 +250,7 @@ fun HomeScreen(modifier: Modifier = Modifier, onLogOut:()->Unit,
                 onDismiss = { showJoinDialog = false },
                 onJoin = { code ->
                     showJoinDialog = false
-                    viewModel.joinExistingGame(user.id, code)
+                    viewModel.joinExistingGame(user.id, code, user.username)
                 }
             )
         }

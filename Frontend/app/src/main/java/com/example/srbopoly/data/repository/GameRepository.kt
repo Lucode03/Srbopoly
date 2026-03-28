@@ -4,8 +4,8 @@ import com.example.srbopoly.data.Game
 import com.example.srbopoly.data.JoinGameRequest
 import com.example.srbopoly.data.PlayerRequest
 import com.example.srbopoly.data.PlayerResponse
-import com.example.srbopoly.network.ApiService
-import com.example.srbopoly.network.apiServices.ApiServiceGame
+import com.example.srbopoly.network.apiServices.persistanceService.ApiService
+import com.example.srbopoly.network.apiServices.persistanceService.ApiServiceGame
 import javax.inject.Inject
 import javax.inject.Singleton
 
@@ -52,24 +52,5 @@ class GameRepository @Inject constructor(
                 Result.failure(Exception("Greška pri dodavanju igrača u igru"))
             }
         } catch (e: Exception) { Result.failure(e) }
-    }
-
-    suspend fun joinGameByCode(userId: Int, accessCode: String): Result<PlayerResponse> {
-        return try {
-            val request = JoinGameRequest(
-                accesscode = accessCode,
-                userId = userId
-            )
-                val response = gameApi.joinGame(request)
-
-            if (response.isSuccessful && response.body() != null) {
-                Result.success(response.body()!!)
-            } else {
-                val errorMsg = response.errorBody()?.string() ?: "Greška pri pridruživanju igri"
-                Result.failure(Exception(errorMsg))
-            }
-        } catch (e: Exception) {
-            Result.failure(e)
-        }
     }
 }

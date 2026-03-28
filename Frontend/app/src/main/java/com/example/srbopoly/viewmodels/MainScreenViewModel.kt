@@ -2,7 +2,7 @@ package com.example.srbopoly.viewmodels
 
 import androidx.lifecycle.ViewModel
 import androidx.lifecycle.viewModelScope
-import com.example.srbopoly.data.repository.GameRepository
+import com.example.srbopoly.data.repository.LobbyRepository
 import dagger.hilt.android.lifecycle.HiltViewModel
 import kotlinx.coroutines.flow.MutableStateFlow
 import kotlinx.coroutines.flow.StateFlow
@@ -12,7 +12,7 @@ import javax.inject.Inject
 
 @HiltViewModel
 class MainScreenViewModel @Inject constructor(
-    private val gameRepository: GameRepository
+    private val lobbyRepository: LobbyRepository
 ) : ViewModel() {
 
     private val _gameCode = MutableStateFlow<String?>(null)
@@ -27,19 +27,13 @@ class MainScreenViewModel @Inject constructor(
     private val _error = MutableStateFlow<String?>(null)
     val error: StateFlow<String?> = _error.asStateFlow()
 
-    fun createNewGame(userId: Int) {
+    fun createNewGame(userId: Int, username: String) {
         viewModelScope.launch {
             _isLoading.value = true
 
-            val gameResult = gameRepository.createGame(maxTurns = 20)
+            val gameResult = lobbyRepository.createLobby(userId, username)
             gameResult.onSuccess { createdGame ->
                 _gameCode.value = createdGame.accessCode
-                val playerResult = gameRepository.addPlayerToGame(userId, createdGame.id)
-
-                playerResult.onSuccess {
-                }.onFailure {
-                    _error.value = "Igra kreirana, ali ne i igrač: ${it.message}"
-                }
             }.onFailure {
                 _error.value = "Neuspešno kreiranje igre: ${it.message}"
             }
@@ -48,7 +42,7 @@ class MainScreenViewModel @Inject constructor(
         }
     }
 
-    fun joinExistingGame(userId: Int, code: String) {
+    fun joinExistingGame(userId: Int, code: String, username: String) {
         if (code.isBlank() || code.length < 6) {
             _error.value = "Pristupni kod mora imati 6 karaktera."
             return
@@ -58,7 +52,7 @@ class MainScreenViewModel @Inject constructor(
             _isLoading.value = true
             _error.value = null
 
-            val result = gameRepository.joinGameByCode(userId, code)
+            val result = lobbyRepository.joinLobby(code, userId, username)
 
             result.onSuccess {
                 _error.value = null

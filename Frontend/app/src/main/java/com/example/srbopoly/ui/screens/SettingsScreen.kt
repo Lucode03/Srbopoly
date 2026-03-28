@@ -73,6 +73,7 @@ fun SettingsScreen(navController: NavController,viewModel: GameViewModel,myId: I
             onDismiss = {showExitDialog=false},
             onYes = {
                 showExitDialog=false
+                viewModel.leaveLobby(gameCode,  myId)
                 navController.navigate("home")
             },
             onNo = {showExitDialog=false},

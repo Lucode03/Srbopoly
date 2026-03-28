@@ -1,4 +1,4 @@
-package com.example.srbopoly.network.apiServices
+package com.example.srbopoly.network.apiServices.persistanceService
 
 import com.example.srbopoly.data.JoinGameRequest
 import com.example.srbopoly.data.PlayerResponse

@@ -1,9 +1,10 @@
-package com.example.srbopoly.network
-import com.example.srbopoly.data.User
+package com.example.srbopoly.network.apiServices.persistanceService
+
 import com.example.srbopoly.data.Game
 import com.example.srbopoly.data.PlayerRequest
 import com.example.srbopoly.data.PlayerResponse
 import com.example.srbopoly.data.SendChatMessageRequest
+import com.example.srbopoly.data.User
 import retrofit2.Response
 import retrofit2.http.Body
 import retrofit2.http.DELETE

@@ -2,8 +2,7 @@ package com.example.srbopoly.data.repository
 import com.example.srbopoly.data.User
 import com.example.srbopoly.data.dto.CreateUserRequest
 import com.example.srbopoly.data.dto.LoginUserRequest
-import com.example.srbopoly.network.ApiService
-import com.example.srbopoly.network.apiServices.ApiServiceAuth
+import com.example.srbopoly.network.apiServices.persistanceService.ApiServiceAuth
 import javax.inject.Inject
 import javax.inject.Singleton
 

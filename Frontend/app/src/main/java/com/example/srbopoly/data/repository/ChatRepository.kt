@@ -1,7 +1,7 @@
 package com.example.srbopoly.data.repository
 
 import com.example.srbopoly.data.SendChatMessageRequest
-import com.example.srbopoly.network.ApiService
+import com.example.srbopoly.network.apiServices.persistanceService.ApiService
 import javax.inject.Inject
 import javax.inject.Singleton
 

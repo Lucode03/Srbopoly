@@ -1,4 +1,4 @@
-package com.example.srbopoly.network.apiServices
+package com.example.srbopoly.network.apiServices.persistanceService
 
 import com.example.srbopoly.data.User
 import com.example.srbopoly.data.dto.CreateUserRequest

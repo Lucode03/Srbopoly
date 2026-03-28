@@ -14,6 +14,7 @@ import androidx.compose.runtime.getValue
 import androidx.compose.runtime.remember
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.platform.LocalContext
+import androidx.hilt.navigation.compose.hiltViewModel
 import androidx.lifecycle.compose.collectAsStateWithLifecycle
 import androidx.lifecycle.viewmodel.compose.viewModel
 import androidx.navigation.NavController
@@ -77,7 +78,7 @@ fun MainScreen(modifier: Modifier = Modifier,
         }
     )
     { innerPadding ->
-        val gameViewModel: GameViewModel = viewModel()
+        val gameViewModel: GameViewModel = hiltViewModel()
         NavHost(
             navController = mainNavController,
             startDestination = NavItem.Home.route,
@@ -101,8 +102,9 @@ fun MainScreen(modifier: Modifier = Modifier,
             composable(NavItem.GameList.route) { user?.let { it1 -> GameListScreen(user = it1) } }
             composable("settings/{gameCode}") { backStackEntry ->
                 val gameCode = backStackEntry.arguments?.getString("gameCode") ?: ""
-
-                SettingsScreen(mainNavController,gameViewModel, gameCode = gameCode)
+                user?.let { it
+                    SettingsScreen(mainNavController,gameViewModel, myId = it.id, gameCode = gameCode)
+                }
             }
 
             composable("game") {

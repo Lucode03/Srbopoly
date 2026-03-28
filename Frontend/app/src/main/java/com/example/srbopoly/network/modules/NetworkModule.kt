@@ -1,6 +1,9 @@
-package com.example.srbopoly.network
-import com.example.srbopoly.network.apiServices.ApiServiceAuth
-import com.example.srbopoly.network.apiServices.ApiServiceGame
+package com.example.srbopoly.network.modules
+
+import com.example.srbopoly.network.NetworkConfig
+import com.example.srbopoly.network.apiServices.persistanceService.ApiService
+import com.example.srbopoly.network.apiServices.persistanceService.ApiServiceAuth
+import com.example.srbopoly.network.apiServices.persistanceService.ApiServiceGame
 import dagger.Module
 import dagger.Provides
 import dagger.hilt.InstallIn
@@ -9,6 +12,7 @@ import okhttp3.OkHttpClient
 import okhttp3.logging.HttpLoggingInterceptor
 import retrofit2.Retrofit
 import retrofit2.converter.gson.GsonConverterFactory
+import javax.inject.Named
 import javax.inject.Singleton
 
 @Module
@@ -17,20 +21,12 @@ object NetworkModule {
 
     @Provides
     @Singleton
-    fun provideOkHttpClient(): OkHttpClient {
-        val logging = HttpLoggingInterceptor().apply {
-            level = HttpLoggingInterceptor.Level.BODY
-        }
-        return OkHttpClient.Builder()
-            .addInterceptor(logging)
-            .build()
-    }
-
-    @Provides
-    @Singleton
-    fun provideRetrofit(okHttpClient: OkHttpClient): Retrofit {
+    @Named("GameRetrofit")
+    fun provideRetrofit(
+        okHttpClient: OkHttpClient,
+        networkConfig: NetworkConfig): Retrofit {
         return Retrofit.Builder()
-            .baseUrl("https://backedn-production-5c09.up.railway.app/")
+            .baseUrl(networkConfig.baseUrl)
             .client(okHttpClient)
             .addConverterFactory(GsonConverterFactory.create())
             .build()
@@ -38,19 +34,22 @@ object NetworkModule {
 
     @Provides
     @Singleton
-    fun provideApiService(retrofit: Retrofit): ApiService {
+    fun provideApiService(
+        @Named("GameRetrofit")retrofit: Retrofit): ApiService {
         return retrofit.create(ApiService::class.java)
     }
 
     @Provides
     @Singleton
-    fun provideApiServiceAuth(retrofit: Retrofit): ApiServiceAuth {
+    fun provideApiServiceAuth(
+        @Named("GameRetrofit")retrofit: Retrofit): ApiServiceAuth {
         return retrofit.create(ApiServiceAuth::class.java)
     }
 
     @Provides
     @Singleton
-    fun provideApiServiceGame(retrofit: Retrofit): ApiServiceGame {
+    fun provideApiServiceGame(
+        @Named("GameRetrofit")retrofit: Retrofit): ApiServiceGame {
         return retrofit.create(ApiServiceGame::class.java)
     }
 }
