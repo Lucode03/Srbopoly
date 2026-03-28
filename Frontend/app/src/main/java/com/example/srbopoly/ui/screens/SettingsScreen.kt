@@ -56,7 +56,7 @@ import com.example.srbopoly.viewmodels.GameViewModel
 import com.example.srbopoly.viewmodels.LobbyViewModel
 
 @Composable
-fun SettingsScreen(navController: NavController,/*viewModel: GameViewModel,*/myId: Int=1, gameCode: String, lobbyViewModel: LobbyViewModel = hiltViewModel()) {
+fun SettingsScreen(navController: NavController,myId: Int=1, gameCode: String, lobbyViewModel: LobbyViewModel = hiltViewModel()) {
 
     val colors = listOf("Crvena", "Plava", "Zelena", "Žuta", "Narandžasta", "Bela")
 
@@ -135,7 +135,6 @@ fun SettingsScreen(navController: NavController,/*viewModel: GameViewModel,*/myI
 
         Text(text="Boja figurice:",
             fontSize = 16.sp)
-        Text(text = "Izaberi boju:", fontSize = 16.sp)
         colors.forEachIndexed { index, colorName ->
             val isTaken = lobby?.players?.any { it.color == index && it.userId != myId } ?: false
 
@@ -191,10 +190,6 @@ fun SettingsScreen(navController: NavController,/*viewModel: GameViewModel,*/myI
                 }
             }
         }
-
-        Spacer(modifier = Modifier.height(16.dp))
-
-
 
         Spacer(modifier = Modifier.height(16.dp))
 
@@ -285,7 +280,8 @@ fun SettingsScreen(navController: NavController,/*viewModel: GameViewModel,*/myI
 
 
                 Text(
-                    text="Igrač ${player.id}",
+                    text=player.username,
+                    color= if(myId==player.id) Color.Blue else Color.Black,
                     fontSize = 16.sp
                 )
 
