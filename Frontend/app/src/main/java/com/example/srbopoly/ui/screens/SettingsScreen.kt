@@ -250,10 +250,10 @@ fun SettingsScreen(navController: NavController,myId: Int=1, gameCode: String, l
             Button(
                 enabled = myPlayer?.rolledNumber!=0,
                 onClick = {
-                    lobbyViewModel.toggleReady(gameCode,myId)
-//                navController.navigate("game") {
-//                    popUpTo("settings") { inclusive = true }
-//                }
+//                    lobbyViewModel.toggleReady(gameCode,myId)
+                navController.navigate("game") {
+                    popUpTo("settings") { inclusive = true }
+                }
                 },
                 colors = ButtonDefaults.buttonColors(
                     containerColor = if (myPlayer?.isReady == true) Color.Green else Color.Gray

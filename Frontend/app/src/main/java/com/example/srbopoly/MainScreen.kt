@@ -16,7 +16,6 @@ import androidx.compose.ui.Modifier
 import androidx.compose.ui.platform.LocalContext
 import androidx.hilt.navigation.compose.hiltViewModel
 import androidx.lifecycle.compose.collectAsStateWithLifecycle
-import androidx.lifecycle.viewmodel.compose.viewModel
 import androidx.navigation.NavController
 import androidx.navigation.compose.NavHost
 import androidx.navigation.compose.composable
@@ -24,7 +23,7 @@ import androidx.navigation.compose.rememberNavController
 import com.example.srbopoly.ui.NavItem
 import com.example.srbopoly.ui.BottomNavigationBar
 import com.example.srbopoly.ui.screens.GameListScreen
-import com.example.srbopoly.ui.screens.GameScreen
+import com.example.srbopoly.ui.screens.game.GameScreen
 import com.example.srbopoly.ui.screens.HomeScreen
 import com.example.srbopoly.ui.screens.RankingsScreen
 import com.example.srbopoly.ui.screens.SettingsScreen

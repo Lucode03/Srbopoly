@@ -7,6 +7,7 @@ import com.example.srbopoly.R
 import com.example.srbopoly.data.fields.PropertyField
 
 class Player(
+    var id:Int,
     var Username:String,
     var Balance :Int,
     initialPosition:Int=0,
