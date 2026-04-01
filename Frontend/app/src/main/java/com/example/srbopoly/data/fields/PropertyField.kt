@@ -5,14 +5,13 @@ import com.example.srbopoly.data.Player
 
 class PropertyField(
     Name:String,
-    GameFieldId:Int,
+    FieldType:FieldType,
     var Price:Int,
-    var Owner:Player?,
+    var Owner:Player?=null,
     var BaseRent:Int,
     var Houses:Int=0,
-    var Hotels:Int=0,
-    var Type:String
-):Field(Name,GameFieldId) {
+    var Hotels:Int=0
+):Field(Name,FieldType) {
     override fun Action(player: Player,game: Game?)
     {
 

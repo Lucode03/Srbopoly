@@ -49,12 +49,12 @@ fun getFieldOffset(index: Int, maxWidth: Dp): Pair<Dp, Dp> {
 fun getRect(index: Int,size: Size): Rect {
     val cornerSize = size.width / 7
     val edgeThickness = cornerSize
-    val edgeLength = ((size.width - 2 * cornerSize) / 9)
+    val edgeLength = (size.width - 2 * cornerSize) / 9
 
     return when (index) {
 
         0 -> Rect(0f, 0f, cornerSize, cornerSize)
-        10 -> Rect(size.width - cornerSize, 0f, size.width, cornerSize)
+        10 -> Rect(size.width- cornerSize, 0f, size.width, cornerSize)
         20 -> Rect(size.width - cornerSize, size.height - cornerSize, size.width, size.height)
         30 -> Rect(0f, size.height - cornerSize, cornerSize, size.height)
 
@@ -80,4 +80,15 @@ fun getRect(index: Int,size: Size): Rect {
 
         else -> Rect.Zero
     }
+}
+
+fun getCenterRect(size:Size):Rect{
+
+    val cornerSize = size.width / 7
+    val edgeThickness = cornerSize
+
+    val centerStart = edgeThickness
+    val centerSize = size.width - 2 * edgeThickness
+
+    return Rect(centerStart, centerStart, centerStart+centerSize, centerStart+centerSize)
 }

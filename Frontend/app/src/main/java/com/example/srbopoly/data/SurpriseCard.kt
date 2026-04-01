@@ -3,10 +3,9 @@ package com.example.srbopoly.data
 class SurpriseCard(
     CardName:String,
     Description:String,
-    GameCardID:Int,
     var Amount:Int,
     var Type:String
-):Card(CardName,Description,GameCardID) {
+):Card(CardName,Description) {
     override fun Apply(player:Player)
     {
         //Position -> postavi igraca na polje Amount

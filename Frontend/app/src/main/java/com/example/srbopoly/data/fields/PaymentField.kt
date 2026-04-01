@@ -5,9 +5,9 @@ import com.example.srbopoly.data.Player
 
 class PaymentField(
     Name:String,
-    GameFieldId:Int,
+    FieldType:FieldType,
     var Price:Int
-):Field(Name,GameFieldId) {
+):Field(Name,FieldType) {
     override fun Action(player: Player,game: Game?)
     {
         player.Pay(Price)

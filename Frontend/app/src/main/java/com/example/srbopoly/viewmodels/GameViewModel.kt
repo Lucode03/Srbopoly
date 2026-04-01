@@ -5,8 +5,8 @@ import androidx.lifecycle.ViewModel
 import com.example.srbopoly.classes.GameState
 import androidx.compose.runtime.State
 import com.example.srbopoly.data.Player
-import com.example.srbopoly.data.fields.JailField
 import com.example.srbopoly.data.repository.LobbyRepository
+import com.example.srbopoly.factories.FieldFactory
 import dagger.hilt.android.lifecycle.HiltViewModel
 import kotlinx.coroutines.flow.MutableStateFlow
 import kotlinx.coroutines.flow.asStateFlow
@@ -18,7 +18,7 @@ class GameViewModel @Inject constructor(
 ): ViewModel() {
 
     val board = List(40) { index ->
-        JailField("Polje $index",index)
+        FieldFactory.createField(index)
     }
 
     private val _dice1 = MutableStateFlow(0)
@@ -30,9 +30,9 @@ class GameViewModel @Inject constructor(
     private val _players = mutableStateOf(
         listOf(
             Player(1,"Igrac 1",1000, 10,"Crvena"),
-            Player(2,"Igrac 2",1000,22, "Plava"),
-            Player(3,"Igrac 3",1000,12, "Bela"),
-            Player(4,"Igrac 4",1000,14, "Zelena")
+            Player(2,"Igrac 2",1000,20, "Plava"),
+            Player(3,"Igrac 3",1000,20, "Bela"),
+            Player(4,"Igrac 4",1000,10, "Zelena")
         )
     )
     val players: State<List<Player>> = _players

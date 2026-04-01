@@ -3,10 +3,10 @@ package com.example.srbopoly.data.fields
 import com.example.srbopoly.data.Game
 import com.example.srbopoly.data.Player
 
-abstract class RewardCardField(
+class RewardCardField(
     Name: String,
-    GameFieldID: Int
-):Field(Name,GameFieldID) {
+    FieldType:FieldType
+):Field(Name,FieldType) {
 
     override fun Action(player: Player, game: Game?)
     {
