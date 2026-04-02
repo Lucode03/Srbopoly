@@ -54,6 +54,7 @@ class LobbyRepository @Inject constructor(
 
     suspend fun leaveLobby(accessCode: String, userId: Int): Result<String> {
         return try {
+            hubConnection?.send("LeaveLobbyGroup", accessCode)
             val response = lobbyApi.leaveLobby(accessCode, userId)
             if (response.isSuccessful) {
                 Result.success(response.body() ?: "Uspešno napušten lobi")
