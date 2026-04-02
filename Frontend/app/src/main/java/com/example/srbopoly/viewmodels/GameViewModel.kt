@@ -37,7 +37,7 @@ class GameViewModel @Inject constructor(
     )
     val players: State<List<Player>> = _players
 
-    private val _gameState = mutableStateOf(GameState(50,3))
+    private val _gameState = mutableStateOf(GameState(50,1))
     val gameState: State<GameState> = _gameState
 
 

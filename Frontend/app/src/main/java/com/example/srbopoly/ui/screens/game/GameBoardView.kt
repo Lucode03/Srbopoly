@@ -1,6 +1,6 @@
 package com.example.srbopoly.ui.screens.game
 
-import android.graphics.Rect
+import androidx.compose.foundation.BorderStroke
 import androidx.compose.foundation.Canvas
 import androidx.compose.foundation.Image
 import androidx.compose.foundation.border
@@ -19,21 +19,25 @@ import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.layout.size
 import androidx.compose.foundation.layout.width
 import androidx.compose.foundation.shape.RoundedCornerShape
+import androidx.compose.material.icons.Icons
+import androidx.compose.material.icons.filled.Person
+import androidx.compose.material3.Card
+import androidx.compose.material3.CardColors
+import androidx.compose.material3.HorizontalDivider
+import androidx.compose.material3.Icon
 import androidx.compose.material3.Text
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.collectAsState
 import androidx.compose.runtime.getValue
+import androidx.compose.runtime.mutableStateOf
+import androidx.compose.runtime.remember
+import androidx.compose.runtime.setValue
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.draw.clip
 import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.graphics.ImageBitmap
-import androidx.compose.ui.graphics.asAndroidBitmap
-import androidx.compose.ui.graphics.asImageBitmap
-import androidx.compose.ui.graphics.drawscope.DrawScope
 import androidx.compose.ui.graphics.drawscope.Stroke
-import androidx.compose.ui.graphics.drawscope.drawIntoCanvas
-import androidx.compose.ui.graphics.nativeCanvas
 import androidx.compose.ui.layout.ContentScale
 import androidx.compose.ui.res.imageResource
 import androidx.compose.ui.res.painterResource
@@ -44,18 +48,20 @@ import androidx.compose.ui.unit.sp
 import androidx.navigation.compose.rememberNavController
 import com.example.srbopoly.R
 import com.example.srbopoly.classes.getDiceImage
+import com.example.srbopoly.data.Player
+import com.example.srbopoly.data.fields.Field
 import com.example.srbopoly.data.fields.getCenterRect
-import com.example.srbopoly.data.fields.getFieldImage
 import com.example.srbopoly.data.fields.getFieldOffset
 import com.example.srbopoly.data.fields.getFieldSize
 import com.example.srbopoly.data.fields.getRect
 import com.example.srbopoly.data.getFigure
 import com.example.srbopoly.draw_functions.drawImageOnCanvas
 import com.example.srbopoly.draw_functions.rotateImageBitmap
+import com.example.srbopoly.ui.dialogs.FieldInfoDialog
 import com.example.srbopoly.viewmodels.GameViewModel
 
 @Composable
-fun GameBoardView(myId:Int,viewModel: GameViewModel,playerPosition:Int)
+fun GameBoardView(myPlayer:Player,viewModel: GameViewModel)
 {
     val board_center_image = ImageBitmap.imageResource(R.drawable.board_center)
 
@@ -67,40 +73,115 @@ fun GameBoardView(myId:Int,viewModel: GameViewModel,playerPosition:Int)
     val board = viewModel.board
 
     val players by viewModel.players
-//    val playersByField = remember(players) {
-//        players.groupBy { it.Position }
-//    }
     val playersByField = players.groupBy { it.Position }
+
+    var showDialog by remember { mutableStateOf(false) }
+    var selectedField by remember { mutableStateOf<Field?>(null) }
+
+    if(showDialog)
+    {
+        FieldInfoDialog(
+            onDismiss = {
+                selectedField=null
+                showDialog=false
+            },
+            selectedField!!
+        )
+    }
     Column {
         Spacer(modifier = Modifier.height((15.dp)))
 
         Column {
-            players.forEach { player ->
-                Row(horizontalArrangement = Arrangement.spacedBy(4.dp),
-                    modifier = Modifier.fillMaxWidth()) {
-                    val isCurrentPlayer=player.id==gameState.currentPlayerId
-                    Image(
-                        painter = painterResource(getFigure(player.Color)),
-                        contentDescription = "Figurica od ${player.Username}",
-                        modifier = Modifier.size(20.dp)
-                    )
-                    Spacer(modifier = Modifier.width(8.dp))
-                    Text(text=player.Username,
-                        fontSize = 16.sp,
-                        color = if (isCurrentPlayer) Color.Blue else Color.Black
-                    )
-                    Spacer(modifier = Modifier.width(8.dp))
+            players.chunked(2).forEach { rowPlayers ->
+                Row(
+                    modifier = Modifier.fillMaxWidth(),
+                    horizontalArrangement = Arrangement.spacedBy(12.dp)
+                ) {
+                    rowPlayers.forEach { player ->
+                        val isCurrentPlayer = player.id == gameState.currentPlayerId
 
-                    Text(text="${player.Balance} \uD83D\uDCB5",
-                        fontSize = 16.sp,
-                        color = if (isCurrentPlayer) Color.Blue else Color.Black
-                    )
-                    Spacer(modifier = Modifier.width(8.dp))
+                        Card(
+                            modifier = Modifier
+                                .weight(1f)
+                                .height(100.dp),
+                            colors = CardColors(
+                                containerColor = if (isCurrentPlayer) Color(0xff03a5fc) else Color(0xffd9dcde),
+                                contentColor = Color.Black,
+                                disabledContainerColor = Color.Gray,
+                                disabledContentColor = Color.Black
+                            ),
+                            border = if (isCurrentPlayer) BorderStroke(width = 2.dp,Color.Blue) else BorderStroke(width = 2.dp,Color.Black)                    )
+                        {
+                            Column(
+                                modifier = Modifier.padding(8.dp)
+                                    .fillMaxSize(),
+                            ) {
+                                Box(modifier = Modifier.fillMaxWidth())
+                                {
+                                    Row(
+                                        verticalAlignment = Alignment.CenterVertically,
+                                        horizontalArrangement = Arrangement.Center,
+                                        modifier = Modifier.fillMaxWidth()
+                                    ) {
+                                        if(myPlayer.id==player.id) {
+                                            Icon(
+                                                Icons.Default.Person,
+                                                contentDescription = "My player",
+                                                modifier = Modifier.size(20.dp),
+                                                tint = Color.Blue
+                                            )
+                                            Spacer(modifier = Modifier.width(6.dp))
+                                            Text(
+                                                text = "Ja",
+                                                fontSize = 16.sp,
+                                                color = Color.Blue
+                                            )
+                                        }
+                                        else
+                                        {
+                                            Text(
+                                                text = player.Username,
+                                                fontSize = 16.sp,
+                                                color = Color.Black
+                                            )
+                                        }
+                                    }
 
-                    Text(text= if (isCurrentPlayer) "Na potezu" else "",
-                        fontSize = 16.sp)
+                                    Image(
+                                        painter = painterResource(getFigure(player.Color)),
+                                        contentDescription = "Figurica od ${player.Username}",
+                                        modifier = Modifier.size(20.dp)
+                                            .align(Alignment.CenterEnd)
+                                    )
+                                }
+
+                                Spacer(modifier = Modifier.height((2.dp)))
+                                HorizontalDivider(thickness = 1.dp, color = Color.Black, modifier = Modifier.fillMaxWidth())
+
+                                Spacer(modifier = Modifier.width(8.dp))
+
+                                Column {
+                                    Text(
+                                        text = "Balans: ${player.Balance} \uD83D\uDCB5",
+                                        fontSize = 16.sp,
+                                        color = Color.Black
+                                    )
+                                    Text(
+                                        text = "Polje: "+ board[player.Position].Name+" (${player.Position})",
+                                        fontSize = 16.sp,
+                                        color = Color.Black
+                                    )
+                                }
+                            }
+                        }
+                    }
+
+                    if (rowPlayers.size == 1) {
+                        Spacer(modifier = Modifier.weight(1f))
+                    }
                 }
-                Spacer(modifier = Modifier.width(20.dp))
+
+                Spacer(modifier = Modifier.height(12.dp))
             }
         }
         BoxWithConstraints(
@@ -118,7 +199,7 @@ fun GameBoardView(myId:Int,viewModel: GameViewModel,playerPosition:Int)
 
                     val playersOnField = playersByField[field.GameFieldID] ?: emptyList()
 
-                    val originalImage = ImageBitmap.imageResource(id = getFieldImage(field.FieldType))
+                    val originalImage = ImageBitmap.imageResource(id = Field.getFieldImage(field.FieldType))
                     val rotatedImage = when (field.GameFieldID) {
                         in 1..9 -> rotateImageBitmap(originalImage, 180f)
                         in 11..19 -> rotateImageBitmap(originalImage, -90f)
@@ -129,6 +210,10 @@ fun GameBoardView(myId:Int,viewModel: GameViewModel,playerPosition:Int)
                         modifier = Modifier
                             .offset(x = x, y = y)
                             .size(width, height)
+                            .clickable {
+                                selectedField=field
+                                showDialog = true
+                            }
                     ) {
 
                         Image(
@@ -137,7 +222,6 @@ fun GameBoardView(myId:Int,viewModel: GameViewModel,playerPosition:Int)
                             contentDescription = "Polje ${field.GameFieldID}",
                             contentScale = ContentScale.FillBounds
                         )
-
                         val figureSize=
                             if(playersOnField.size<3)
                                 max(width,height) / 3f
@@ -204,8 +288,8 @@ fun GameBoardView(myId:Int,viewModel: GameViewModel,playerPosition:Int)
                 }
                 Canvas(modifier = Modifier.matchParentSize()) {
 
-                    val centerRect= getCenterRect(size)
-                    drawImageOnCanvas(board_center_image,centerRect)
+                    val centerRect = getCenterRect(size)
+                    drawImageOnCanvas(board_center_image, centerRect)
 
                     drawRect(
                         color = Color.Black,
@@ -215,55 +299,55 @@ fun GameBoardView(myId:Int,viewModel: GameViewModel,playerPosition:Int)
                     )
                     for (field in board) {
                         val rect = getRect(field.GameFieldID, size)
-                        val isMyField = field.GameFieldID == playerPosition
+                        val isMyField = field.GameFieldID == myPlayer?.Position
 
                         drawRect(
-                            color = if (field.GameFieldID == playerPosition) Color.Red else Color.Black,
+                            color = if (isMyField) Color.Red else Color.Black,
                             topLeft = rect.topLeft,
                             size = rect.size,
                             style = Stroke(width = if (isMyField) 4f else 2f)
                         )
                     }
                 }
-                Box(
-                    modifier = Modifier.fillMaxSize(),
-                    contentAlignment = Alignment.Center)
-                {
-                    Row(
-                        modifier = Modifier.clickable(
-                            enabled = myId == gameState.currentPlayerId,
-                            onClick = { viewModel.rollDice(myId) }
-
-                        ),
-                        horizontalArrangement = Arrangement.spacedBy(16.dp),
-                        verticalAlignment = Alignment.CenterVertically
-                    ) {
-                        Image(
-                            painter = painterResource(getDiceImage(dice1)),
-                            contentDescription = "Dice 1",
-                            modifier = Modifier
-                                .size(64.dp)
-                                .clip(RoundedCornerShape(12.dp))
-                                .border(
-                                    width = 2.dp,
-                                    color = Color.Blue,
-                                    shape = RoundedCornerShape(12.dp)
-                                )
+            }
+        }
+        Box(
+            modifier = Modifier.fillMaxSize()
+                .padding(top=20.dp),
+            contentAlignment = Alignment.TopCenter)
+        {
+            Row(
+                modifier = Modifier.clickable(
+                    enabled = myPlayer.id == gameState.currentPlayerId,
+                    onClick = { viewModel.rollDice(myPlayer.id) }
+                ),
+                horizontalArrangement = Arrangement.spacedBy(16.dp),
+                verticalAlignment = Alignment.CenterVertically
+            ) {
+                Image(
+                    painter = painterResource(getDiceImage(dice1)),
+                    contentDescription = "Dice 1",
+                    modifier = Modifier
+                        .size(64.dp)
+                        .clip(RoundedCornerShape(12.dp))
+                        .border(
+                            width = 2.dp,
+                            color = Color.Blue,
+                            shape = RoundedCornerShape(12.dp)
                         )
-                        Image(
-                            painter = painterResource(getDiceImage(dice2)),
-                            contentDescription = "Dice 2",
-                            modifier = Modifier
-                                .size(64.dp)
-                                .clip(RoundedCornerShape(12.dp))
-                                .border(
-                                    width = 2.dp,
-                                    color = Color.Blue,
-                                    shape = RoundedCornerShape(12.dp)
-                                )
+                )
+                Image(
+                    painter = painterResource(getDiceImage(dice2)),
+                    contentDescription = "Dice 2",
+                    modifier = Modifier
+                        .size(64.dp)
+                        .clip(RoundedCornerShape(12.dp))
+                        .border(
+                            width = 2.dp,
+                            color = Color.Blue,
+                            shape = RoundedCornerShape(12.dp)
                         )
-                    }
-                }
+                )
             }
         }
     }
@@ -273,5 +357,7 @@ fun GameBoardView(myId:Int,viewModel: GameViewModel,playerPosition:Int)
 @Composable
 fun GffaPreview() {
     val mainNavController = rememberNavController()
-    GameBoardView(1, viewModel = GameViewModel(),10)
+    val viewModel = GameViewModel()
+    GameBoardView(viewModel.players.value[0], viewModel)
+
 }

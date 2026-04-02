@@ -22,20 +22,23 @@ class PropertyField(
             Owner = player;
         player.Pay(Price);
     }
-    fun CalculateRent(player: Player):Int
+    fun CalculateRent():Int
     {
-        var rent:Int=0;
-        //racunanje cene placanja
+        if(Owner==null)
+            return 0
+        var rent:Int=BaseRent;
+        rent+=Houses*30
+        rent+=Hotels*50
         return rent;
     }
-    fun BuildHouse(player: Player):Boolean
+    fun BuildHouse():Boolean
     {
         if(Houses>3)
             return false
         Houses+=1
         return false;
     }
-    fun BuildHotel(player: Player):Boolean
+    fun BuildHotel():Boolean
     {
         if(Houses<3)
             return false
