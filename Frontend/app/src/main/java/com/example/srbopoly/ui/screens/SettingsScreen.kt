@@ -74,7 +74,7 @@ fun SettingsScreen(navController: NavController,myId: Int=1, gameCode: String, l
     val scrollState = rememberScrollState()
 
     LaunchedEffect(gameCode) {
-        lobbyViewModel.initLobby(gameCode)
+        lobbyViewModel.initLobby(gameCode, myId)
     }
 
     LaunchedEffect(lobby) {

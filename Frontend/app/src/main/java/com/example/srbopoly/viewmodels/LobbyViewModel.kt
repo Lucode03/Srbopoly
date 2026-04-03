@@ -33,8 +33,8 @@ class LobbyViewModel @Inject constructor(
         _maxMoves.value = moves
     }
 
-    fun initLobby(accessCode: String) {
-        lobbyRepository.connectToHub(accessCode)
+    fun initLobby(accessCode: String, userId: Int) {
+        lobbyRepository.connectToHub(accessCode, userId)
     }
 
     fun setPlayerColor(accessCode: String, userId: Int, colorInt: Int) {

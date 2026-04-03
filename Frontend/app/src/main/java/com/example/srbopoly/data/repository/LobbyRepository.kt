@@ -1,5 +1,6 @@
 package com.example.srbopoly.data.repository
 
+import android.util.Log
 import com.example.srbopoly.data.Lobby
 import com.example.srbopoly.data.LobbyPlayer
 import com.example.srbopoly.data.dto.CreateLobbyRequest
@@ -54,7 +55,7 @@ class LobbyRepository @Inject constructor(
 
     suspend fun leaveLobby(accessCode: String, userId: Int): Result<String> {
         return try {
-            hubConnection?.send("LeaveLobbyGroup", accessCode)
+            Log.d("LobbyRepository", "Izlazim iz lobija.")
             val response = lobbyApi.leaveLobby(accessCode, userId)
             if (response.isSuccessful) {
                 Result.success(response.body() ?: "Uspešno napušten lobi")
@@ -79,7 +80,7 @@ class LobbyRepository @Inject constructor(
         }
     }
 
-    fun connectToHub(accessCode: String) {
+    fun connectToHub(accessCode: String, userId: Int) {
         if (hubConnection?.connectionState == HubConnectionState.CONNECTED) return
 
         hubConnection = HubConnectionBuilder
@@ -91,7 +92,7 @@ class LobbyRepository @Inject constructor(
         }, Lobby::class.java)
 
         hubConnection?.start()?.blockingAwait()
-        hubConnection?.send("JoinLobbyGroup", accessCode)
+        hubConnection?.send("JoinLobbyGroup", accessCode, userId)
     }
 
     fun disconnect() {
