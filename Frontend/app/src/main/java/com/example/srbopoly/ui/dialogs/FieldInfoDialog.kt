@@ -30,8 +30,8 @@ import com.example.srbopoly.data.fields.FieldInfo
 import com.example.srbopoly.data.fields.FieldType
 import com.example.srbopoly.data.fields.JailField
 import com.example.srbopoly.data.fields.PropertyField
-import com.example.srbopoly.ui.views.FieldView
-import com.example.srbopoly.ui.views.PropertyFieldView
+import com.example.srbopoly.ui.popups.views.FieldView
+import com.example.srbopoly.ui.popups.views.PropertyFieldView
 
 @Composable
 fun FieldInfoDialog(onDismiss:()->Unit, field: Field)
