@@ -265,19 +265,7 @@ fun SettingsScreen(navController: NavController,myId: Int=1, gameCode: String, l
         }
 
         lobby?.players?.forEach { player ->
-            Row(
-                modifier = Modifier.fillMaxWidth().padding(vertical = 4.dp),
-                verticalAlignment = Alignment.CenterVertically
-            ) {
-                Text(text = player.username, modifier = Modifier.weight(1f))
-                if (player.isReady) Text("SPREMAN", color = Color.Green, fontSize = 12.sp)
-                if (player.userId == lobby?.hostUserId) Text(" 👑")
-            }
-        }
-
-        lobby?.players?.forEach { player ->
             Row(verticalAlignment = Alignment.CenterVertically) {
-
 
                 Text(
                     text=player.username,
@@ -311,7 +299,7 @@ fun SettingsScreen(navController: NavController,myId: Int=1, gameCode: String, l
 
                 Spacer(modifier = Modifier.width(8.dp))
 
-                if (isHost) {
+                if (player.userId == lobby?.hostUserId){
                     Text(" 👑",
                         fontSize = 16.sp,
                         color = Color.Yellow)

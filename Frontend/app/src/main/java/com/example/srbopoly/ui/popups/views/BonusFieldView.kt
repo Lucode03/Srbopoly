@@ -1,4 +1,4 @@
-package com.example.srbopoly.ui.views
+package com.example.srbopoly.ui.popups.views
 
 import androidx.compose.foundation.layout.Column
 import androidx.compose.runtime.Composable

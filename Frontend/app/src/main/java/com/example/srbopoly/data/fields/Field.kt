@@ -4,14 +4,14 @@ import androidx.compose.runtime.Composable
 import com.example.srbopoly.R
 import com.example.srbopoly.data.Game
 import com.example.srbopoly.data.Player
-import com.example.srbopoly.ui.views.BonusFieldView
-import com.example.srbopoly.ui.views.JailFieldView
-import com.example.srbopoly.ui.views.MovementFieldView
-import com.example.srbopoly.ui.views.NationalParkFieldView
-import com.example.srbopoly.ui.views.PaymentFieldView
-import com.example.srbopoly.ui.views.PropertyFieldView
-import com.example.srbopoly.ui.views.RewardCardFieldView
-import com.example.srbopoly.ui.views.SurpriseCardFieldView
+import com.example.srbopoly.ui.popups.views.BonusFieldView
+import com.example.srbopoly.ui.popups.views.JailFieldView
+import com.example.srbopoly.ui.popups.views.MovementFieldView
+import com.example.srbopoly.ui.popups.views.NationalParkFieldView
+import com.example.srbopoly.ui.popups.views.PaymentFieldView
+import com.example.srbopoly.ui.popups.views.PropertyFieldView
+import com.example.srbopoly.ui.popups.views.RewardCardFieldView
+import com.example.srbopoly.ui.popups.views.SurpriseCardFieldView
 
 abstract class Field
 (

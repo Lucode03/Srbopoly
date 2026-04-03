@@ -1,12 +1,12 @@
-package com.example.srbopoly.ui.views
+package com.example.srbopoly.ui.popups.views
 
 import androidx.compose.foundation.layout.Column
 import androidx.compose.runtime.Composable
-import com.example.srbopoly.data.fields.JailField
+import com.example.srbopoly.data.fields.MovementField
 
 @Composable
-fun JailFieldView(
-    field: JailField
+fun MovementFieldView(
+    field: MovementField
 ) {
     Column {
         FieldView(field)

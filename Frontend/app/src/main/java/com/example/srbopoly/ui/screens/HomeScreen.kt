@@ -218,24 +218,25 @@ fun HomeScreen(modifier: Modifier = Modifier, onLogOut:()->Unit,
                         fontSize = 20.sp
                     )
                 }
-            }
-            Spacer(modifier = Modifier.height(30.dp))
-            Button(
-                onClick = { showJoinDialog = true },
-                shape = RoundedCornerShape(20.dp),
-                elevation = ButtonDefaults.buttonElevation(elevation),
-                colors = ButtonDefaults.buttonColors(
-                    containerColor = Color(0xFF001FE1),
-                    contentColor = Color.White
-                ),
-                modifier = Modifier
-                    .width(250.dp)
-                    .height(60.dp)
-            ) {
-                Text(
-                    text = "Pridruži se igri",
-                    fontSize = 20.sp
-                )
+
+                Spacer(modifier = Modifier.height(30.dp))
+                Button(
+                    onClick = { showJoinDialog = true },
+                    shape = RoundedCornerShape(20.dp),
+                    elevation = ButtonDefaults.buttonElevation(elevation),
+                    colors = ButtonDefaults.buttonColors(
+                        containerColor = Color(0xFF001FE1),
+                        contentColor = Color.White
+                    ),
+                    modifier = Modifier
+                        .width(250.dp)
+                        .height(60.dp)
+                ) {
+                    Text(
+                        text = "Pridruži se igri",
+                        fontSize = 20.sp
+                    )
+                }
             }
         }
         SnackbarHost(
