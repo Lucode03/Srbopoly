@@ -8,6 +8,7 @@ import androidx.compose.foundation.border
 import androidx.compose.foundation.clickable
 import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Box
+import androidx.compose.foundation.layout.BoxWithConstraints
 import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.Spacer
 import androidx.compose.foundation.layout.fillMaxSize
@@ -62,8 +63,7 @@ import com.example.srbopoly.viewmodels.MainScreenViewModel
 @Composable
 fun HomeScreen(modifier: Modifier = Modifier, onLogOut:()->Unit,
                user: User, onStartGame:(gameCode: String)->Unit, onJoinGame:(String)->Unit,
-               viewModel: MainScreenViewModel = hiltViewModel())
-{
+               viewModel: MainScreenViewModel = hiltViewModel()) {
 
     val gameCode by viewModel.gameCode.collectAsState()
     val joinedGameCode by viewModel.joinedGameCode.collectAsState()
@@ -91,12 +91,12 @@ fun HomeScreen(modifier: Modifier = Modifier, onLogOut:()->Unit,
 
     if (showLogOutDialog) {
         ExitDialog(
-            onDismiss = {showLogOutDialog=false},
+            onDismiss = { showLogOutDialog = false },
             onYes = {
-                showLogOutDialog=false
+                showLogOutDialog = false
                 onLogOut()
             },
-            onNo = {showLogOutDialog=false},
+            onNo = { showLogOutDialog = false },
             text = "Bićete odjavljeni sa uređaja!"
         )
     }
@@ -106,14 +106,20 @@ fun HomeScreen(modifier: Modifier = Modifier, onLogOut:()->Unit,
             viewModel.clearError()
         }
     }
-    Box(modifier = modifier.fillMaxSize())
-    {
+
+    BoxWithConstraints {
+        val maxHeight = this.maxHeight
+        val maxWidth = this.maxWidth
+
+        val spacerHeight = maxHeight / 20f
+
         Image(
             painter = painterResource(id = R.drawable.main_background),
             contentDescription = "Main background",
             modifier = Modifier.fillMaxSize(),
             contentScale = ContentScale.Crop
         )
+
         TopAppBar(
             title = {
                 Column()
@@ -146,7 +152,7 @@ fun HomeScreen(modifier: Modifier = Modifier, onLogOut:()->Unit,
         Column(
             modifier = Modifier
                 .fillMaxSize()
-                .padding(top = 80.dp),
+                .padding(top = 40.dp),
             horizontalAlignment = Alignment.CenterHorizontally,
             verticalArrangement = Arrangement.Center
         ) {
@@ -171,13 +177,12 @@ fun HomeScreen(modifier: Modifier = Modifier, onLogOut:()->Unit,
 
 
 
-            Spacer(modifier = Modifier.height(60.dp))
-
+            Spacer(modifier = Modifier.height(spacerHeight * 2f))
             Image(
                 painter = painterResource(id = R.drawable.game_logo),
                 contentDescription = "Game",
                 modifier = Modifier
-                    .size(300.dp)
+                    .size(maxWidth * 0.65f)
                     .shadow(
                         elevation = 40.dp,
                         shape = RoundedCornerShape(20.dp),
@@ -190,7 +195,7 @@ fun HomeScreen(modifier: Modifier = Modifier, onLogOut:()->Unit,
                     }
             )
 
-            Spacer(modifier = Modifier.height(30.dp))
+            Spacer(modifier = Modifier.height(spacerHeight))
 
             val elevation by animateDpAsState(
                 targetValue = 10.dp
@@ -201,7 +206,7 @@ fun HomeScreen(modifier: Modifier = Modifier, onLogOut:()->Unit,
             else {
                 Button(
                     onClick = {
-                        viewModel.createNewGame(user.id, user.username)
+                            viewModel.createNewGame(user.id, user.username)
                     },
                     shape = RoundedCornerShape(20.dp),
                     elevation = ButtonDefaults.buttonElevation(elevation),
@@ -219,7 +224,7 @@ fun HomeScreen(modifier: Modifier = Modifier, onLogOut:()->Unit,
                     )
                 }
 
-                Spacer(modifier = Modifier.height(30.dp))
+                Spacer(modifier = Modifier.height(spacerHeight))
                 Button(
                     onClick = { showJoinDialog = true },
                     shape = RoundedCornerShape(20.dp),
@@ -256,7 +261,6 @@ fun HomeScreen(modifier: Modifier = Modifier, onLogOut:()->Unit,
             )
         }
     }
-
 }
 
 @Preview
@@ -264,5 +268,6 @@ fun HomeScreen(modifier: Modifier = Modifier, onLogOut:()->Unit,
 fun HomeScreenPrev()
 {
     HomeScreen(modifier = Modifier, onLogOut={},
-    user=User(1,"Username",142), onStartGame={},{})
+    user=User(1,"Username",142), onStartGame={},{}
+    )
 }
