@@ -1,6 +1,7 @@
 package com.example.srbopoly.ui.screens
 
 import androidx.compose.foundation.Image
+import androidx.compose.foundation.background
 import androidx.compose.foundation.border
 import androidx.compose.foundation.clickable
 import androidx.compose.foundation.layout.Arrangement
@@ -16,6 +17,7 @@ import androidx.compose.foundation.layout.size
 import androidx.compose.foundation.layout.width
 import androidx.compose.foundation.rememberScrollState
 import androidx.compose.foundation.shape.RoundedCornerShape
+import androidx.compose.foundation.text.BasicTextField
 import androidx.compose.foundation.text.KeyboardOptions
 import androidx.compose.foundation.verticalScroll
 import androidx.compose.material.icons.Icons
@@ -24,7 +26,9 @@ import androidx.compose.material3.Button
 import androidx.compose.material3.ButtonDefaults
 import androidx.compose.material3.HorizontalDivider
 import androidx.compose.material3.Icon
+import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.OutlinedTextField
+import androidx.compose.material3.OutlinedTextFieldDefaults
 import androidx.compose.material3.RadioButton
 import androidx.compose.material3.Text
 import androidx.compose.runtime.Composable
@@ -56,7 +60,7 @@ import com.example.srbopoly.viewmodels.GameViewModel
 import com.example.srbopoly.viewmodels.LobbyViewModel
 
 @Composable
-fun SettingsScreen(navController: NavController,myId: Int=1, gameCode: String, lobbyViewModel: LobbyViewModel = hiltViewModel()) {
+fun SettingsScreen(navController: NavController,myId: Int, gameCode: String, lobbyViewModel: LobbyViewModel = hiltViewModel()) {
 
     val colors = listOf("Crvena", "Plava", "Zelena", "Žuta", "Narandžasta", "Bela")
 
@@ -102,7 +106,10 @@ fun SettingsScreen(navController: NavController,myId: Int=1, gameCode: String, l
     Column(
         modifier = Modifier
             .fillMaxSize()
-            .padding(16.dp)
+            .padding(
+                start = 16.dp,
+                end=16.dp,
+                bottom = 5.dp)
             .verticalScroll(scrollState)
     ) {
 
@@ -131,16 +138,20 @@ fun SettingsScreen(navController: NavController,myId: Int=1, gameCode: String, l
         )
         Spacer(modifier = Modifier.height(8.dp))
         HorizontalDivider(color=Color.Blue)
-        Spacer(modifier = Modifier.height(16.dp))
+        Spacer(modifier = Modifier.height(8.dp))
 
         Text(text="Boja figurice:",
-            fontSize = 16.sp)
+            fontSize = 20.sp)
+
+        Spacer(modifier = Modifier.height(8.dp))
+
         colors.forEachIndexed { index, colorName ->
             val isTaken = lobby?.players?.any { it.color == index && it.userId != myId } ?: false
 
             Row(
                 verticalAlignment = Alignment.CenterVertically,
                 modifier = Modifier.alpha(if (isTaken) 0.5f else 1f)
+                    .height(36.dp)
             ) {
                 RadioButton(
                     selected = myPlayer?.color == index,
@@ -156,30 +167,43 @@ fun SettingsScreen(navController: NavController,myId: Int=1, gameCode: String, l
             }
         }
 
-        Spacer(modifier = Modifier.height(16.dp))
+        Spacer(modifier = Modifier.height(8.dp))
 
         if (myPlayer != null) {
             if(isHost)
 
-                Row(verticalAlignment = Alignment.CenterVertically) {
-                    Text(text="Maksimalan broj poteza:",
+                Row(
+                    modifier = Modifier
+                        .fillMaxWidth(),
+                    verticalAlignment = Alignment.CenterVertically
+                ) {
+                    Text(
+                        text = "Maksimalan broj poteza",
+                        modifier = Modifier.weight(1f),
                         fontSize = 16.sp
                     )
-                    OutlinedTextField(
+
+                    BasicTextField(
                         value = maxMovesText,
-                        onValueChange = {input ->
+                        onValueChange = { input ->
                             if (input.all { it.isDigit() }) {
                                 maxMovesText = input
-
-                                val number = input.toIntOrNull()
-                                if (number != null) {
-                                    lobbyViewModel.setMaxMoves(number)
-                                }
                             }
                         },
                         keyboardOptions = KeyboardOptions(keyboardType = KeyboardType.Number),
-                        maxLines = 1,
-                        modifier = Modifier.padding(10.dp)
+                        singleLine = true,
+                        decorationBox = { innerTextField ->
+                            Box(
+                                modifier = Modifier
+                                    .background(
+                                        MaterialTheme.colorScheme.surfaceVariant,
+                                        RoundedCornerShape(10.dp)
+                                    )
+                                    .padding(horizontal = 14.dp, vertical = 10.dp)
+                            ) {
+                                innerTextField()
+                            }
+                        }
                     )
                 }
             else{
@@ -244,7 +268,7 @@ fun SettingsScreen(navController: NavController,myId: Int=1, gameCode: String, l
 
         Spacer(modifier = Modifier.height(8.dp))
         HorizontalDivider(color=Color.Blue)
-        Spacer(modifier = Modifier.height(16.dp))
+        Spacer(modifier = Modifier.height(8.dp))
         Box(modifier = Modifier.fillMaxWidth())
         {
             Button(
@@ -264,12 +288,14 @@ fun SettingsScreen(navController: NavController,myId: Int=1, gameCode: String, l
             }
         }
 
+        Spacer(modifier = Modifier.height(16.dp))
+
         lobby?.players?.forEach { player ->
             Row(verticalAlignment = Alignment.CenterVertically) {
 
                 Text(
                     text=player.username,
-                    color= if(myId==player.id) Color.Blue else Color.Black,
+                    color= if(myPlayer?.id==player.id) Color.Blue else MaterialTheme.colorScheme.secondary,
                     fontSize = 16.sp
                 )
 
@@ -312,6 +338,5 @@ fun SettingsScreen(navController: NavController,myId: Int=1, gameCode: String, l
 @Preview
 @Composable
 fun SettingsScreenPreview() {
-    val mainNavController = rememberNavController()
-    SettingsScreen(mainNavController, gameCode = "123456")
+
 }
