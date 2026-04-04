@@ -54,15 +54,20 @@ import com.example.srbopoly.data.getFigure
 import com.example.srbopoly.ui.dialogs.ExitDialog
 import com.example.srbopoly.viewmodels.GameViewModel
 import com.example.srbopoly.viewmodels.LobbyViewModel
+import androidx.compose.ui.focus.onFocusChanged
+import androidx.compose.ui.platform.LocalFocusManager
+import androidx.compose.foundation.gestures.detectTapGestures
+import androidx.compose.foundation.text.KeyboardActions
+import androidx.compose.ui.input.pointer.pointerInput
+import androidx.compose.ui.text.input.ImeAction
 
 @Composable
 fun SettingsScreen(navController: NavController,myId: Int=1, gameCode: String, lobbyViewModel: LobbyViewModel = hiltViewModel()) {
 
     val colors = listOf("Crvena", "Plava", "Zelena", "Žuta", "Narandžasta", "Bela")
 
-    var maxMovesText by remember { mutableStateOf(lobbyViewModel.maxMoves.value.toString()) }
+    var maxMovesText by remember { mutableStateOf(lobbyViewModel.maxMovesText.value.toString()) }
 
-    val maxMoves by lobbyViewModel.maxMoves.collectAsState()
     val lobby by lobbyViewModel.currentLobby.collectAsState()
     val dice1 by lobbyViewModel.dice1.collectAsState()
     val dice2 by lobbyViewModel.dice2.collectAsState()
@@ -72,6 +77,8 @@ fun SettingsScreen(navController: NavController,myId: Int=1, gameCode: String, l
 
     var showExitDialog by remember { mutableStateOf(false) }
     val scrollState = rememberScrollState()
+    val focusManager = LocalFocusManager.current
+    var isTextFieldFocused by remember { mutableStateOf(false) }
 
     LaunchedEffect(gameCode) {
         lobbyViewModel.initLobby(gameCode, myId)
@@ -82,6 +89,11 @@ fun SettingsScreen(navController: NavController,myId: Int=1, gameCode: String, l
         if (players.size >= 2 && players.all { it.isReady }) {
             navController.navigate("game") {
                 popUpTo("settings") { inclusive = true }
+            }
+        }
+        lobby?.let {
+            if (!isTextFieldFocused) {
+                maxMovesText = it.maxPlayCout.toString()
             }
         }
     }
@@ -104,6 +116,11 @@ fun SettingsScreen(navController: NavController,myId: Int=1, gameCode: String, l
             .fillMaxSize()
             .padding(16.dp)
             .verticalScroll(scrollState)
+            .pointerInput(Unit) {
+                detectTapGestures(onTap = {
+                    focusManager.clearFocus()
+                })
+            }
     ) {
 
         Box {
@@ -170,21 +187,28 @@ fun SettingsScreen(navController: NavController,myId: Int=1, gameCode: String, l
                         onValueChange = {input ->
                             if (input.all { it.isDigit() }) {
                                 maxMovesText = input
-
-                                val number = input.toIntOrNull()
+                                val number = maxMovesText.toIntOrNull()
                                 if (number != null) {
-                                    lobbyViewModel.setMaxMoves(number)
+                                    lobbyViewModel.setMaxMoves(gameCode, myId, number)
                                 }
                             }
                         },
-                        keyboardOptions = KeyboardOptions(keyboardType = KeyboardType.Number),
+                        keyboardOptions = KeyboardOptions(
+                            keyboardType = KeyboardType.Number,
+                            imeAction = ImeAction.Done),
+                        keyboardActions = KeyboardActions(
+                            onDone = {
+                                focusManager.clearFocus()
+                            }
+                        ),
                         maxLines = 1,
-                        modifier = Modifier.padding(10.dp)
+                        modifier = Modifier
+                            .padding(10.dp)
                     )
                 }
             else{
                 Row(verticalAlignment = Alignment.CenterVertically) {
-                    Text(text="Maksimalan broj poteza: $maxMovesText",
+                    Text(text="Maksimalan broj poteza: ${lobby?.maxPlayCout}",
                         fontSize = 16.sp
                     )
                 }
@@ -196,7 +220,7 @@ fun SettingsScreen(navController: NavController,myId: Int=1, gameCode: String, l
         myPlayer?.let { player ->
             Box(modifier = Modifier.fillMaxWidth()
                 .clickable (
-                    enabled = maxMoves >= 50 && myPlayer.rolledNumber==0,
+                    enabled = (lobby?.maxPlayCout ?: 50) >= 50 && myPlayer.rolledNumber==0,
                     onClick = { lobbyViewModel.rollDice(gameCode, myId) }
                 ),
                 contentAlignment = Alignment.Center

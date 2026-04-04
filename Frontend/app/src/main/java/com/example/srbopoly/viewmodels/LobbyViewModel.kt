@@ -1,5 +1,6 @@
 package com.example.srbopoly.viewmodels
 
+import android.util.Log
 import androidx.lifecycle.ViewModel
 import androidx.lifecycle.viewModelScope
 import com.example.srbopoly.data.Lobby
@@ -20,8 +21,9 @@ class LobbyViewModel @Inject constructor(
     private val _isLoading = MutableStateFlow(false)
     val isLoading = _isLoading.asStateFlow()
 
-    private val _maxMoves = MutableStateFlow(50)
-    val maxMoves = _maxMoves.asStateFlow()
+    private val _maxMovesText = MutableStateFlow(50)
+    val maxMovesText = _maxMovesText.asStateFlow()
+
 
     private val _dice1 = MutableStateFlow(0)
     val dice1 = _dice1.asStateFlow()
@@ -29,11 +31,16 @@ class LobbyViewModel @Inject constructor(
     private val _dice2 = MutableStateFlow(0)
     val dice2 = _dice2.asStateFlow()
 
-    fun setMaxMoves(moves: Int) {
-        _maxMoves.value = moves
+    fun setMaxMoves(accessCode: String, userId: Int, moves: Int) {
+        lobbyRepository.setMaxPlayCount(accessCode, userId, moves)
+    }
+
+    fun setMaxMovesText(moves: Int) {
+        _maxMovesText.value = moves
     }
 
     fun initLobby(accessCode: String, userId: Int) {
+        Log.d("LobbyViewModel", "Moj id-je $userId")
         lobbyRepository.connectToHub(accessCode, userId)
     }
 

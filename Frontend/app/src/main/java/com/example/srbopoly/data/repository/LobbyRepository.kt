@@ -104,6 +104,10 @@ class LobbyRepository @Inject constructor(
         hubConnection?.send("ChangeColor", accessCode, userId, colorInt)
     }
 
+    fun setMaxPlayCount(accessCode: String, userId: Int, maxPlayCount: Int) {
+        hubConnection?.send("SetMaxPlayCount", accessCode, userId, maxPlayCount)
+    }
+
     fun toggleReady(accessCode: String, userId: Int) {
         hubConnection?.send("ToggleReady", accessCode, userId)
     }
