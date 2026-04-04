@@ -4,6 +4,7 @@ import android.app.Activity
 import android.os.Build
 import androidx.activity.compose.BackHandler
 import androidx.annotation.RequiresApi
+import androidx.compose.foundation.layout.consumeWindowInsets
 import androidx.compose.foundation.layout.padding
 import androidx.compose.material3.Scaffold
 import androidx.compose.material3.SnackbarHost
@@ -82,6 +83,7 @@ fun MainScreen(modifier: Modifier = Modifier,
             navController = mainNavController,
             startDestination = NavItem.Home.route,
             modifier = modifier.padding( innerPadding)
+                .consumeWindowInsets(innerPadding)
         ) {
             composable(NavItem.Rankings.route) { user?.let { it1 -> RankingsScreen(user= it1) } }
             composable(NavItem.Home.route) {
@@ -101,7 +103,7 @@ fun MainScreen(modifier: Modifier = Modifier,
             composable(NavItem.GameList.route) { user?.let { it1 -> GameListScreen(user = it1) } }
             composable("settings/{gameCode}") { backStackEntry ->
                 val gameCode = backStackEntry.arguments?.getString("gameCode") ?: ""
-                user?.let { it
+                user?.let {
                     SettingsScreen(mainNavController, myId = it.id, gameCode = gameCode)
                 }
             }
