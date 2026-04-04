@@ -21,6 +21,7 @@ import androidx.compose.foundation.lazy.rememberLazyListState
 import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.material3.Text
 import androidx.compose.runtime.Composable
+import androidx.compose.runtime.collectAsState
 import androidx.compose.runtime.mutableStateListOf
 import androidx.compose.runtime.remember
 import androidx.compose.runtime.rememberCoroutineScope
@@ -34,75 +35,65 @@ import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.tooling.preview.Preview
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
+import androidx.hilt.navigation.compose.hiltViewModel
 import com.example.srbopoly.R
 import com.example.srbopoly.data.User
+import com.example.srbopoly.viewmodels.UserRankingsViewModel
 import kotlinx.coroutines.launch
+import androidx.compose.runtime.getValue
+import androidx.compose.runtime.LaunchedEffect
 
 @Composable
-fun RankingsScreen(modifier: Modifier = Modifier,user:User) {
-    val rankings = remember { mutableStateListOf(
-        User(5,"Petarx",50),
-        User(6,"Nikk",120),
-        User(7,"Illo",110),
-        User(8,"Jack",10),
-        User(15,"FullAR",1320),
-        User(10,"RL",1120),
-        User(5,"Petarx",50),
-        User(6,"Nikk",120),
-        User(7,"Illo",110),
-        User(8,"Jack",10),
-        User(15,"FullAR",1320),
-        User(10,"RL",1120),
-        User(5,"Petarx",50),
-        User(6,"Nikk",120),
-        User(7,"Illo",110),
-        User(8,"Jack",10),
-        User(15,"FullAR",1320),
-        User(10,"RL",1120),
-        User(5,"Petarx",50),
-        User(6,"Nikk",120),
-        User(7,"Illo",110),
-        User(8,"Jack",10),
-        User(15,"FullAR",1320),
-        User(10,"RL",1120)
-    ) }+user
+fun RankingsScreen(modifier: Modifier = Modifier,user:User, viewModel: UserRankingsViewModel = hiltViewModel()) {
+    val rankings by viewModel.users.collectAsState()
 
-    val sortedRankings = rankings.sortedByDescending { it.points }
+    val updatedUser = rankings.find { it.id == user.id }
+    val displayPoints = updatedUser?.points ?: user.points
+    val myIndexInCurrentList = rankings.indexOfFirst { it.id == user.id }
 
     val listState = rememberLazyListState()
     val coroutineScope = rememberCoroutineScope()
-    BoxWithConstraints()
-    {
-        val maxWidth=this.maxWidth
+
+    LaunchedEffect(Unit) {
+        if (rankings.isEmpty()) {
+            viewModel.loadNextUsers()
+        }
+    }
+
+    BoxWithConstraints {
+        val maxWidth = this.maxWidth
+
         Image(
             painter = painterResource(id = R.drawable.rankings_background),
             contentDescription = "Rankings background",
             modifier = Modifier.fillMaxSize(),
             contentScale = ContentScale.Crop
         )
+
         Column(
             modifier = Modifier
                 .fillMaxSize()
                 .padding(16.dp)
         ) {
-            val myIndex = sortedRankings.indexOfFirst { it.id == user.id }
-            val myBackgroundColor = when (myIndex) {
+            val myIndexInCurrentList = rankings.indexOfFirst { it.id == user.id }
+
+            val myBackgroundColor = when (myIndexInCurrentList) {
                 0 -> Color(0xFFFFD700)
                 1 -> Color(0xFFC0C0C0)
                 2 -> Color(0xFFCD7F32)
                 else -> Color(0xFF2196F3)
             }
+
             Box(
                 modifier = Modifier
                     .width(maxWidth)
                     .background(Color(0xFFE3E3E3), RoundedCornerShape(16.dp))
-                    .border(2.dp,Color.Black, RoundedCornerShape(16.dp))
+                    .border(2.dp, Color.Black, RoundedCornerShape(16.dp))
                     .clickable {
-                        coroutineScope.launch {
-                            listState.animateScrollToItem(
-                                index = myIndex,
-                                scrollOffset = -100
-                            )
+                        if (myIndexInCurrentList != -1) {
+                            coroutineScope.launch {
+                                listState.animateScrollToItem(index = myIndexInCurrentList, scrollOffset = -100)
+                            }
                         }
                     }
                     .padding(10.dp)
@@ -111,7 +102,6 @@ fun RankingsScreen(modifier: Modifier = Modifier,user:User) {
                     horizontalAlignment = Alignment.CenterHorizontally,
                     modifier = Modifier.fillMaxWidth()
                 ) {
-
                     Text(
                         text = user.username,
                         fontWeight = FontWeight.Bold,
@@ -122,7 +112,7 @@ fun RankingsScreen(modifier: Modifier = Modifier,user:User) {
                     Spacer(modifier = Modifier.height(8.dp))
 
                     Text(
-                        text = "#${myIndex+1}",
+                        text = if (myIndexInCurrentList != -1) "#${myIndexInCurrentList + 1}" else "#...",
                         fontSize = 30.sp,
                         fontWeight = FontWeight.Bold,
                         color = myBackgroundColor
@@ -131,7 +121,7 @@ fun RankingsScreen(modifier: Modifier = Modifier,user:User) {
                     Spacer(modifier = Modifier.height(8.dp))
 
                     Text(
-                        text = "\uD83C\uDFC5 ${user.points}",
+                        text = "\uD83C\uDFC5 $displayPoints",
                         fontSize = 20.sp,
                         fontWeight = FontWeight.Bold,
                         color = Color.Black
@@ -144,19 +134,25 @@ fun RankingsScreen(modifier: Modifier = Modifier,user:User) {
             LazyColumn(
                 state = listState,
                 modifier = modifier.fillMaxSize(),
-                verticalArrangement = Arrangement.Center,
                 horizontalAlignment = Alignment.CenterHorizontally
-            )
-            {
-                itemsIndexed(sortedRankings) { index, userRanked ->
+            ) {
+                itemsIndexed(rankings) { index, userRanked ->
+
+                    if (index >= rankings.size - 1) {
+                        LaunchedEffect(rankings.size) {
+                            viewModel.loadNextUsers()
+                        }
+                    }
+
                     val backgroundColor = when (index) {
                         0 -> Color(0xFFFFD700)
                         1 -> Color(0xFFC0C0C0)
                         2 -> Color(0xFFCD7F32)
                         else -> Color.White
                     }
+
                     Row(
-                        modifier = modifier
+                        modifier = Modifier
                             .width(maxWidth)
                             .padding(vertical = 4.dp)
                             .background(backgroundColor, shape = RoundedCornerShape(10.dp))
