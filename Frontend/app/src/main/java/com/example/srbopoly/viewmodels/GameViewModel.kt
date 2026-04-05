@@ -31,6 +31,9 @@ class GameViewModel @Inject constructor(
     private val _dice2 = MutableStateFlow(0)
     val dice2 = _dice2.asStateFlow()
 
+    val _diceResult = MutableStateFlow<Int?>(null)
+    val diceResult = _diceResult
+
     private val _players = mutableStateOf(
         listOf(
             Player(1,"Igrac 1",1000, 10,"Crvena"),
@@ -47,6 +50,10 @@ class GameViewModel @Inject constructor(
     private val _activeField = mutableStateOf<Field?>(null)
     val activeField: State<Field?> = _activeField
 
+    val _highlightedFields = MutableStateFlow<List<Int>>(emptyList())
+    val highlightedFields = _highlightedFields
+
+
     private fun rollDice():Int {
         val r1 = (1..6).random()
         val r2 = (1..6).random()
@@ -54,35 +61,54 @@ class GameViewModel @Inject constructor(
         _dice1.value = r1
         _dice2.value = r2
 
-        return dice1.value + dice2.value
+        return dice1.value+dice2.value
     }
-    fun getCurrentPlayerId():Int
+    fun getCurrentPlayer():Player
     {
         val currentIndex = gameState.value.currentPlayer
         val currentPlayer = _players.value[currentIndex]
 
-        return currentPlayer.id
+        return currentPlayer
     }
     fun movePlayer() {
         val steps = rollDice()
+        _diceResult.value = steps
 
-        val currentIndex = gameState.value.currentPlayer
-        val currentPlayer = _players.value[currentIndex]
+        //proveri da li svi igraci vide animaciju
+        viewModelScope.launch {
+            delay(2000)
 
-        val newPosition = (currentPlayer.Position + steps) % board.size
+            _diceResult.value = null
 
-        val updatedPlayer = currentPlayer.copy(
-            Position = newPosition
-        )
+            val currentIndex = gameState.value.currentPlayer
 
-        val updatedList = _players.value.toMutableList()
-        updatedList[currentIndex] = updatedPlayer
+            delay(800)
 
-        _players.value = updatedList
+            val path = mutableListOf<Int>()
+            repeat(steps) {
+                val currentPlayer = _players.value[currentIndex]
+                val nextPosition = (currentPlayer.Position + 1) % board.size
 
-        val field = board[newPosition]
+                path.add(nextPosition)
+                _highlightedFields.value = path.toList()
+                val updatedPlayer = currentPlayer.copy(
+                    Position = nextPosition
+                )
 
-        _activeField.value = field
+                val updatedList = _players.value.toMutableList()
+                updatedList[currentIndex] = updatedPlayer
+
+                _players.value = updatedList
+
+                delay(600)
+            }
+
+            _highlightedFields.value = emptyList()
+            delay(200)
+            val finalPlayer = _players.value[currentIndex]
+            val field = board[finalPlayer.Position]
+            _activeField.value = field
+        }
     }
     private fun nextMove(){
         _dice1.value = 0

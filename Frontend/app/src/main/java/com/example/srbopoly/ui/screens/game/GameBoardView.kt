@@ -1,8 +1,10 @@
 package com.example.srbopoly.ui.screens.game
 
+import androidx.compose.animation.animateColorAsState
 import androidx.compose.foundation.BorderStroke
 import androidx.compose.foundation.Canvas
 import androidx.compose.foundation.Image
+import androidx.compose.foundation.background
 import androidx.compose.foundation.border
 import androidx.compose.foundation.clickable
 import androidx.compose.foundation.layout.Arrangement
@@ -27,6 +29,7 @@ import androidx.compose.material3.HorizontalDivider
 import androidx.compose.material3.Icon
 import androidx.compose.material3.Text
 import androidx.compose.runtime.Composable
+import androidx.compose.runtime.LaunchedEffect
 import androidx.compose.runtime.collectAsState
 import androidx.compose.runtime.getValue
 import androidx.compose.runtime.mutableStateOf
@@ -54,6 +57,7 @@ import com.example.srbopoly.data.fields.getCenterRect
 import com.example.srbopoly.data.fields.getFieldOffset
 import com.example.srbopoly.data.fields.getFieldSize
 import com.example.srbopoly.data.fields.getRect
+import com.example.srbopoly.data.getColor
 import com.example.srbopoly.data.getFigure
 import com.example.srbopoly.draw_functions.drawImageOnCanvas
 import com.example.srbopoly.draw_functions.rotateImageBitmap
@@ -82,6 +86,8 @@ fun GameBoardView(myId:Int,viewModel: GameViewModel)
 
     val actionField by viewModel.activeField
 
+    val highlighted by viewModel.highlightedFields.collectAsState()
+
     if(showInfoDialog)
     {
         FieldInfoDialog(
@@ -89,12 +95,16 @@ fun GameBoardView(myId:Int,viewModel: GameViewModel)
                 selectedField=null
                 showInfoDialog=false
             },
-            selectedField!!
+            selectedField!!,
+            onResult = {
+                selectedField=null
+                showInfoDialog=false
+            }
         )
     }
     if(actionField != null)
     {
-        val isMyTurn= myId==viewModel.getCurrentPlayerId()
+        val isMyTurn= myId==viewModel.getCurrentPlayer().id
         selectedField=null
         showInfoDialog=false
 
@@ -109,9 +119,10 @@ fun GameBoardView(myId:Int,viewModel: GameViewModel)
                 viewModel.applyFieldAction(result)
                 viewModel.clearActiveField()
             },
-            isMyTurn = isMyTurn
+//            isMyTurn = isMyTurn
         )
     }
+
     Column {
         Spacer(modifier = Modifier.height((15.dp)))
 
@@ -127,7 +138,7 @@ fun GameBoardView(myId:Int,viewModel: GameViewModel)
                         Card(
                             modifier = Modifier
                                 .weight(1f)
-                                .height(100.dp),
+                                .height(140.dp),
                             colors = CardColors(
                                 containerColor = if (isCurrentPlayer) Color(0xff03a5fc) else Color(0xffd9dcde),
                                 contentColor = Color.Black,
@@ -214,8 +225,11 @@ fun GameBoardView(myId:Int,viewModel: GameViewModel)
                 .padding(top = 20.dp)
         ) {
             val maxWidth = maxWidth
+
             Box(modifier = Modifier.size(maxWidth)) {
                 board.forEach { field ->
+
+                    val isHighlighted = field.GameFieldID in highlighted
 
                     val (width, height) = getFieldSize(field.GameFieldID, maxWidth)
                     val hasRowFigures = (field.GameFieldID in 10..19 || field.GameFieldID in 30..39)
@@ -223,29 +237,37 @@ fun GameBoardView(myId:Int,viewModel: GameViewModel)
 
                     val playersOnField = playersByField[field.GameFieldID] ?: emptyList()
 
-                    val originalImage = ImageBitmap.imageResource(id = Field.getFieldImage(field.FieldType))
-                    val rotatedImage = when (field.GameFieldID) {
-                        in 1..9 -> rotateImageBitmap(originalImage, 180f)
-                        in 11..19 -> rotateImageBitmap(originalImage, -90f)
-                        in 31..39 -> rotateImageBitmap(originalImage, 90f)
-                        else -> originalImage
-                    }
+                    val color by animateColorAsState(
+                        if (isHighlighted) getColor(viewModel.getCurrentPlayer().Color) else Color.White
+                    )
                     Box(
                         modifier = Modifier
                             .offset(x = x, y = y)
                             .size(width, height)
+                            .background(color)
                             .clickable {
                                 selectedField=field
                                 showInfoDialog = true
                             }
                     ) {
 
-                        Image(
-                            modifier = Modifier.fillMaxSize(),
-                            bitmap = rotatedImage,
-                            contentDescription = "Polje ${field.GameFieldID}",
-                            contentScale = ContentScale.FillBounds
-                        )
+                        if(!isHighlighted)
+                        {
+                            val originalImage = ImageBitmap.imageResource(id = Field.getFieldImage(field.FieldType))
+
+                            val rotatedImage = when (field.GameFieldID) {
+                                in 1..9 -> rotateImageBitmap(originalImage, 180f)
+                                in 11..19 -> rotateImageBitmap(originalImage, -90f)
+                                in 31..39 -> rotateImageBitmap(originalImage, 90f)
+                                else -> originalImage
+                            }
+                            Image(
+                                modifier = Modifier.fillMaxSize(),
+                                bitmap = rotatedImage,
+                                contentDescription = "Polje ${field.GameFieldID}",
+                                contentScale = ContentScale.FillBounds
+                            )
+                        }
                         val figureSize=
                             if(playersOnField.size<3)
                                 max(width,height) / 3f

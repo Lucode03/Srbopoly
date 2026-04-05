@@ -3,6 +3,7 @@ package com.example.srbopoly.data
 import androidx.compose.runtime.getValue
 import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.setValue
+import androidx.compose.ui.graphics.Color
 import com.example.srbopoly.R
 import com.example.srbopoly.data.fields.PropertyField
 
@@ -50,5 +51,17 @@ fun getFigure(color: String): Int {
         "Narandžasta" -> R.drawable.figure_orange
         "Bela" -> R.drawable.figure_white
         else -> R.drawable.figure_white
+    }
+}
+
+fun getColor(color: String): Color {
+    return when (color) {
+        "Crvena" -> Color(0xFFD30000)
+        "Plava" -> Color(0xFF002ECC)
+        "Zelena" -> Color(0xFF00D301)
+        "Žuta" -> Color(0xFFE3B000)
+        "Narandžasta" -> Color(0xFFFF8400)
+        "Bela" -> Color(0xFFB4B4B4)
+        else -> Color.White
     }
 }

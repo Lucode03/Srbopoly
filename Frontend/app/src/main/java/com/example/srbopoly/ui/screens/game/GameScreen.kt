@@ -1,5 +1,6 @@
 package com.example.srbopoly.ui.screens.game
 
+import androidx.compose.foundation.background
 import androidx.compose.foundation.clickable
 import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Box
@@ -19,19 +20,23 @@ import androidx.compose.material.icons.filled.MoreVert
 import androidx.compose.material3.HorizontalDivider
 import androidx.compose.material3.Icon
 import androidx.compose.runtime.Composable
+import androidx.compose.runtime.collectAsState
 import androidx.compose.runtime.getValue
 import androidx.compose.runtime.mutableStateListOf
 import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.remember
 import androidx.compose.runtime.setValue
+import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.tooling.preview.Preview
 import androidx.compose.ui.unit.dp
+import androidx.compose.ui.zIndex
 import androidx.navigation.NavController
 import androidx.navigation.compose.rememberNavController
 import com.example.srbopoly.data.RewardCard
 import com.example.srbopoly.data.SurpriseCard
+import com.example.srbopoly.ui.animations.DiceResultAnimation
 import com.example.srbopoly.ui.dialogs.ExitDialog
 import com.example.srbopoly.viewmodels.GameViewModel
 
@@ -53,6 +58,9 @@ fun GameScreen(navController: NavController,viewModel: GameViewModel,myId: Int=1
     var linearBoard by remember { mutableStateOf(false)}
 
     var showQuitDialog by remember { mutableStateOf(false) }
+
+    val diceResult by viewModel.diceResult.collectAsState()
+
     if (showQuitDialog) {
         ExitDialog(
             onDismiss = {showQuitDialog=false},
@@ -65,6 +73,18 @@ fun GameScreen(navController: NavController,viewModel: GameViewModel,myId: Int=1
             onNo = {showQuitDialog=false},
             text = "Igra može biti nastavljena samo ukoliko svi ostali igrači ponovo uđu!"
         )
+    }
+    if (diceResult != null) {
+        Box(
+            modifier = Modifier
+                .fillMaxSize()
+                .background(Color.Black.copy(alpha = 0.6f))
+                .zIndex(10f)
+            ,
+            contentAlignment = Alignment.Center
+        ) {
+            DiceResultAnimation(diceResult!!)
+        }
     }
     Column(modifier = Modifier.fillMaxSize()) {
         Row(
