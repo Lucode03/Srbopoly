@@ -6,17 +6,15 @@ import androidx.compose.runtime.setValue
 import com.example.srbopoly.R
 import com.example.srbopoly.data.fields.PropertyField
 
-class Player(
+data class Player(
     var id:Int,
     var Username:String,
     var Balance :Int,
-    initialPosition:Int=0,
+    var Position:Int=0,
     var Color :String,
     var IsInJail:Boolean=false,
     var Properties:List<PropertyField> = emptyList()
 ){
-    var Position by mutableStateOf(initialPosition)
-
     fun Receive(amount:Int)
     {
         Balance += amount

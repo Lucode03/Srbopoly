@@ -41,6 +41,7 @@ import androidx.compose.ui.graphics.drawscope.Stroke
 import androidx.compose.ui.layout.ContentScale
 import androidx.compose.ui.res.imageResource
 import androidx.compose.ui.res.painterResource
+import androidx.compose.ui.text.style.TextAlign
 import androidx.compose.ui.tooling.preview.Preview
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.max
@@ -48,7 +49,6 @@ import androidx.compose.ui.unit.sp
 import androidx.navigation.compose.rememberNavController
 import com.example.srbopoly.R
 import com.example.srbopoly.classes.getDiceImage
-import com.example.srbopoly.data.Player
 import com.example.srbopoly.data.fields.Field
 import com.example.srbopoly.data.fields.getCenterRect
 import com.example.srbopoly.data.fields.getFieldOffset
@@ -61,7 +61,7 @@ import com.example.srbopoly.ui.dialogs.FieldInfoDialog
 import com.example.srbopoly.viewmodels.GameViewModel
 
 @Composable
-fun GameBoardView(myPlayer:Player,viewModel: GameViewModel)
+fun GameBoardView(myId:Int,viewModel: GameViewModel)
 {
     val board_center_image = ImageBitmap.imageResource(R.drawable.board_center)
 
@@ -75,17 +75,41 @@ fun GameBoardView(myPlayer:Player,viewModel: GameViewModel)
     val players by viewModel.players
     val playersByField = players.groupBy { it.Position }
 
-    var showDialog by remember { mutableStateOf(false) }
+    val myPlayer = players.find { it.id == myId }
+
+    var showInfoDialog by remember { mutableStateOf(false) }
     var selectedField by remember { mutableStateOf<Field?>(null) }
 
-    if(showDialog)
+    val actionField by viewModel.activeField
+
+    if(showInfoDialog)
     {
         FieldInfoDialog(
             onDismiss = {
                 selectedField=null
-                showDialog=false
+                showInfoDialog=false
             },
             selectedField!!
+        )
+    }
+    if(actionField != null)
+    {
+        val isMyTurn= myId==viewModel.getCurrentPlayerId()
+        selectedField=null
+        showInfoDialog=false
+
+        FieldInfoDialog(
+            onDismiss = {
+//                viewModel.applyFieldAction(false)
+//                viewModel.clearActiveField()
+            },
+            actionField!!,
+            action=true,
+            onResult = { result->
+                viewModel.applyFieldAction(result)
+                viewModel.clearActiveField()
+            },
+            isMyTurn = isMyTurn
         )
     }
     Column {
@@ -98,7 +122,7 @@ fun GameBoardView(myPlayer:Player,viewModel: GameViewModel)
                     horizontalArrangement = Arrangement.spacedBy(12.dp)
                 ) {
                     rowPlayers.forEach { player ->
-                        val isCurrentPlayer = player.id == gameState.currentPlayerId
+                        val isCurrentPlayer = player.id == players[gameState.currentPlayer].id
 
                         Card(
                             modifier = Modifier
@@ -123,7 +147,7 @@ fun GameBoardView(myPlayer:Player,viewModel: GameViewModel)
                                         horizontalArrangement = Arrangement.Center,
                                         modifier = Modifier.fillMaxWidth()
                                     ) {
-                                        if(myPlayer.id==player.id) {
+                                        if(myPlayer?.id==player.id) {
                                             Icon(
                                                 Icons.Default.Person,
                                                 contentDescription = "My player",
@@ -187,7 +211,7 @@ fun GameBoardView(myPlayer:Player,viewModel: GameViewModel)
         BoxWithConstraints(
             modifier = Modifier
                 .fillMaxWidth()
-                .padding(top = 40.dp)
+                .padding(top = 20.dp)
         ) {
             val maxWidth = maxWidth
             Box(modifier = Modifier.size(maxWidth)) {
@@ -212,7 +236,7 @@ fun GameBoardView(myPlayer:Player,viewModel: GameViewModel)
                             .size(width, height)
                             .clickable {
                                 selectedField=field
-                                showDialog = true
+                                showInfoDialog = true
                             }
                     ) {
 
@@ -318,8 +342,10 @@ fun GameBoardView(myPlayer:Player,viewModel: GameViewModel)
         {
             Row(
                 modifier = Modifier.clickable(
-                    enabled = myPlayer.id == gameState.currentPlayerId,
-                    onClick = { viewModel.rollDice(myPlayer.id) }
+//                    enabled = myPlayer?.id == players[gameState.currentPlayer].id,
+                    onClick = {
+                        viewModel.movePlayer()
+                    }
                 ),
                 horizontalArrangement = Arrangement.spacedBy(16.dp),
                 verticalAlignment = Alignment.CenterVertically
@@ -358,6 +384,6 @@ fun GameBoardView(myPlayer:Player,viewModel: GameViewModel)
 fun GffaPreview() {
     val mainNavController = rememberNavController()
     val viewModel = GameViewModel()
-    GameBoardView(viewModel.players.value[0], viewModel)
+    GameBoardView(viewModel.players.value[0].id, viewModel)
 
 }

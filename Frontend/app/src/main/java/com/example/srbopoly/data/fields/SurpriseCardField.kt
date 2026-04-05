@@ -10,7 +10,7 @@ class SurpriseCardField(
 
     override fun Action(player: Player,game: Game?)
     {
-        val card=game!!.DrawSurpriseCard()
-        card.Apply(player)
+//        val card=game!!.DrawSurpriseCard()
+//        card.Apply(player)
     }
 }

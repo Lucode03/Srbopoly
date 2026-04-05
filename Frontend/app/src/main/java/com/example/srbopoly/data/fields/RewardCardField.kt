@@ -10,7 +10,7 @@ class RewardCardField(
 
     override fun Action(player: Player, game: Game?)
     {
-        val card=game!!.DrawRewardsCard()
-        card.Apply(player)
+//        val card=game!!.DrawRewardsCard()
+//        card.Apply(player)
     }
 }

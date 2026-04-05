@@ -5,6 +5,7 @@ import android.os.Build
 import androidx.activity.compose.BackHandler
 import androidx.annotation.RequiresApi
 import androidx.compose.foundation.layout.consumeWindowInsets
+import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.foundation.layout.padding
 import androidx.compose.material3.Scaffold
 import androidx.compose.material3.SnackbarHost
@@ -20,6 +21,7 @@ import androidx.lifecycle.compose.collectAsStateWithLifecycle
 import androidx.navigation.NavController
 import androidx.navigation.compose.NavHost
 import androidx.navigation.compose.composable
+import androidx.navigation.compose.currentBackStackEntryAsState
 import androidx.navigation.compose.rememberNavController
 import com.example.srbopoly.ui.NavItem
 import com.example.srbopoly.ui.BottomNavigationBar
@@ -45,6 +47,8 @@ fun MainScreen(modifier: Modifier = Modifier,
     val user by authViewModel.user.collectAsStateWithLifecycle()
     val error by authViewModel.error.collectAsStateWithLifecycle()
 
+    val navBackStackEntry by mainNavController.currentBackStackEntryAsState()
+    val currentRoute = navBackStackEntry?.destination?.route
 
     val snackbarHostState = remember { SnackbarHostState() }
 
@@ -71,21 +75,29 @@ fun MainScreen(modifier: Modifier = Modifier,
             activity?.finish()
         }
     }
+
+    val isGameScreen = currentRoute == "game"
+
     Scaffold(
         snackbarHost = { SnackbarHost(snackbarHostState) },
         bottomBar = {
-            BottomNavigationBar(mainNavController)
+            if (!isGameScreen) {
+                BottomNavigationBar(mainNavController)
+            }
         }
     )
     { innerPadding ->
-        val gameViewModel: GameViewModel = hiltViewModel()
         NavHost(
             navController = mainNavController,
             startDestination = NavItem.Home.route,
-            modifier = modifier.padding( innerPadding)
-                .consumeWindowInsets(innerPadding)
+            modifier = Modifier.then(
+                if (isGameScreen) Modifier.fillMaxSize()
+                else Modifier
+                    .padding(innerPadding)
+                    .consumeWindowInsets(innerPadding)
+            )
         ) {
-            composable(NavItem.Rankings.route) { user?.let { it1 -> RankingsScreen(user= it1) } }
+            composable(NavItem.Rankings.route) { user?.let { it1 -> RankingsScreen(user = it1) } }
             composable(NavItem.Home.route) {
                 user?.let { it1 ->
                     HomeScreen(
@@ -107,10 +119,11 @@ fun MainScreen(modifier: Modifier = Modifier,
                     SettingsScreen(mainNavController, myId = it.id, gameCode = gameCode)
                 }
             }
-
             composable("game") {
-                GameScreen(mainNavController,gameViewModel)
+                val gameViewModel: GameViewModel = hiltViewModel()
+                GameScreen(mainNavController, gameViewModel)
             }
         }
     }
+
 }

@@ -9,6 +9,6 @@ class MovementField(
 ):Field(Name,FieldType) {
     override fun Action(player: Player,game: Game?)
     {
-        player.Position=20
+        player.GoToJail()
     }
 }

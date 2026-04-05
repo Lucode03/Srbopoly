@@ -2,6 +2,6 @@ package com.example.srbopoly.classes
 
 data class GameState(
     val maxMoves: Int,
-    val currentPlayerId: Int?,
-    val currentMove:Int=0
+    var currentPlayer: Int=0,
+    var currentMove:Int=1
 )

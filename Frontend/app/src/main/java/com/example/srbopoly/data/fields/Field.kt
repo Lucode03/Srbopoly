@@ -1,9 +1,19 @@
 package com.example.srbopoly.data.fields
 
+import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.runtime.Composable
+import androidx.compose.ui.Modifier
 import com.example.srbopoly.R
 import com.example.srbopoly.data.Game
 import com.example.srbopoly.data.Player
+import com.example.srbopoly.ui.popups.actions.BonusFieldAction
+import com.example.srbopoly.ui.popups.actions.JailFieldAction
+import com.example.srbopoly.ui.popups.actions.MovementFieldAction
+import com.example.srbopoly.ui.popups.actions.NationalParkFieldAction
+import com.example.srbopoly.ui.popups.actions.PaymentFieldAction
+import com.example.srbopoly.ui.popups.actions.PropertyFieldAction
+import com.example.srbopoly.ui.popups.actions.RewardCardFieldAction
+import com.example.srbopoly.ui.popups.actions.SurpriseCardFieldAction
 import com.example.srbopoly.ui.popups.views.BonusFieldView
 import com.example.srbopoly.ui.popups.views.JailFieldView
 import com.example.srbopoly.ui.popups.views.MovementFieldView
@@ -20,7 +30,7 @@ abstract class Field
     var GameFieldID: Int = 0
     )
 {
-    abstract fun Action(player: Player,game: Game?)
+    abstract fun Action(player: Player,game: Game?=null)
 
     companion object{
         fun getFieldImage(fieldType:FieldType):Int {
@@ -77,6 +87,26 @@ fun FieldInfo(field: Field) {
         is PropertyField -> PropertyFieldView(field)
         is RewardCardField -> RewardCardFieldView(field)
         is SurpriseCardField -> SurpriseCardFieldView(field)
+    }
+}
+@Composable
+fun FieldAction(field: Field,
+                action:Boolean,
+                isMyTurn:Boolean,
+                modifier: Modifier = Modifier,
+                onResult: (Boolean) -> Unit)
+{
+    val fullWidthModifier = modifier.fillMaxWidth()
+
+    when (field) {
+        is BonusField -> BonusFieldAction(field,action,onResult,fullWidthModifier,isMyTurn)
+        is JailField -> JailFieldAction(field,action,onResult,fullWidthModifier,isMyTurn)
+        is MovementField -> MovementFieldAction(field,action,onResult,fullWidthModifier,isMyTurn)
+        is NationalParkField -> NationalParkFieldAction(field,action,onResult,fullWidthModifier,isMyTurn)
+        is PaymentField -> PaymentFieldAction(field,action,onResult,fullWidthModifier,isMyTurn)
+        is PropertyField -> PropertyFieldAction(field,action,onResult,fullWidthModifier,isMyTurn)
+        is RewardCardField -> RewardCardFieldAction(field,action,onResult,fullWidthModifier,isMyTurn)
+        is SurpriseCardField -> SurpriseCardFieldAction(field,action,onResult,fullWidthModifier,isMyTurn)
     }
 }
 

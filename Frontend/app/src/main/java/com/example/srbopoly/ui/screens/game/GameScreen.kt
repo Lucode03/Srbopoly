@@ -50,7 +50,7 @@ fun GameScreen(navController: NavController,viewModel: GameViewModel,myId: Int=1
 //        surpriseCardsDeck.addAll(createSurpriseCards())
 //    }
 
-    var linearBoard by remember { mutableStateOf(true)}
+    var linearBoard by remember { mutableStateOf(false)}
 
     var showQuitDialog by remember { mutableStateOf(false) }
     if (showQuitDialog) {
@@ -85,6 +85,7 @@ fun GameScreen(navController: NavController,viewModel: GameViewModel,myId: Int=1
                 Icons.Default.Edit,
                 contentDescription = "Pomeraj",
                 modifier = Modifier.size(40.dp).clickable {
+
                     myPlayer?.Move(1)
                 },
                 Color.Black
@@ -108,7 +109,7 @@ fun GameScreen(navController: NavController,viewModel: GameViewModel,myId: Int=1
                 GameLinearView(myId, viewModel, myPlayer!!.Position)
 
             } else {
-                GameBoardView(myPlayer!!,viewModel)
+                GameBoardView(myId,viewModel)
             }
         }
     }
@@ -118,5 +119,5 @@ fun GameScreen(navController: NavController,viewModel: GameViewModel,myId: Int=1
 @Composable
 fun GmPreview() {
     val mainNavController = rememberNavController()
-    GameScreen(mainNavController, viewModel = GameViewModel())
+    GameScreen(mainNavController, viewModel = GameViewModel(),10)
 }

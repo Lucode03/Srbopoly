@@ -14,13 +14,19 @@ class PropertyField(
 ):Field(Name,FieldType) {
     override fun Action(player: Player,game: Game?)
     {
-
-    }
-    fun Buy(player: Player)
-    {
-        if (Owner == null)
-            Owner = player;
-        player.Pay(Price);
+        if(Owner==null)
+        {
+            player.Pay(Price)
+            Owner=player
+        }
+        else
+        {
+            if(player.id==Owner!!.id)
+                return
+            val rent=CalculateRent()
+            player.Pay(rent)
+            Owner!!.Receive(rent)
+        }
     }
     fun CalculateRent():Int
     {
@@ -28,23 +34,43 @@ class PropertyField(
             return 0
         var rent:Int=BaseRent;
         rent+=Houses*30
-        rent+=Hotels*50
+        rent+=Hotels*65
         return rent;
     }
     fun BuildHouse():Boolean
     {
-        if(Houses>3)
+        if(Owner==null)
             return false
+        if(Houses==3)
+            return false
+
+        val price=GetHousePrice()
+        Owner!!.Pay(price)
         Houses+=1
-        return false;
+
+        return true;
+    }
+    fun GetHousePrice():Int
+    {
+        return (100+BaseRent/10).toInt()
     }
     fun BuildHotel():Boolean
     {
+        if(Owner==null)
+            return false
+
         if(Houses<3)
             return false
-        if(Hotels>2)
+        if(Hotels==2)
             return false
+
+        val price=GetHotelPrice()
+        Owner!!.Pay(price)
         Hotels+=1
-        return false;
+        return true;
+    }
+    fun GetHotelPrice():Int
+    {
+        return (150+BaseRent/8).toInt()
     }
 }
