@@ -16,6 +16,7 @@ import androidx.compose.foundation.layout.Spacer
 import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.height
+import androidx.compose.foundation.layout.heightIn
 import androidx.compose.foundation.layout.offset
 import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.layout.size
@@ -23,13 +24,15 @@ import androidx.compose.foundation.layout.width
 import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.filled.Person
+import androidx.compose.material3.Button
+import androidx.compose.material3.ButtonDefaults
 import androidx.compose.material3.Card
 import androidx.compose.material3.CardColors
 import androidx.compose.material3.HorizontalDivider
 import androidx.compose.material3.Icon
+import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.Text
 import androidx.compose.runtime.Composable
-import androidx.compose.runtime.LaunchedEffect
 import androidx.compose.runtime.collectAsState
 import androidx.compose.runtime.getValue
 import androidx.compose.runtime.mutableStateOf
@@ -44,7 +47,7 @@ import androidx.compose.ui.graphics.drawscope.Stroke
 import androidx.compose.ui.layout.ContentScale
 import androidx.compose.ui.res.imageResource
 import androidx.compose.ui.res.painterResource
-import androidx.compose.ui.text.style.TextAlign
+import androidx.compose.ui.text.style.TextOverflow
 import androidx.compose.ui.tooling.preview.Preview
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.max
@@ -53,6 +56,7 @@ import androidx.navigation.compose.rememberNavController
 import com.example.srbopoly.R
 import com.example.srbopoly.classes.getDiceImage
 import com.example.srbopoly.data.fields.Field
+import com.example.srbopoly.data.fields.PropertyField
 import com.example.srbopoly.data.fields.getCenterRect
 import com.example.srbopoly.data.fields.getFieldOffset
 import com.example.srbopoly.data.fields.getFieldSize
@@ -60,12 +64,13 @@ import com.example.srbopoly.data.fields.getRect
 import com.example.srbopoly.data.getColor
 import com.example.srbopoly.data.getFigure
 import com.example.srbopoly.draw_functions.drawImageOnCanvas
+import com.example.srbopoly.draw_functions.limit
 import com.example.srbopoly.draw_functions.rotateImageBitmap
 import com.example.srbopoly.ui.dialogs.FieldInfoDialog
 import com.example.srbopoly.viewmodels.GameViewModel
 
 @Composable
-fun GameBoardView(myId:Int,viewModel: GameViewModel)
+fun GameBoardView(myId:Int,viewModel: GameViewModel,showPlayerDetails:Boolean=true)
 {
     val board_center_image = ImageBitmap.imageResource(R.drawable.board_center)
 
@@ -88,6 +93,8 @@ fun GameBoardView(myId:Int,viewModel: GameViewModel)
 
     val highlighted by viewModel.highlightedFields.collectAsState()
 
+    var selectedPlayerToShowFields by remember { mutableStateOf<Int?>(null) }
+    var showPlayerFields by remember { mutableStateOf(false) }
     if(showInfoDialog)
     {
         FieldInfoDialog(
@@ -135,10 +142,11 @@ fun GameBoardView(myId:Int,viewModel: GameViewModel)
                     rowPlayers.forEach { player ->
                         val isCurrentPlayer = player.id == players[gameState.currentPlayer].id
 
+                        val cardHeight=if(showPlayerDetails) 120.dp else 40.dp
                         Card(
                             modifier = Modifier
                                 .weight(1f)
-                                .height(140.dp),
+                                .height(cardHeight),
                             colors = CardColors(
                                 containerColor = if (isCurrentPlayer) Color(0xff03a5fc) else Color(0xffd9dcde),
                                 contentColor = Color.Black,
@@ -189,23 +197,76 @@ fun GameBoardView(myId:Int,viewModel: GameViewModel)
                                             .align(Alignment.CenterEnd)
                                     )
                                 }
+                                if(showPlayerDetails) {
 
-                                Spacer(modifier = Modifier.height((2.dp)))
-                                HorizontalDivider(thickness = 1.dp, color = Color.Black, modifier = Modifier.fillMaxWidth())
 
-                                Spacer(modifier = Modifier.width(8.dp))
-
-                                Column {
-                                    Text(
-                                        text = "Balans: ${player.Balance} \uD83D\uDCB5",
-                                        fontSize = 16.sp,
-                                        color = Color.Black
+                                    Spacer(modifier = Modifier.height((2.dp)))
+                                    HorizontalDivider(
+                                        thickness = 1.dp,
+                                        color = Color.Black,
+                                        modifier = Modifier.fillMaxWidth()
                                     )
-                                    Text(
-                                        text = "Polje: "+ board[player.Position].Name+" (${player.Position})",
-                                        fontSize = 16.sp,
-                                        color = Color.Black
-                                    )
+
+                                    Spacer(modifier = Modifier.width(8.dp))
+
+                                    Column(
+                                        modifier = Modifier.weight(1f)
+                                            .fillMaxSize(),
+                                        verticalArrangement = Arrangement.spacedBy(4.dp)
+                                    ) {
+
+                                        Text(
+                                            text = "${player.Balance} \uD83D\uDCB5",
+                                            fontSize = 16.sp,
+                                            color = Color.Black,
+                                            maxLines = 2,
+                                            overflow = TextOverflow.Ellipsis
+                                        )
+                                        Row {
+                                            Text(
+                                                text = board[player.Position].Name.limit(14),
+                                                maxLines = 1,
+                                                overflow = TextOverflow.Ellipsis,
+                                                fontSize = 16.sp,
+                                                color = Color.Black
+                                            )
+                                            Text(
+                                                text = " (${player.Position})",
+                                                fontSize = 14.sp,
+                                                color = Color.Gray
+                                            )
+                                        }
+                                        Spacer(modifier = Modifier.weight(1f))
+                                        val buttonSelected=showPlayerFields && selectedPlayerToShowFields == player.id
+                                        Button(
+                                            onClick = {
+                                                if (showPlayerFields && selectedPlayerToShowFields != player.id) {
+                                                    selectedPlayerToShowFields = player.id
+                                                } else {
+                                                    if (selectedPlayerToShowFields == null)
+                                                        selectedPlayerToShowFields = player.id
+                                                    else
+                                                        selectedPlayerToShowFields = null
+                                                    showPlayerFields = !showPlayerFields
+
+                                                }
+                                            },
+                                            modifier = Modifier.height(36.dp)
+                                                .align(Alignment.CenterHorizontally),
+                                            colors = ButtonDefaults.buttonColors(
+                                                containerColor = if (buttonSelected) MaterialTheme.colorScheme.primary else MaterialTheme.colorScheme.primary,
+                                                contentColor = Color.White
+                                            ),
+                                            elevation = ButtonDefaults.elevatedButtonElevation(4.dp)
+                                        )
+                                        {
+                                            Text(
+                                                text = if (buttonSelected) "Sakrij posede" else "Prikaži posede",
+                                                fontSize = 14.sp,
+                                                color = Color.Black
+                                            )
+                                        }
+                                    }
                                 }
                             }
                         }
@@ -237,18 +298,28 @@ fun GameBoardView(myId:Int,viewModel: GameViewModel)
 
                     val playersOnField = playersByField[field.GameFieldID] ?: emptyList()
 
-                    val color by animateColorAsState(
+                    val fieldFillColor by animateColorAsState(
                         if (isHighlighted) getColor(viewModel.getCurrentPlayer().Color) else Color.White
+                    )
+
+                    val isOwnedBySelectedPlayer = (field is PropertyField && field.Owner?.id == selectedPlayerToShowFields)
+
+                    val fieldBorderColor by animateColorAsState(
+                        if (showPlayerFields && isOwnedBySelectedPlayer) Color.Blue else Color.Black
                     )
                     Box(
                         modifier = Modifier
                             .offset(x = x, y = y)
                             .size(width, height)
-                            .background(color)
+                            .background(fieldFillColor)
                             .clickable {
                                 selectedField=field
                                 showInfoDialog = true
                             }
+                            .border(
+                                width = if (showPlayerFields && isOwnedBySelectedPlayer) 3.dp else 1.dp,
+                                color = fieldBorderColor
+                            )
                     ) {
 
                         if(!isHighlighted)
@@ -343,17 +414,17 @@ fun GameBoardView(myId:Int,viewModel: GameViewModel)
                         size = centerRect.size,
                         style = Stroke(width = 2.dp.toPx())
                     )
-                    for (field in board) {
-                        val rect = getRect(field.GameFieldID, size)
-                        val isMyField = field.GameFieldID == myPlayer?.Position
-
-                        drawRect(
-                            color = if (isMyField) Color.Red else Color.Black,
-                            topLeft = rect.topLeft,
-                            size = rect.size,
-                            style = Stroke(width = if (isMyField) 4f else 2f)
-                        )
-                    }
+//                    for (field in board) {
+//                        val rect = getRect(field.GameFieldID, size)
+//                        val isMyField = field.GameFieldID == myPlayer?.Position
+//
+//                        drawRect(
+//                            color = if (isMyField) Color.Red else Color.Black,
+//                            topLeft = rect.topLeft,
+//                            size = rect.size,
+//                            style = Stroke(width = if (isMyField) 4f else 2f)
+//                        )
+//                    }
                 }
             }
         }

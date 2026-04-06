@@ -48,3 +48,7 @@ fun DrawScope.drawImageOnCanvas(
         )
     }
 }
+
+fun String.limit(n: Int): String {
+    return if (length > n) take(n) + "..." else this
+}

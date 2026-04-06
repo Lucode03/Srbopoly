@@ -17,6 +17,7 @@ import androidx.compose.material.icons.automirrored.filled.KeyboardArrowLeft
 import androidx.compose.material.icons.filled.Edit
 import androidx.compose.material.icons.filled.Menu
 import androidx.compose.material.icons.filled.MoreVert
+import androidx.compose.material.icons.filled.Person
 import androidx.compose.material3.HorizontalDivider
 import androidx.compose.material3.Icon
 import androidx.compose.runtime.Composable
@@ -61,6 +62,7 @@ fun GameScreen(navController: NavController,viewModel: GameViewModel,myId: Int=1
 
     val diceResult by viewModel.diceResult.collectAsState()
 
+    var showPlayerDetails by remember { mutableStateOf(false) }
     if (showQuitDialog) {
         ExitDialog(
             onDismiss = {showQuitDialog=false},
@@ -102,11 +104,10 @@ fun GameScreen(navController: NavController,viewModel: GameViewModel,myId: Int=1
                 Color.Black
             )
             Icon(
-                Icons.Default.Edit,
-                contentDescription = "Pomeraj",
+                Icons.Default.Person,
+                contentDescription = "Igraci",
                 modifier = Modifier.size(40.dp).clickable {
-
-                    myPlayer?.Move(1)
+                    showPlayerDetails=!showPlayerDetails
                 },
                 Color.Black
             )
@@ -129,7 +130,7 @@ fun GameScreen(navController: NavController,viewModel: GameViewModel,myId: Int=1
                 GameLinearView(myId, viewModel, myPlayer!!.Position)
 
             } else {
-                GameBoardView(myId,viewModel)
+                GameBoardView(myId,viewModel,showPlayerDetails)
             }
         }
     }
