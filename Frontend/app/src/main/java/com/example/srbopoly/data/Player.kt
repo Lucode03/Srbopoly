@@ -28,7 +28,10 @@ data class Player(
 
     fun Move(amount:Int)
     {
-        Position = (Position + amount) % 40
+        val newPosition=Position+amount
+        if(newPosition>40)
+            Receive(5000)
+        Position = newPosition % 40
     }
 
     fun SetPosition(amount:Int)

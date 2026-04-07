@@ -142,7 +142,7 @@ fun GameBoardView(myId:Int,viewModel: GameViewModel,showPlayerDetails:Boolean=tr
                     rowPlayers.forEach { player ->
                         val isCurrentPlayer = player.id == players[gameState.currentPlayer].id
 
-                        val cardHeight=if(showPlayerDetails) 120.dp else 40.dp
+                        val cardHeight=if(showPlayerDetails) 140.dp else 40.dp
                         Card(
                             modifier = Modifier
                                 .weight(1f)

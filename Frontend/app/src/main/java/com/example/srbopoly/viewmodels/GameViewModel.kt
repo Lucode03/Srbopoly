@@ -80,33 +80,28 @@ class GameViewModel @Inject constructor(
 
             _diceResult.value = null
 
-            val currentIndex = gameState.value.currentPlayer
+            val currentPlayer = getCurrentPlayer()
 
             delay(800)
 
             val path = mutableListOf<Int>()
+            var currentPosition = currentPlayer.Position
+
             repeat(steps) {
-                val currentPlayer = _players.value[currentIndex]
-                val nextPosition = (currentPlayer.Position + 1) % board.size
+                currentPosition = (currentPosition + 1) % board.size
 
-                path.add(nextPosition)
+                path.add(currentPosition)
                 _highlightedFields.value = path.toList()
-                val updatedPlayer = currentPlayer.copy(
-                    Position = nextPosition
-                )
-
-                val updatedList = _players.value.toMutableList()
-                updatedList[currentIndex] = updatedPlayer
-
-                _players.value = updatedList
 
                 delay(600)
             }
 
+            currentPlayer.Move(steps)
+
             _highlightedFields.value = emptyList()
             delay(200)
-            val finalPlayer = _players.value[currentIndex]
-            val field = board[finalPlayer.Position]
+
+            val field = board[currentPlayer.Position]
             _activeField.value = field
         }
     }
@@ -122,8 +117,7 @@ class GameViewModel @Inject constructor(
     {
         if(!apply && _activeField.value is PropertyField)
             return
-        val currentIndex = gameState.value.currentPlayer
-        val currentPlayer = _players.value[currentIndex]
+        val currentPlayer = getCurrentPlayer()
 
         _activeField.value!!.Action(currentPlayer)
     }
