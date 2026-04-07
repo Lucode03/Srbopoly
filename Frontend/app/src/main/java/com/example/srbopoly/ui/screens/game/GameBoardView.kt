@@ -13,6 +13,7 @@ import androidx.compose.foundation.layout.BoxWithConstraints
 import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.Row
 import androidx.compose.foundation.layout.Spacer
+import androidx.compose.foundation.layout.fillMaxHeight
 import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.height
@@ -21,7 +22,9 @@ import androidx.compose.foundation.layout.offset
 import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.layout.size
 import androidx.compose.foundation.layout.width
+import androidx.compose.foundation.rememberScrollState
 import androidx.compose.foundation.shape.RoundedCornerShape
+import androidx.compose.foundation.verticalScroll
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.filled.Person
 import androidx.compose.material3.Button
@@ -60,12 +63,12 @@ import com.example.srbopoly.data.fields.PropertyField
 import com.example.srbopoly.data.fields.getCenterRect
 import com.example.srbopoly.data.fields.getFieldOffset
 import com.example.srbopoly.data.fields.getFieldSize
-import com.example.srbopoly.data.fields.getRect
 import com.example.srbopoly.data.getColor
 import com.example.srbopoly.data.getFigure
 import com.example.srbopoly.draw_functions.drawImageOnCanvas
 import com.example.srbopoly.draw_functions.limit
 import com.example.srbopoly.draw_functions.rotateImageBitmap
+import com.example.srbopoly.enums.TurnPhase
 import com.example.srbopoly.ui.dialogs.FieldInfoDialog
 import com.example.srbopoly.viewmodels.GameViewModel
 
@@ -129,8 +132,13 @@ fun GameBoardView(myId:Int,viewModel: GameViewModel,showPlayerDetails:Boolean=tr
 //            isMyTurn = isMyTurn
         )
     }
+    val scrollState = rememberScrollState()
 
-    Column {
+    Column(modifier = Modifier
+        .fillMaxSize()
+        .verticalScroll(scrollState)
+    ) {
+
         Spacer(modifier = Modifier.height((15.dp)))
 
         Column {
@@ -141,130 +149,146 @@ fun GameBoardView(myId:Int,viewModel: GameViewModel,showPlayerDetails:Boolean=tr
                 ) {
                     rowPlayers.forEach { player ->
                         val isCurrentPlayer = player.id == players[gameState.currentPlayer].id
+                        val cardHeight=if(showPlayerDetails) 120.dp else 40.dp
 
-                        val cardHeight=if(showPlayerDetails) 140.dp else 40.dp
-                        Card(
+                        BoxWithConstraints(
                             modifier = Modifier
                                 .weight(1f)
-                                .height(cardHeight),
-                            colors = CardColors(
-                                containerColor = if (isCurrentPlayer) Color(0xff03a5fc) else Color(0xffd9dcde),
-                                contentColor = Color.Black,
-                                disabledContainerColor = Color.Gray,
-                                disabledContentColor = Color.Black
-                            ),
-                            border = if (isCurrentPlayer) BorderStroke(width = 2.dp,Color.Blue) else BorderStroke(width = 2.dp,Color.Black)                    )
-                        {
-                            Column(
-                                modifier = Modifier.padding(8.dp)
-                                    .fillMaxSize(),
-                            ) {
-                                Box(modifier = Modifier.fillMaxWidth())
-                                {
-                                    Row(
-                                        verticalAlignment = Alignment.CenterVertically,
-                                        horizontalArrangement = Arrangement.Center,
-                                        modifier = Modifier.fillMaxWidth()
-                                    ) {
-                                        if(myPlayer?.id==player.id) {
-                                            Icon(
-                                                Icons.Default.Person,
-                                                contentDescription = "My player",
-                                                modifier = Modifier.size(20.dp),
-                                                tint = Color.Blue
-                                            )
-                                            Spacer(modifier = Modifier.width(6.dp))
-                                            Text(
-                                                text = "Ja",
-                                                fontSize = 16.sp,
-                                                color = Color.Blue
-                                            )
+                        ) {
+                            val titleSize = (maxWidth.value * 0.09f).sp
+                            val smallSize = (maxWidth.value * 0.08f).sp
+                            val iconSize = maxWidth * 0.12f
+                            val spacerHeight = (maxWidth.value * 0.02f).dp
+                            Card(
+
+                                colors = CardColors(
+                                    containerColor = if (isCurrentPlayer) Color(0xff03a5fc) else Color(
+                                        0xffd9dcde
+                                    ),
+                                    contentColor = Color.Black,
+                                    disabledContainerColor = Color.Gray,
+                                    disabledContentColor = Color.Black
+                                ),
+                                border = if (isCurrentPlayer) BorderStroke(
+                                    width = 2.dp,
+                                    Color.Blue
+                                ) else BorderStroke(width = 2.dp, Color.Black)
+                            )
+                            {
+                                Column(
+                                    modifier = Modifier.padding(8.dp)
+                                        .fillMaxSize()
+                                ) {
+                                    Box(modifier = Modifier.fillMaxWidth())
+                                    {
+                                        Row(
+                                            verticalAlignment = Alignment.CenterVertically,
+                                            horizontalArrangement = Arrangement.Center,
+                                            modifier = Modifier.fillMaxWidth()
+                                        ) {
+                                            if (myPlayer?.id == player.id) {
+                                                Icon(
+                                                    Icons.Default.Person,
+                                                    contentDescription = "My player",
+                                                    modifier = Modifier.size(iconSize),
+                                                    tint = Color.Blue
+                                                )
+                                                Spacer(modifier = Modifier.width(6.dp))
+                                                Text(
+                                                    text = "Ja",
+                                                    fontSize = titleSize,
+                                                    color = Color.Blue
+                                                )
+                                            } else {
+                                                Text(
+                                                    text = player.Username,
+                                                    fontSize = titleSize,
+                                                    color = Color.Black
+                                                )
+                                            }
                                         }
-                                        else
-                                        {
-                                            Text(
-                                                text = player.Username,
-                                                fontSize = 16.sp,
-                                                color = Color.Black
-                                            )
-                                        }
+
+                                        Image(
+                                            painter = painterResource(getFigure(player.Color)),
+                                            contentDescription = "Figurica od ${player.Username}",
+                                            modifier = Modifier.size(iconSize)
+                                                .align(Alignment.CenterEnd)
+                                        )
                                     }
-
-                                    Image(
-                                        painter = painterResource(getFigure(player.Color)),
-                                        contentDescription = "Figurica od ${player.Username}",
-                                        modifier = Modifier.size(20.dp)
-                                            .align(Alignment.CenterEnd)
-                                    )
-                                }
-                                if(showPlayerDetails) {
+                                    if (showPlayerDetails) {
 
 
-                                    Spacer(modifier = Modifier.height((2.dp)))
-                                    HorizontalDivider(
-                                        thickness = 1.dp,
-                                        color = Color.Black,
-                                        modifier = Modifier.fillMaxWidth()
-                                    )
-
-                                    Spacer(modifier = Modifier.width(8.dp))
-
-                                    Column(
-                                        modifier = Modifier.weight(1f)
-                                            .fillMaxSize(),
-                                        verticalArrangement = Arrangement.spacedBy(4.dp)
-                                    ) {
-
-                                        Text(
-                                            text = "${player.Balance} \uD83D\uDCB5",
-                                            fontSize = 16.sp,
+                                        Spacer(modifier = Modifier.height((2.dp)))
+                                        HorizontalDivider(
+                                            thickness = 1.dp,
                                             color = Color.Black,
-                                            maxLines = 2,
-                                            overflow = TextOverflow.Ellipsis
+                                            modifier = Modifier.fillMaxWidth()
                                         )
-                                        Row {
-                                            Text(
-                                                text = board[player.Position].Name.limit(14),
-                                                maxLines = 1,
-                                                overflow = TextOverflow.Ellipsis,
-                                                fontSize = 16.sp,
-                                                color = Color.Black
-                                            )
-                                            Text(
-                                                text = " (${player.Position})",
-                                                fontSize = 14.sp,
-                                                color = Color.Gray
-                                            )
-                                        }
-                                        Spacer(modifier = Modifier.weight(1f))
-                                        val buttonSelected=showPlayerFields && selectedPlayerToShowFields == player.id
-                                        Button(
-                                            onClick = {
-                                                if (showPlayerFields && selectedPlayerToShowFields != player.id) {
-                                                    selectedPlayerToShowFields = player.id
-                                                } else {
-                                                    if (selectedPlayerToShowFields == null)
-                                                        selectedPlayerToShowFields = player.id
-                                                    else
-                                                        selectedPlayerToShowFields = null
-                                                    showPlayerFields = !showPlayerFields
 
-                                                }
-                                            },
-                                            modifier = Modifier.height(36.dp)
-                                                .align(Alignment.CenterHorizontally),
-                                            colors = ButtonDefaults.buttonColors(
-                                                containerColor = if (buttonSelected) MaterialTheme.colorScheme.primary else MaterialTheme.colorScheme.primary,
-                                                contentColor = Color.White
-                                            ),
-                                            elevation = ButtonDefaults.elevatedButtonElevation(4.dp)
-                                        )
-                                        {
+                                        Column(
+                                            modifier = Modifier
+                                                .fillMaxSize(),
+                                            verticalArrangement = Arrangement.SpaceBetween
+                                        ) {
+
                                             Text(
-                                                text = if (buttonSelected) "Sakrij posede" else "Prikaži posede",
-                                                fontSize = 14.sp,
-                                                color = Color.Black
+                                                text = "${player.Balance} \uD83D\uDCB5",
+                                                fontSize = smallSize,
+                                                color = Color.Black,
+                                                maxLines = 2,
+                                                overflow = TextOverflow.Ellipsis
                                             )
+                                            Spacer(modifier = Modifier.height(spacerHeight))
+                                            Row {
+                                                Text(
+                                                    text = board[player.Position].Name.limit(14),
+                                                    maxLines = 1,
+                                                    overflow = TextOverflow.Ellipsis,
+                                                    fontSize = smallSize,
+                                                    color = Color.Black
+                                                )
+                                                Text(
+                                                    text = " (${player.Position})",
+                                                    fontSize = smallSize,
+                                                    color = Color.Gray
+                                                )
+                                            }
+                                            val buttonSelected =
+                                                showPlayerFields && selectedPlayerToShowFields == player.id
+
+                                            Spacer(modifier = Modifier.height(spacerHeight))
+
+                                            Box(
+                                                modifier = Modifier
+                                                    .width(120.dp)
+                                                    .height(30.dp)
+                                                    .align(Alignment.CenterHorizontally)
+                                                    .clickable {
+                                                        if (showPlayerFields && selectedPlayerToShowFields != player.id) {
+                                                            selectedPlayerToShowFields = player.id
+                                                        } else {
+                                                            if (selectedPlayerToShowFields == null)
+                                                                selectedPlayerToShowFields =
+                                                                    player.id
+                                                            else
+                                                                selectedPlayerToShowFields = null
+                                                            showPlayerFields = !showPlayerFields
+
+                                                        }
+                                                    }
+                                                    .background(
+                                                        MaterialTheme.colorScheme.primary,
+                                                        shape = RoundedCornerShape(8.dp)
+                                                    )
+                                            )
+                                            {
+                                                Text(
+                                                    text = if (buttonSelected) "Sakrij posede" else "Prikaži posede",
+                                                    fontSize = smallSize,
+                                                    color = Color.Black,
+                                                    modifier = Modifier.align(Alignment.Center)
+                                                )
+                                            }
                                         }
                                     }
                                 }
@@ -433,40 +457,62 @@ fun GameBoardView(myId:Int,viewModel: GameViewModel,showPlayerDetails:Boolean=tr
                 .padding(top=20.dp),
             contentAlignment = Alignment.TopCenter)
         {
-            Row(
-                modifier = Modifier.clickable(
+            val phase by viewModel.phase
+
+            if(phase==TurnPhase.DICE_ROLL) {
+                Row(
+                    modifier = Modifier.clickable(
 //                    enabled = myPlayer?.id == players[gameState.currentPlayer].id,
+                        onClick = {
+                            viewModel.movePlayer()
+                        }
+                    ),
+                    horizontalArrangement = Arrangement.spacedBy(16.dp),
+                    verticalAlignment = Alignment.CenterVertically
+                ) {
+                    Image(
+                        painter = painterResource(getDiceImage(dice1)),
+                        contentDescription = "Dice 1",
+                        modifier = Modifier
+                            .size(64.dp)
+                            .clip(RoundedCornerShape(12.dp))
+                            .border(
+                                width = 2.dp,
+                                color = Color.Blue,
+                                shape = RoundedCornerShape(12.dp)
+                            )
+                    )
+                    Image(
+                        painter = painterResource(getDiceImage(dice2)),
+                        contentDescription = "Dice 2",
+                        modifier = Modifier
+                            .size(64.dp)
+                            .clip(RoundedCornerShape(12.dp))
+                            .border(
+                                width = 2.dp,
+                                color = Color.Blue,
+                                shape = RoundedCornerShape(12.dp)
+                            )
+                    )
+                }
+            }
+            else
+            {
+                Button(
                     onClick = {
-                        viewModel.movePlayer()
-                    }
-                ),
-                horizontalArrangement = Arrangement.spacedBy(16.dp),
-                verticalAlignment = Alignment.CenterVertically
-            ) {
-                Image(
-                    painter = painterResource(getDiceImage(dice1)),
-                    contentDescription = "Dice 1",
-                    modifier = Modifier
-                        .size(64.dp)
-                        .clip(RoundedCornerShape(12.dp))
-                        .border(
-                            width = 2.dp,
-                            color = Color.Blue,
-                            shape = RoundedCornerShape(12.dp)
-                        )
+                        viewModel.nextTurn()
+                    },
+                    modifier = Modifier.height(36.dp)
+                        .align(Alignment.Center),
+                    elevation = ButtonDefaults.elevatedButtonElevation(4.dp)
                 )
-                Image(
-                    painter = painterResource(getDiceImage(dice2)),
-                    contentDescription = "Dice 2",
-                    modifier = Modifier
-                        .size(64.dp)
-                        .clip(RoundedCornerShape(12.dp))
-                        .border(
-                            width = 2.dp,
-                            color = Color.Blue,
-                            shape = RoundedCornerShape(12.dp)
-                        )
-                )
+                {
+                    Text(
+                        text = "Završi potez",
+                        fontSize = 14.sp,
+                        color = Color.Black
+                    )
+                }
             }
         }
     }

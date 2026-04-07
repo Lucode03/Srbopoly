@@ -2,6 +2,7 @@ package com.example.srbopoly.data.fields
 
 import com.example.srbopoly.data.Game
 import com.example.srbopoly.data.Player
+import com.example.srbopoly.enums.FieldType
 
 class JailField(
     Name:String,

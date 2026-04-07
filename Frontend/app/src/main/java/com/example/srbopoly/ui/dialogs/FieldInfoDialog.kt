@@ -31,7 +31,7 @@ import com.example.srbopoly.data.fields.Field
 import com.example.srbopoly.data.fields.Field.Companion.getFieldImage
 import com.example.srbopoly.data.fields.FieldAction
 import com.example.srbopoly.data.fields.FieldInfo
-import com.example.srbopoly.data.fields.FieldType
+import com.example.srbopoly.enums.FieldType
 import com.example.srbopoly.data.fields.PropertyField
 @Composable
 fun FieldInfoDialog(onDismiss:()->Unit, field: Field,

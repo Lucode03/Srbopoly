@@ -6,6 +6,7 @@ import androidx.compose.ui.Modifier
 import com.example.srbopoly.R
 import com.example.srbopoly.data.Game
 import com.example.srbopoly.data.Player
+import com.example.srbopoly.enums.FieldType
 import com.example.srbopoly.ui.popups.actions.BonusFieldAction
 import com.example.srbopoly.ui.popups.actions.JailFieldAction
 import com.example.srbopoly.ui.popups.actions.MovementFieldAction
@@ -108,12 +109,4 @@ fun FieldAction(field: Field,
         is RewardCardField -> RewardCardFieldAction(field,action,onResult,fullWidthModifier,isMyTurn)
         is SurpriseCardField -> SurpriseCardFieldAction(field,action,onResult,fullWidthModifier,isMyTurn)
     }
-}
-
-enum class FieldType {
-    START, JAIL, PARKING, GO_TO_JAIL,
-    REWARD, CHANCE, NATIONAL_PARK, TAX,
-    ELECTRIC_TAX, WATER_TAX,
-    VOJVODINA, ISTOCNA_SRBIJA, JUZNA_SRBIJA, KIM,
-    SUMADIJA, ZAPADNA_SRBIJA, PREMIUM1, PREMIUM2
 }

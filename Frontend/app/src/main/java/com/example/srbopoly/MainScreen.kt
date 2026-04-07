@@ -91,7 +91,11 @@ fun MainScreen(modifier: Modifier = Modifier,
             navController = mainNavController,
             startDestination = NavItem.Home.route,
             modifier = Modifier.then(
-                if (isGameScreen) Modifier.fillMaxSize()
+                if (isGameScreen) Modifier
+                    .fillMaxSize()
+                    .padding(
+                        top = innerPadding.calculateTopPadding()
+                    )
                 else Modifier
                     .padding(innerPadding)
                     .consumeWindowInsets(innerPadding)
@@ -125,5 +129,4 @@ fun MainScreen(modifier: Modifier = Modifier,
             }
         }
     }
-
 }

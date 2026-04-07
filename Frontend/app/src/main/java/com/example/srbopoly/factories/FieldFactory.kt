@@ -2,7 +2,6 @@ package com.example.srbopoly.factories
 
 import com.example.srbopoly.data.fields.BonusField
 import com.example.srbopoly.data.fields.Field
-import com.example.srbopoly.data.fields.FieldType
 import com.example.srbopoly.data.fields.JailField
 import com.example.srbopoly.data.fields.MovementField
 import com.example.srbopoly.data.fields.NationalParkField
@@ -10,6 +9,7 @@ import com.example.srbopoly.data.fields.PaymentField
 import com.example.srbopoly.data.fields.PropertyField
 import com.example.srbopoly.data.fields.RewardCardField
 import com.example.srbopoly.data.fields.SurpriseCardField
+import com.example.srbopoly.enums.FieldType
 
 class FieldFactory
 {
@@ -19,7 +19,7 @@ class FieldFactory
                 0 -> BonusField(
                     Name = "Start",
                     Bonus = 5000,
-                    FieldType=FieldType.START
+                    FieldType= FieldType.START
                 )
 
                 1 -> PropertyField(
