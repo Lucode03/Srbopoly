@@ -45,6 +45,7 @@ import androidx.compose.ui.draw.shadow
 import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.layout.ContentScale
 import androidx.compose.ui.res.painterResource
+import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.text.style.TextAlign
 import androidx.compose.ui.tooling.preview.Preview
@@ -166,7 +167,7 @@ fun HomeScreen(modifier: Modifier = Modifier, onLogOut:()->Unit,
             )
             {
                 Text(
-                    text = "\uD83C\uDFC5 ${user.points}",
+                    text = stringResource(R.string.medal)+" ${user.points}",
                     color = Color.Black,
                     fontWeight = FontWeight.Bold,
                     fontSize = 24.sp,

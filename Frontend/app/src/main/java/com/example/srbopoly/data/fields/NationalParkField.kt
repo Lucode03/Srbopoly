@@ -8,8 +8,8 @@ class NationalParkField(
     Name:String,
     FieldType:FieldType
 ):Field(Name,FieldType) {
-    override fun Action(player: Player,game: Game?)
+    override fun Action(player: Player,game: Game?):String
     {
-
+        return "Igrač ${player.Username} je stao da odmori kod Nacionalnog parka:$Name"
     }
 }

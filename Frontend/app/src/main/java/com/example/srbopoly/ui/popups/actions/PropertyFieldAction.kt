@@ -17,7 +17,8 @@ fun PropertyFieldAction(
     action: Boolean = false,
     onResult: (Boolean) -> Unit,
     modifier: Modifier,
-    isMyTurn:Boolean
+    isMyTurn:Boolean,
+    playerID:Int,
 )
 {
     Box(
@@ -57,12 +58,37 @@ fun PropertyFieldAction(
                 }
             }
         } else {
-            Button(onClick = {
-                onResult(false)
-            },
-                enabled = isMyTurn
+            Row(
+                horizontalArrangement = Arrangement.SpaceAround,
+                modifier = Modifier.fillMaxWidth()
             ) {
-                Text("Zatvori")
+                if (isMyTurn && hasOwner) {
+                    if (playerID == field.Owner!!.id) {
+                        //true-hotel  false-kuca
+                        val structureToBuild = field.CheckStructureToBuild()
+
+                        Button(
+                            onClick = {
+                                if (structureToBuild)
+                                    field.BuildHotel()
+                                else
+                                    field.BuildHouse()
+                                onResult(false)
+                            },
+                            enabled = field.CheckMonopoly()
+                        ) {
+                            Text(if (structureToBuild) "Izgradi hotel" else "Izgradi kuću")
+                        }
+                    }
+                }
+                Button(
+                    onClick = {
+                        onResult(false)
+                    },
+                    enabled = isMyTurn
+                ) {
+                    Text("Zatvori")
+                }
             }
         }
     }

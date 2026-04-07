@@ -8,8 +8,9 @@ class MovementField(
     Name:String,
     FieldType:FieldType
 ):Field(Name,FieldType) {
-    override fun Action(player: Player,game: Game?)
+    override fun Action(player: Player,game: Game?):String
     {
         player.GoToJail()
+        return "Igrač ${player.Username} je otišao u zatvor"
     }
 }

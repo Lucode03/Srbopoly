@@ -1,3 +1,5 @@
 <resources>
     <string name="app_name">Srbopoly</string>
+    <string name="money">💵</string>
+    <string name="medal">🏅</string>
 </resources>

@@ -8,8 +8,9 @@ class JailField(
     Name:String,
     FieldType:FieldType
 ):Field(Name,FieldType) {
-    override fun Action(player: Player, game: Game?)
+    override fun Action(player: Player, game: Game?):String
     {
         player.IsInJail=true
+        return "Igrač ${player.Username} je sada u zatvoru!"
     }
 }

@@ -46,6 +46,7 @@ import androidx.navigation.NavController
 import androidx.navigation.compose.rememberNavController
 import com.example.srbopoly.data.RewardCard
 import com.example.srbopoly.data.SurpriseCard
+import com.example.srbopoly.ui.animations.ActionResultAnimation
 import com.example.srbopoly.ui.animations.DiceResultAnimation
 import com.example.srbopoly.ui.dialogs.ExitDialog
 import com.example.srbopoly.viewmodels.GameViewModel
@@ -58,6 +59,7 @@ fun GameScreen(navController: NavController,viewModel: GameViewModel,myId: Int=1
     var showQuitDialog by remember { mutableStateOf(false) }
 
     val diceResult by viewModel.diceResult.collectAsState()
+    val actionResult by viewModel.actionResult.collectAsState()
 
     var showPlayerDetails by remember { mutableStateOf(false) }
 
@@ -89,6 +91,18 @@ fun GameScreen(navController: NavController,viewModel: GameViewModel,myId: Int=1
             contentAlignment = Alignment.Center
         ) {
             DiceResultAnimation(diceResult!!)
+        }
+    }
+    if (actionResult != null) {
+        Box(
+            modifier = Modifier
+                .fillMaxSize()
+                .background(Color.Black.copy(alpha = 0.6f))
+                .zIndex(10f)
+            ,
+            contentAlignment = Alignment.Center
+        ) {
+            ActionResultAnimation(actionResult!!)
         }
     }
     Column(

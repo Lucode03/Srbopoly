@@ -31,7 +31,7 @@ abstract class Field
     var GameFieldID: Int = 0
     )
 {
-    abstract fun Action(player: Player,game: Game?=null)
+    abstract fun Action(player: Player,game: Game?=null):String
 
     companion object{
         fun getFieldImage(fieldType:FieldType):Int {
@@ -95,7 +95,8 @@ fun FieldAction(field: Field,
                 action:Boolean,
                 isMyTurn:Boolean,
                 modifier: Modifier = Modifier,
-                onResult: (Boolean) -> Unit)
+                onResult: (Boolean) -> Unit,
+                playerID:Int)
 {
     val fullWidthModifier = modifier.fillMaxWidth()
 
@@ -105,7 +106,7 @@ fun FieldAction(field: Field,
         is MovementField -> MovementFieldAction(field,action,onResult,fullWidthModifier,isMyTurn)
         is NationalParkField -> NationalParkFieldAction(field,action,onResult,fullWidthModifier,isMyTurn)
         is PaymentField -> PaymentFieldAction(field,action,onResult,fullWidthModifier,isMyTurn)
-        is PropertyField -> PropertyFieldAction(field,action,onResult,fullWidthModifier,isMyTurn)
+        is PropertyField -> PropertyFieldAction(field,action,onResult,fullWidthModifier,isMyTurn,playerID)
         is RewardCardField -> RewardCardFieldAction(field,action,onResult,fullWidthModifier,isMyTurn)
         is SurpriseCardField -> SurpriseCardFieldAction(field,action,onResult,fullWidthModifier,isMyTurn)
     }

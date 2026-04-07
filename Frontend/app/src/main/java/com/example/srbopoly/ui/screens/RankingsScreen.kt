@@ -42,6 +42,7 @@ import com.example.srbopoly.viewmodels.UserRankingsViewModel
 import kotlinx.coroutines.launch
 import androidx.compose.runtime.getValue
 import androidx.compose.runtime.LaunchedEffect
+import androidx.compose.ui.res.stringResource
 
 @Composable
 fun RankingsScreen(modifier: Modifier = Modifier,user:User, viewModel: UserRankingsViewModel = hiltViewModel()) {
@@ -121,7 +122,7 @@ fun RankingsScreen(modifier: Modifier = Modifier,user:User, viewModel: UserRanki
                     Spacer(modifier = Modifier.height(8.dp))
 
                     Text(
-                        text = "\uD83C\uDFC5 $displayPoints",
+                        text = stringResource(R.string.medal)+" $displayPoints",
                         fontSize = 20.sp,
                         fontWeight = FontWeight.Bold,
                         color = Color.Black
@@ -165,7 +166,7 @@ fun RankingsScreen(modifier: Modifier = Modifier,user:User, viewModel: UserRanki
                             color = if (userRanked.id == user.id) Color.Blue else Color.Black
                         )
                         Text(
-                            "\uD83C\uDFC5 ${userRanked.points}",
+                            stringResource(R.string.medal)+" ${userRanked.points}",
                             fontWeight = FontWeight.Bold,
                             color = if (userRanked.id == user.id) Color.Blue else Color.Black
                         )

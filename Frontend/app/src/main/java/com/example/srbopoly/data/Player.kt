@@ -1,11 +1,19 @@
 package com.example.srbopoly.data
 
-import androidx.compose.runtime.getValue
-import androidx.compose.runtime.mutableStateOf
-import androidx.compose.runtime.setValue
 import androidx.compose.ui.graphics.Color
 import com.example.srbopoly.R
-import com.example.srbopoly.data.fields.PropertyField
+import com.example.srbopoly.enums.FieldType
+
+val propertyFieldTypes = listOf(
+    FieldType.VOJVODINA,
+    FieldType.ISTOCNA_SRBIJA,
+    FieldType.JUZNA_SRBIJA,
+    FieldType.KIM,
+    FieldType.SUMADIJA,
+    FieldType.ZAPADNA_SRBIJA,
+    FieldType.PREMIUM1,
+    FieldType.PREMIUM2
+)
 
 data class Player(
     var id:Int,
@@ -14,7 +22,7 @@ data class Player(
     var Position:Int=0,
     var Color :String,
     var IsInJail:Boolean=false,
-    var Properties:List<PropertyField> = emptyList()
+    var Properties: MutableMap<FieldType, Int> = propertyFieldTypes.associateWith { 0 }.toMutableMap()
 ){
     fun Receive(amount:Int)
     {
@@ -42,6 +50,20 @@ data class Player(
     fun GoToJail()
     {
         Position = 20
+    }
+
+    fun CheckMonopoly(fieldType:FieldType):Boolean
+    {
+        if(fieldType !in propertyFieldTypes)
+            return false
+
+        var retVal=false
+        retVal = when(fieldType) {
+            FieldType.PREMIUM1 -> Properties[fieldType]==2
+            FieldType.PREMIUM2 -> Properties[fieldType]==2
+            else -> Properties[fieldType]==3
+        }
+        return retVal
     }
 }
 

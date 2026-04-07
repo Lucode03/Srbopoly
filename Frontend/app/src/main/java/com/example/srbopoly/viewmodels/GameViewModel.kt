@@ -66,6 +66,9 @@ class GameViewModel @Inject constructor(
     private var _remainingTime = mutableStateOf(20)
     val remainingTime: State<Int> = _remainingTime
 
+    private val _actionResult = MutableStateFlow<String?>(null)
+    val actionResult = _actionResult.asStateFlow()
+
     private var timerJob: Job? = null
 
     private fun startTimer(seconds: Int, onFinish: () -> Unit) {
@@ -173,9 +176,15 @@ class GameViewModel @Inject constructor(
     {
         if(!apply && _activeField.value is PropertyField)
             return
-        val currentPlayer = getCurrentPlayer()
+        viewModelScope.launch {
+            val currentPlayer = getCurrentPlayer()
 
-        _activeField.value!!.Action(currentPlayer)
+            _actionResult.value = _activeField.value!!.Action(currentPlayer)
+
+            delay(4000)
+
+            _actionResult.value = null
+        }
     }
     fun clearActiveField() {
         viewModelScope.launch {

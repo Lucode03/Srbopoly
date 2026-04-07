@@ -50,6 +50,7 @@ import androidx.compose.ui.graphics.drawscope.Stroke
 import androidx.compose.ui.layout.ContentScale
 import androidx.compose.ui.res.imageResource
 import androidx.compose.ui.res.painterResource
+import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.text.style.TextOverflow
 import androidx.compose.ui.tooling.preview.Preview
 import androidx.compose.ui.unit.dp
@@ -109,7 +110,8 @@ fun GameBoardView(myId:Int,viewModel: GameViewModel,showPlayerDetails:Boolean=tr
             onResult = {
                 selectedField=null
                 showInfoDialog=false
-            }
+            },
+            playerID=myId
         )
     }
     if(actionField != null)
@@ -129,7 +131,8 @@ fun GameBoardView(myId:Int,viewModel: GameViewModel,showPlayerDetails:Boolean=tr
                 viewModel.applyFieldAction(result)
                 viewModel.clearActiveField()
             },
-//            isMyTurn = isMyTurn
+//            isMyTurn = isMyTurn,
+            playerID=myId
         )
     }
     val scrollState = rememberScrollState()
@@ -232,7 +235,7 @@ fun GameBoardView(myId:Int,viewModel: GameViewModel,showPlayerDetails:Boolean=tr
                                         ) {
 
                                             Text(
-                                                text = "${player.Balance} \uD83D\uDCB5",
+                                                text = "${player.Balance} "+stringResource(R.string.money),
                                                 fontSize = smallSize,
                                                 color = Color.Black,
                                                 maxLines = 2,

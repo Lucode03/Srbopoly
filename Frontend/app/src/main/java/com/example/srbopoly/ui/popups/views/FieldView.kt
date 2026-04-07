@@ -11,9 +11,11 @@ import androidx.compose.material3.Text
 import androidx.compose.runtime.Composable
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.graphics.Color
+import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
+import com.example.srbopoly.R
 import com.example.srbopoly.data.fields.Field
 
 @Composable
@@ -53,7 +55,7 @@ fun InfoRow(label: String, value: String,cash:Boolean=false) {
         )
 
         Text(
-            text = value + if (cash)"   \uD83D\uDCB5" else "",
+            text = value + if (cash)"   "+ stringResource(R.string.money) else "",
             color = Color.Black,
             fontSize = 14.sp,
             fontWeight = FontWeight.SemiBold

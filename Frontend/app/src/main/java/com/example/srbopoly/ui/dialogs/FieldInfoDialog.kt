@@ -36,7 +36,8 @@ import com.example.srbopoly.data.fields.PropertyField
 @Composable
 fun FieldInfoDialog(onDismiss:()->Unit, field: Field,
                     action:Boolean=false,
-                    onResult:(Boolean)->Unit={},isMyTurn:Boolean=true)
+                    onResult:(Boolean)->Unit={},isMyTurn:Boolean=true,
+                    playerID:Int)
 {
     Dialog(onDismissRequest = onDismiss) {
         Card(
@@ -89,7 +90,8 @@ fun FieldInfoDialog(onDismiss:()->Unit, field: Field,
                     isMyTurn=isMyTurn,
                     onResult = { result ->
                         onResult(result)
-                    }
+                    },
+                    playerID = playerID
                 )
                 Spacer(modifier = Modifier.height(10.dp))
             }
@@ -102,5 +104,6 @@ fun FieldInfoDialog(onDismiss:()->Unit, field: Field,
 fun Preview() {
     FieldInfoDialog({},PropertyField("Imeeeee", FieldType.JUZNA_SRBIJA,10, null,60,3).apply { GameFieldID=10 },
         true,
-        isMyTurn = true)
+        isMyTurn = true,
+        playerID = 1)
 }

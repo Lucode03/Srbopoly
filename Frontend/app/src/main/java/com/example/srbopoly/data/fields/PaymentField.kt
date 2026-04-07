@@ -9,8 +9,9 @@ class PaymentField(
     FieldType:FieldType,
     var Price:Int
 ):Field(Name,FieldType) {
-    override fun Action(player: Player,game: Game?)
+    override fun Action(player: Player,game: Game?):String
     {
         player.Pay(Price)
+        return "Igrač ${player.Username} mora da plati $Price"
     }
 }
