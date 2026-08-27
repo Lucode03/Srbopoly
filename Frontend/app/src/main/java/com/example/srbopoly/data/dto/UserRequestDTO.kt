@@ -9,3 +9,10 @@ data class LoginUserRequest(
     val username: String,
     val password: String
 )
+
+data class LoginResponse(
+    val token: String,
+    val userId: Int,
+    val username: String,
+    val points: Int
+)

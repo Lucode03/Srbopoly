@@ -1,4 +1,6 @@
 package com.example.srbopoly.data.repository
+import com.example.srbopoly.data.AuthTokenProvider
+import com.example.srbopoly.data.SessionManager
 import com.example.srbopoly.data.User
 import com.example.srbopoly.data.dto.CreateUserRequest
 import com.example.srbopoly.data.dto.LoginUserRequest
@@ -8,7 +10,9 @@ import javax.inject.Singleton
 
 @Singleton
 class UserRepository @Inject constructor(
-    private val api: ApiServiceAuth
+    private val api: ApiServiceAuth,
+    private val tokenProvider: AuthTokenProvider,
+    private val sessionManager: SessionManager
 ) {
     suspend fun login(username: String, password: String): Result<User> {
         return try {
@@ -16,9 +20,11 @@ class UserRepository @Inject constructor(
 
             when {
                 response.isSuccessful -> {
-                    val user = response.body()
-                    if (user != null) {
-                        Result.success(user)
+                    val body = response.body()
+                    if (body != null) {
+                        tokenProvider.token = body.token
+                        sessionManager.saveUser(body.userId, body.username, body.points, body.token)
+                        Result.success(User(body.userId, body.username, body.points))
                     } else {
                         Result.failure(Exception("Korisnik ne postoji"))
                     }
@@ -48,9 +54,11 @@ class UserRepository @Inject constructor(
 
             when {
                 response.isSuccessful -> {
-                    val user = response.body()
-                    if (user != null) {
-                        Result.success(user)
+                    val body = response.body()
+                    if (body != null) {
+                        tokenProvider.token = body.token
+                        sessionManager.saveUser(body.userId, body.username, body.points, body.token)
+                        Result.success(User(body.userId, body.username, body.points))
                     } else {
                         Result.failure(Exception("Korisnik nije kreiran"))
                     }

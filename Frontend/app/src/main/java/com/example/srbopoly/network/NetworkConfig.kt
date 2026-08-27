@@ -5,6 +5,6 @@ import javax.inject.Singleton
 
 @Singleton
 class NetworkConfig @Inject constructor() {
-    val baseUrl: String = "https://perzistencija-production.up.railway.app/"
-    val baseUrlLobbyServer: String = "https://perzistencija-production-6918.up.railway.app/"
+    val baseUrl: String = "https://program-headdress-spree.ngrok-free.dev/"
+    val baseUrlLobbyServer: String = "https://program-headdress-spree.ngrok-free.dev/"
 }

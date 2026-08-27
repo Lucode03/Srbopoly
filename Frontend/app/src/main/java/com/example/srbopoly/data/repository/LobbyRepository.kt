@@ -1,6 +1,7 @@
 package com.example.srbopoly.data.repository
 
 import android.util.Log
+import com.example.srbopoly.data.AuthTokenProvider
 import com.example.srbopoly.data.Lobby
 import com.example.srbopoly.data.LobbyPlayer
 import com.example.srbopoly.data.dto.CreateLobbyRequest
@@ -10,6 +11,7 @@ import com.example.srbopoly.network.apiServices.lobbyService.ApiServiceLobby
 import com.microsoft.signalr.HubConnection
 import com.microsoft.signalr.HubConnectionBuilder
 import com.microsoft.signalr.HubConnectionState
+import io.reactivex.rxjava3.core.Single
 import kotlinx.coroutines.flow.MutableStateFlow
 import kotlinx.coroutines.flow.StateFlow
 import kotlinx.coroutines.flow.asStateFlow
@@ -19,7 +21,8 @@ import javax.inject.Singleton
 @Singleton
 class LobbyRepository @Inject constructor(
     private val lobbyApi: ApiServiceLobby,
-    private val networkConfig: NetworkConfig
+    private val networkConfig: NetworkConfig,
+    private val tokenProvider: AuthTokenProvider
 ){
     private var hubConnection: HubConnection? = null
 
@@ -80,11 +83,12 @@ class LobbyRepository @Inject constructor(
         }
     }
 
-    fun connectToHub(accessCode: String, userId: Int) {
+    fun connectToHub(accessCode: String, userId: Int, token: String) {
         if (hubConnection?.connectionState == HubConnectionState.CONNECTED) return
 
         hubConnection = HubConnectionBuilder
             .create("${networkConfig.baseUrlLobbyServer}lobbyHub")
+            .withAccessTokenProvider(Single.defer { Single.just(tokenProvider.token ?: "") })
             .build()
 
         hubConnection?.on("LobbyStateUpdated", { lobby ->

@@ -3,6 +3,8 @@ import android.os.Build
 import androidx.annotation.RequiresApi
 import androidx.lifecycle.ViewModel
 import androidx.lifecycle.viewModelScope
+import com.example.srbopoly.data.AuthTokenProvider
+import com.example.srbopoly.data.SessionExpiredNotifier
 import com.example.srbopoly.data.SessionManager
 import com.example.srbopoly.data.User
 import com.example.srbopoly.data.repository.UserRepository
@@ -17,7 +19,9 @@ import javax.inject.Inject
 @HiltViewModel
 class AuthViewModel @Inject constructor(
     private val repository: UserRepository,
-    private val sessionManager: SessionManager
+    private val sessionManager: SessionManager,
+    private val tokenProvider: AuthTokenProvider,
+    private val sessionExpiredNotifier: SessionExpiredNotifier
 ) : ViewModel() {
     private val _usernameLogin = MutableStateFlow("")
     val usernameLogin: StateFlow<String> = _usernameLogin.asStateFlow()
@@ -62,9 +66,20 @@ class AuthViewModel @Inject constructor(
             sessionManager.userFlow.collect { session ->
                 _user.value = session?.let {
                     _usernameLogin.value = it.username
+                    tokenProvider.token = it.token
                     User(it.id, it.username, it.points)
                 }
+                if (session == null) {
+                    tokenProvider.clear()
+                }
                 isSessionLoaded.value = true
+            }
+
+            viewModelScope.launch {
+                sessionExpiredNotifier.events.collect {
+                    _error.value = "Sesija je istekla, prijavite se ponovo"
+                    signout()
+                }
             }
         }
     }
@@ -85,7 +100,6 @@ class AuthViewModel @Inject constructor(
 
             result.onSuccess { user ->
                 _user.value = user
-                sessionManager.saveUser(user.id, user.username, user.points)
             }.onFailure { exception ->
                 _error.value = exception.message
             }
@@ -109,7 +123,6 @@ class AuthViewModel @Inject constructor(
             result.onSuccess { user ->
                 _user.value = user
                 _usernameLogin.value = user.username
-                sessionManager.saveUser(user.id, user.username, user.points)
             }.onFailure { exception ->
                 _error.value = exception.message
             }
@@ -119,6 +132,7 @@ class AuthViewModel @Inject constructor(
     fun signout(){
         viewModelScope.launch {
             sessionManager.clear()
+            tokenProvider.clear()
             _user.value = null
         }
     }

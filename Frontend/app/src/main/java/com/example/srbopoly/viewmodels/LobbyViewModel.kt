@@ -3,6 +3,7 @@ package com.example.srbopoly.viewmodels
 import android.util.Log
 import androidx.lifecycle.ViewModel
 import androidx.lifecycle.viewModelScope
+import com.example.srbopoly.data.AuthTokenProvider
 import com.example.srbopoly.data.Lobby
 import com.example.srbopoly.data.repository.LobbyRepository
 import dagger.hilt.android.lifecycle.HiltViewModel
@@ -14,7 +15,8 @@ import javax.inject.Inject
 
 @HiltViewModel
 class LobbyViewModel @Inject constructor(
-    private val lobbyRepository: LobbyRepository
+    private val lobbyRepository: LobbyRepository,
+    private val tokenProvider: AuthTokenProvider
 ) : ViewModel() {
     val currentLobby: StateFlow<Lobby?> = lobbyRepository.lobbyState
 
@@ -41,7 +43,8 @@ class LobbyViewModel @Inject constructor(
 
     fun initLobby(accessCode: String, userId: Int) {
         Log.d("LobbyViewModel", "Moj id-je $userId")
-        lobbyRepository.connectToHub(accessCode, userId)
+        val token = tokenProvider.token ?: return
+        lobbyRepository.connectToHub(accessCode, userId, token)
     }
 
     fun setPlayerColor(accessCode: String, userId: Int, colorInt: Int) {

@@ -1,5 +1,6 @@
 package com.example.srbopoly.viewmodels
 
+import android.util.Log
 import androidx.lifecycle.ViewModel
 import androidx.lifecycle.viewModelScope
 import com.example.srbopoly.data.repository.LobbyRepository
@@ -34,8 +35,10 @@ class MainScreenViewModel @Inject constructor(
             val gameResult = lobbyRepository.createLobby(userId, username)
             gameResult.onSuccess { createdGame ->
                 _gameCode.value = createdGame.accessCode
+                Log.d("CreateGame", "Lobi uspešno kreiran: $createdGame")
             }.onFailure {
                 _error.value = "Neuspešno kreiranje igre: ${it.message}"
+                Log.e("CreateGame", "Neuspešno kreiranje igre: ${it.message}")
             }
 
             _isLoading.value = false

@@ -16,14 +16,16 @@ class SessionManager(private val context: Context) {
         val KEY_USERNAME = stringPreferencesKey("username")
         val KEY_POINTS = intPreferencesKey("points")
         val KEY_IS_LOGGED_IN = booleanPreferencesKey("is_logged_in")
+        val KEY_TOKEN = stringPreferencesKey("auth_token")
     }
 
-    suspend fun saveUser(id: Int, username: String, points: Int) {
+    suspend fun saveUser(id: Int, username: String, points: Int, token: String) {
         context.dataStore.edit { prefs ->
             prefs[KEY_USER_ID] = id
             prefs[KEY_USERNAME] = username
             prefs[KEY_POINTS] = points
             prefs[KEY_IS_LOGGED_IN] = true
+            prefs[KEY_TOKEN] = token
         }
     }
 
@@ -33,7 +35,8 @@ class SessionManager(private val context: Context) {
             UserSession(
                 id = prefs[KEY_USER_ID] ?: 0,
                 username = prefs[KEY_USERNAME] ?: "",
-                points = prefs[KEY_POINTS] ?: 0
+                points = prefs[KEY_POINTS] ?: 0,
+                token = prefs[KEY_TOKEN] ?: ""
             )
         } else null
     }
@@ -46,5 +49,6 @@ class SessionManager(private val context: Context) {
 data class UserSession(
     val id: Int,
     val username: String,
-    val points: Int
+    val points: Int,
+    val token: String
 )
