@@ -29,6 +29,9 @@ class LobbyRepository @Inject constructor(
     private val _lobbyState = MutableStateFlow<Lobby?>(null)
     val lobbyState: StateFlow<Lobby?> = _lobbyState.asStateFlow()
 
+    private val _gameStarted = MutableStateFlow<String?>(null)
+    val gameStarted: StateFlow<String?> = _gameStarted.asStateFlow()
+
     suspend fun createLobby(hostUserId: Int, hostUsername: String): Result<Lobby> {
         return try {
             val response = lobbyApi.createLobby(CreateLobbyRequest(hostUserId, hostUsername))
@@ -95,13 +98,22 @@ class LobbyRepository @Inject constructor(
             _lobbyState.value = lobby
         }, Lobby::class.java)
 
+        hubConnection?.on("GameStarted", { gameId ->
+            _gameStarted.value = gameId
+        }, String::class.java)
+
         hubConnection?.start()?.blockingAwait()
         hubConnection?.send("JoinLobbyGroup", accessCode, userId)
+    }
+
+    fun startGame(accessCode: String, userId: Int) {
+        hubConnection?.send("StartGame", accessCode, userId)
     }
 
     fun disconnect() {
         hubConnection?.stop()
         _lobbyState.value = null
+        _gameStarted.value = null
     }
 
     fun changeColor(accessCode: String, userId: Int, colorInt: Int) {

@@ -76,7 +76,7 @@ fun MainScreen(modifier: Modifier = Modifier,
         }
     }
 
-    val isGameScreen = currentRoute == "game"
+    val isGameScreen = currentRoute == "game/{gameId}"
 
     Scaffold(
         snackbarHost = { SnackbarHost(snackbarHostState) },
@@ -123,9 +123,10 @@ fun MainScreen(modifier: Modifier = Modifier,
                     SettingsScreen(mainNavController, myId = it.id, gameCode = gameCode)
                 }
             }
-            composable("game") {
+            composable("game/{gameId}") { backStackEntry ->
+                val gameId = backStackEntry.arguments?.getString("gameId") ?: ""
                 val gameViewModel: GameViewModel = hiltViewModel()
-                GameScreen(mainNavController, gameViewModel)
+                GameScreen(mainNavController, gameViewModel, gameId)
             }
         }
     }

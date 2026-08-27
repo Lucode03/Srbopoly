@@ -23,3 +23,8 @@ data class TradeOfferDto(
     val requestedPropertyIds: List<Int>,
     val requestedMoney: Int
 )
+
+data class CommandResultDto(
+    val success: Boolean,
+    val error: String? = null
+)

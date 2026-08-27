@@ -86,17 +86,21 @@ fun SettingsScreen(navController: NavController,myId: Int, gameCode: String, lob
     val focusManager = LocalFocusManager.current
     var isTextFieldFocused by remember { mutableStateOf(false) }
 
+    val gameStarted by lobbyViewModel.gameStarted.collectAsState()
+    
     LaunchedEffect(gameCode) {
         lobbyViewModel.initLobby(gameCode, myId)
     }
 
-    LaunchedEffect(lobby) {
-        val players = lobby?.players ?: emptyList()
-        if (players.size >= 2 && players.all { it.isReady }) {
-            navController.navigate("game") {
-                popUpTo("settings") { inclusive = true }
+    LaunchedEffect(gameStarted) {
+        gameStarted?.let { gameId ->
+            navController.navigate("game/$gameId") {
+                popUpTo("settings/{gameCode}") { inclusive = true }
             }
         }
+    }
+
+    LaunchedEffect(lobby) {
         lobby?.let {
             if (!isTextFieldFocused) {
                 maxMovesText = it.maxPlayCout.toString()
@@ -189,8 +193,16 @@ fun SettingsScreen(navController: NavController,myId: Int, gameCode: String, lob
         Spacer(modifier = Modifier.height(8.dp))
 
         if (myPlayer != null) {
-            if(isHost)
-
+            if(isHost) {
+                Spacer(modifier = Modifier.height(8.dp))
+                Button(
+                    enabled = (lobby?.players?.size ?: 0) >= 2 &&
+                            (lobby?.players?.all { it.isReady } ?: false),
+                    onClick = { lobbyViewModel.startGame(gameCode, myId) },
+                    modifier = Modifier.fillMaxWidth()
+                ) {
+                    Text("Pokreni igru")
+                }
                 Row(
                     modifier = Modifier
                         .fillMaxWidth(),
@@ -215,7 +227,8 @@ fun SettingsScreen(navController: NavController,myId: Int, gameCode: String, lob
                         },
                         keyboardOptions = KeyboardOptions(
                             keyboardType = KeyboardType.Number,
-                            imeAction = ImeAction.Done),
+                            imeAction = ImeAction.Done
+                        ),
                         keyboardActions = KeyboardActions(
                             onDone = {
                                 focusManager.clearFocus()
@@ -236,9 +249,10 @@ fun SettingsScreen(navController: NavController,myId: Int, gameCode: String, lob
                             }
                         },
                         modifier = Modifier
-                                .padding(10.dp)
+                            .padding(10.dp)
                     )
                 }
+            }
             else{
                 Row(verticalAlignment = Alignment.CenterVertically) {
                     Text(text="Maksimalan broj poteza: ${lobby?.maxPlayCout}",
@@ -307,10 +321,7 @@ fun SettingsScreen(navController: NavController,myId: Int, gameCode: String, lob
             Button(
                 enabled = myPlayer?.rolledNumber!=0,
                 onClick = {
-//                    lobbyViewModel.toggleReady(gameCode,myId)
-                navController.navigate("game") {
-                    popUpTo("settings") { inclusive = true }
-                }
+                    lobbyViewModel.toggleReady(gameCode,myId)
                 },
                 colors = ButtonDefaults.buttonColors(
                     containerColor = if (myPlayer?.isReady == true) Color.Green else Color.Gray

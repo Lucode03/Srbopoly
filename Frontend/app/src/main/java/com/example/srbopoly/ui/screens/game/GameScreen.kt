@@ -52,9 +52,17 @@ import com.example.srbopoly.ui.dialogs.ExitDialog
 import com.example.srbopoly.viewmodels.GameViewModel
 
 @Composable
-fun GameScreen(navController: NavController,viewModel: GameViewModel,myId: Int=1) {
+fun GameScreen(
+    navController: NavController,
+    viewModel: GameViewModel,
+    gameId: String,
+    myId: Int=1) {
 
 //    var linearBoard by remember { mutableStateOf(false)}
+
+    LaunchedEffect(gameId) {
+        //viewModel.joinGame(gameId)
+    }
 
     var showQuitDialog by remember { mutableStateOf(false) }
 
@@ -179,5 +187,5 @@ fun GameScreen(navController: NavController,viewModel: GameViewModel,myId: Int=1
 @Composable
 fun GmPreview() {
     val mainNavController = rememberNavController()
-    GameScreen(mainNavController, viewModel = GameViewModel(),10)
+    GameScreen(mainNavController, viewModel = GameViewModel(),"", 1)
 }

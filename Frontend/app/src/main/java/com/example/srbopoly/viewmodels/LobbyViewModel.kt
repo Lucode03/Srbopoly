@@ -20,6 +20,8 @@ class LobbyViewModel @Inject constructor(
 ) : ViewModel() {
     val currentLobby: StateFlow<Lobby?> = lobbyRepository.lobbyState
 
+    val gameStarted: StateFlow<String?> = lobbyRepository.gameStarted
+
     private val _isLoading = MutableStateFlow(false)
     val isLoading = _isLoading.asStateFlow()
 
@@ -70,6 +72,10 @@ class LobbyViewModel @Inject constructor(
             lobbyRepository.leaveLobby(accessCode, userId)
             lobbyRepository.disconnect()
         }
+    }
+
+    fun startGame(accessCode: String, userId: Int) {
+        lobbyRepository.startGame(accessCode, userId)
     }
 
     override fun onCleared() {
