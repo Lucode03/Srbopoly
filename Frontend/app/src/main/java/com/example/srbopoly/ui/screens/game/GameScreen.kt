@@ -23,6 +23,8 @@ import androidx.compose.material.icons.filled.Edit
 import androidx.compose.material.icons.filled.Menu
 import androidx.compose.material.icons.filled.MoreVert
 import androidx.compose.material.icons.filled.Person
+import androidx.compose.material3.Button
+import androidx.compose.material3.Card
 import androidx.compose.material3.HorizontalDivider
 import androidx.compose.material3.Icon
 import androidx.compose.material3.Text
@@ -41,12 +43,14 @@ import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.tooling.preview.Preview
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
+import androidx.compose.ui.window.Dialog
 import androidx.compose.ui.zIndex
 import androidx.navigation.NavController
 import androidx.navigation.compose.rememberNavController
 import com.example.srbopoly.data.RewardCard
 import com.example.srbopoly.data.SurpriseCard
 import com.example.srbopoly.data.fields.PropertyField
+import com.example.srbopoly.data.gamedto.GameEndReason
 import com.example.srbopoly.ui.animations.ActionResultAnimation
 import com.example.srbopoly.ui.animations.DiceResultAnimation
 import com.example.srbopoly.ui.dialogs.ExitDialog
@@ -71,26 +75,38 @@ fun GameScreen(
     val diceResult by viewModel.diceResult.collectAsState()
     val actionResult by viewModel.actionResult.collectAsState()
 
+    val gameState by viewModel.gameState.collectAsState()
+
     var showPlayerDetails by remember { mutableStateOf(false) }
 
     val remainingTime by viewModel.remainingTime.collectAsState()
 
-    val pendingPurchaseField by viewModel.pendingPurchaseField.collectAsState()
-    val currentGameState by viewModel.gameState.collectAsState()
-    val isMyTurn = currentGameState?.currentTurn?.playerId == myId
+    val gameEndedInfo by viewModel.gameEndedInfo.collectAsState()
 
-    pendingPurchaseField?.let { field ->
-        if (field is PropertyField) {
-            FieldInfoDialog(
-                onDismiss = { },
-                field = field,
-                action = true,
-                isMyTurn = isMyTurn,
-                playerID = myId,
-                onResult = { bought ->
-                    if (bought) viewModel.buyProperty() else viewModel.declineBuy()
+    gameEndedInfo?.let { ended ->
+        val winnerName = gameState?.players?.firstOrNull { it.id == ended.winnerPlayerId }?.name ?: "Nepoznat igrač"
+        val reasonText = when (ended.reason) {
+            GameEndReason.LAST_PLAYER_STANDING -> "Svi ostali igrači su bankrotirali"
+            GameEndReason.TURN_LIMIT_REACHED -> "Dostignut je limit rundi"
+        }
+
+        Dialog(onDismissRequest = { }) {
+            Card(shape = RoundedCornerShape(20.dp), modifier = Modifier.padding(16.dp)) {
+                Column(modifier = Modifier.padding(20.dp), horizontalAlignment = Alignment.CenterHorizontally) {
+                    Text("Igra je gotova!", fontSize = 20.sp, fontWeight = FontWeight.Bold)
+                    Spacer(modifier = Modifier.height(8.dp))
+                    Text("Pobednik: $winnerName", fontSize = 16.sp)
+                    Text(reasonText, fontSize = 14.sp, color = Color.Gray)
+                    Spacer(modifier = Modifier.height(16.dp))
+                    Button(onClick = {
+                        navController.navigate("home") {
+                            popUpTo("game/{gameId}") { inclusive = true }
+                        }
+                    }) {
+                        Text("Nazad na početnu")
+                    }
                 }
-            )
+            }
         }
     }
 

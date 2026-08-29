@@ -8,11 +8,24 @@ import com.example.srbopoly.data.gamedto.CardDeckType
 import com.example.srbopoly.data.gamedto.CardDrawnEvent
 import com.example.srbopoly.data.gamedto.DiceRolledEvent
 import com.example.srbopoly.data.gamedto.GameCommand
+import com.example.srbopoly.data.gamedto.GameEndedEvent
 import com.example.srbopoly.data.gamedto.GameEvent
 import com.example.srbopoly.data.gamedto.GameStateSnapshotDto
+import com.example.srbopoly.data.gamedto.GetOutOfJailFreeCardUsedEvent
+import com.example.srbopoly.data.gamedto.HouseBuiltEvent
+import com.example.srbopoly.data.gamedto.HouseSoldEvent
+import com.example.srbopoly.data.gamedto.PlayerBankruptEvent
 import com.example.srbopoly.data.gamedto.PlayerMovedEvent
+import com.example.srbopoly.data.gamedto.PlayerReleasedFromJailEvent
+import com.example.srbopoly.data.gamedto.PlayerSentToJailEvent
+import com.example.srbopoly.data.gamedto.PropertyBoughtEvent
+import com.example.srbopoly.data.gamedto.PropertyMortgagedEvent
+import com.example.srbopoly.data.gamedto.PropertyPurchaseDeclinedEvent
 import com.example.srbopoly.data.gamedto.PropertyPurchaseOfferedEvent
+import com.example.srbopoly.data.gamedto.PropertyUnmortgagedEvent
+import com.example.srbopoly.data.gamedto.TradeAcceptedEvent
 import com.example.srbopoly.data.gamedto.TradeOfferDto
+import com.example.srbopoly.data.gamedto.TradeRejectedEvent
 import com.example.srbopoly.data.repository.GameHubRepository
 import com.example.srbopoly.data.repository.GameServerMessage
 import com.example.srbopoly.factories.FieldFactory
@@ -68,6 +81,9 @@ class GameViewModel @Inject constructor(
 
     private val _remainingTime = MutableStateFlow(TURN_TIMEOUT_SECONDS)
     val remainingTime: StateFlow<Int> = _remainingTime.asStateFlow()
+
+    private val _gameEndedInfo = MutableStateFlow<GameEndedEvent?>(null)
+    val gameEndedInfo: StateFlow<GameEndedEvent?> = _gameEndedInfo.asStateFlow()
 
     private var timerJob: Job? = null
 
@@ -131,9 +147,9 @@ class GameViewModel @Inject constructor(
                         ?.firstOrNull { it.id == event.playerId }?.position ?: event.newPosition
                     if (lastRollWasDiceRoll) {
                         animateMovement(oldPosition, event.newPosition)
-                    } else {
+                    } /*else {
                         _highlightedFields.value = emptyList()
-                    }
+                    }*/
                     lastRollWasDiceRoll = false
                 }
                 is CardDrawnEvent -> {
@@ -143,6 +159,46 @@ class GameViewModel @Inject constructor(
                 }
                 is PropertyPurchaseOfferedEvent -> {
                     _pendingPurchaseField.value = board.getOrNull(event.propertyId)
+                }
+                is PropertyBoughtEvent -> {
+                    showActionResult("${playerName(event.ownerId)} je kupio/la ${fieldName(event.fieldId)} za ${event.pricePaid}")
+                }
+                is PropertyPurchaseDeclinedEvent -> {
+                    showActionResult("Niko nije kupio ${fieldName(event.propertyId)}")
+                }
+                is HouseBuiltEvent -> {
+                    val what = if (event.newHouseCount == 5) "hotel" else "kuća"
+                    showActionResult("Izgrađen/a je $what na ${fieldName(event.fieldId)}")
+                }
+                is HouseSoldEvent -> {
+                    showActionResult("Prodata je kuća na ${fieldName(event.fieldId)}")
+                }
+                is PropertyMortgagedEvent -> {
+                    showActionResult("${fieldName(event.fieldId)} je hipotekovano")
+                }
+                is PropertyUnmortgagedEvent -> {
+                    showActionResult("Hipoteka na ${fieldName(event.fieldId)} je otkupljena")
+                }
+                is PlayerSentToJailEvent -> {
+                    showActionResult("${playerName(event.playerId)} je poslat/a u zatvor!")
+                }
+                is PlayerReleasedFromJailEvent -> {
+                    showActionResult("${playerName(event.playerId)} je izašao/la iz zatvora")
+                }
+                is GetOutOfJailFreeCardUsedEvent -> {
+                    showActionResult("${playerName(event.playerId)} je iskoristio/la kartu za izlazak iz zatvora")
+                }
+                is PlayerBankruptEvent -> {
+                    showActionResult("${playerName(event.playerId)} je bankrotirao/la!", durationMs = 3500)
+                }
+                is TradeAcceptedEvent -> {
+                    showActionResult("Razmena je prihvaćena")
+                }
+                is TradeRejectedEvent -> {
+                    showActionResult("Razmena je odbijena")
+                }
+                is GameEndedEvent -> {
+                    _gameEndedInfo.value = event
                 }
                 else -> Unit
             }
@@ -163,6 +219,19 @@ class GameViewModel @Inject constructor(
             }
         }
     }
+
+    private fun playerName(id: Int): String =
+        _gameState.value?.players?.firstOrNull { it.id == id }?.name ?: "Igrač"
+
+    private fun fieldName(fieldId: Int): String =
+        board.getOrNull(fieldId)?.Name ?: "polje"
+
+    private suspend fun showActionResult(text: String, durationMs: Long = 2500) {
+        _actionResult.value = text
+        delay(durationMs)
+        _actionResult.value = null
+    }
+
 
     fun joinGame(gameId: String) {
         viewModelScope.launch(Dispatchers.IO) {
