@@ -126,7 +126,9 @@ fun MainScreen(modifier: Modifier = Modifier,
             composable("game/{gameId}") { backStackEntry ->
                 val gameId = backStackEntry.arguments?.getString("gameId") ?: ""
                 val gameViewModel: GameViewModel = hiltViewModel()
-                GameScreen(mainNavController, gameViewModel, gameId, 1 )//Mora da se resi.
+                user?.let {
+                    GameScreen(mainNavController, gameViewModel, gameId, it.id)
+                }
             }
         }
     }

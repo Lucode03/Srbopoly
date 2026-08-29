@@ -19,7 +19,7 @@ import com.example.srbopoly.data.fields.PropertyField
 fun PropertyFieldView(
     field: PropertyField
 ) {
-    val hasOwner = field.Owner != null
+    val hasOwner = field.ownerId != null
     Column(modifier = Modifier.fillMaxWidth()) {
         FieldView(field)
 
@@ -27,19 +27,14 @@ fun PropertyFieldView(
             InfoRow("Cena", field.Price.toString(), true)
         }
         else {
-            InfoRow("Izdavanje", field.CalculateRent().toString(), true)
+            InfoRow("Osnovna renta", field.BaseRent.toString(), true)
         }
 
+        InfoRow("Vlasnik", field.ownerName ?: " - ")
         if (hasOwner) {
-            InfoRow("Vlasnik", field.Owner!!.Username)
-
-            InfoRow("Kuće", field.Houses.toString())
-
-            InfoRow("Hoteli", field.Hotels.toString())
-        }
-        else
-        {
-            InfoRow("Vlasnik"," - ")
+            InfoRow("Kuće", minOf(field.houseCount, 4).toString())
+            InfoRow("Hotel", if (field.houseCount == 5) "Da" else "Ne")
+            if (field.isMortgaged) InfoRow("Hipoteka", "Da")
         }
 
         Spacer(modifier = Modifier.height(6.dp))
@@ -49,8 +44,8 @@ fun PropertyFieldView(
         Spacer(modifier = Modifier.height(6.dp))
 
         Text(
-            text = if (field.Owner == null) "NA PRODAJU" else "PRODATO",
-            color = if (field.Owner == null) Color(0xFF2E7D32) else Color(0xFFC62828),
+            text = if (!hasOwner) "NA PRODAJU" else "PRODATO",
+            color = if (!hasOwner) Color(0xFF2E7D32) else Color(0xFFC62828),
             fontWeight = FontWeight.Bold,
             fontSize = 16.sp,
             modifier = Modifier.fillMaxWidth(),

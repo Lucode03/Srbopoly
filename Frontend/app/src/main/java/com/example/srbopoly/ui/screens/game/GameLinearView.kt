@@ -36,21 +36,21 @@ import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
 import androidx.compose.ui.unit.times
 import com.example.srbopoly.classes.getDiceImage
+import com.example.srbopoly.data.gamedto.toColorName
 import com.example.srbopoly.data.getFigure
 import com.example.srbopoly.viewmodels.GameViewModel
 
 @Composable
 fun GameLinearView(myId:Int, viewModel: GameViewModel, playerPosition:Int)
 {
-    val gameState by viewModel.gameState
-
-    val dice1 by viewModel.dice1.collectAsState()
-    val dice2 by viewModel.dice2.collectAsState()
+    val gameState by viewModel.gameState.collectAsState()
+    val state = gameState ?: return
 
     val board = viewModel.board
 
-    val players by viewModel.players
-    val playersByField = players.groupBy { it.Position }
+    val players = state.players
+    val playersByField = players.groupBy { it.position }
+
     val visibleFields = remember(playerPosition, board) {
         (-1..10).map { offset ->
             val index = (playerPosition + offset + board.size) % board.size
@@ -112,8 +112,8 @@ fun GameLinearView(myId:Int, viewModel: GameViewModel, playerPosition:Int)
                             Row(horizontalArrangement = Arrangement.spacedBy(4.dp)) {
                                 rowPlayers.forEach { player ->
                                     Image(
-                                        painter = painterResource(id = getFigure(player.Color)),
-                                        contentDescription = player.Username,
+                                        painter = painterResource(id = getFigure(player.color.toColorName())),
+                                        contentDescription = player.name,
                                         modifier = Modifier
                                             .size(24.dp)
                                     )

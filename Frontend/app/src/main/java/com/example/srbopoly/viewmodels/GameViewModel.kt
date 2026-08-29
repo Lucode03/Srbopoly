@@ -2,6 +2,8 @@ package com.example.srbopoly.viewmodels
 
 import androidx.lifecycle.ViewModel
 import androidx.lifecycle.viewModelScope
+import com.example.srbopoly.data.fields.Field
+import com.example.srbopoly.data.fields.PropertyField
 import com.example.srbopoly.data.gamedto.CardDeckType
 import com.example.srbopoly.data.gamedto.CardDrawnEvent
 import com.example.srbopoly.data.gamedto.DiceRolledEvent
@@ -9,6 +11,7 @@ import com.example.srbopoly.data.gamedto.GameCommand
 import com.example.srbopoly.data.gamedto.GameEvent
 import com.example.srbopoly.data.gamedto.GameStateSnapshotDto
 import com.example.srbopoly.data.gamedto.PlayerMovedEvent
+import com.example.srbopoly.data.gamedto.PropertyPurchaseOfferedEvent
 import com.example.srbopoly.data.gamedto.TradeOfferDto
 import com.example.srbopoly.data.repository.GameHubRepository
 import com.example.srbopoly.data.repository.GameServerMessage
@@ -51,6 +54,9 @@ class GameViewModel @Inject constructor(
     private val _actionResult = MutableStateFlow<String?>(null)
     val actionResult = _actionResult.asStateFlow()
 
+    private val _pendingPurchaseField = MutableStateFlow<Field?>(null)
+    val pendingPurchaseField: StateFlow<Field?> = _pendingPurchaseField.asStateFlow()
+
     private val _highlightedFields = MutableStateFlow<List<Int>>(emptyList())
     val highlightedFields: StateFlow<List<Int>> = _highlightedFields.asStateFlow()
 
@@ -72,6 +78,7 @@ class GameViewModel @Inject constructor(
                     is GameServerMessage.EventsBatch -> handleEvents(message.events)
                     is GameServerMessage.Snapshot -> {
                         _gameState.value = message.dto
+                        syncFieldState(message.dto)
                         restartCosmeticTimer()
                     }
                 }
@@ -134,10 +141,25 @@ class GameViewModel @Inject constructor(
                     delay(3000)
                     _lastDrawnCardText.value = null
                 }
-                // ostali eventi (MoneyTransferEvent, PropertyBoughtEvent, TradeAcceptedEvent...)
-                // trenutno ne trebaju posebnu animaciju - gameState iz narednog Snapshot-a
-                // već nosi konačan, tačan rezultat
+                is PropertyPurchaseOfferedEvent -> {
+                    _pendingPurchaseField.value = board.getOrNull(event.propertyId)
+                }
                 else -> Unit
+            }
+        }
+    }
+
+    private fun syncFieldState(state: GameStateSnapshotDto) {
+        val fieldStatesById = state.fields.associateBy { it.fieldId }
+        val playersById = state.players.associateBy { it.id }
+
+        board.forEach { field ->
+            if (field is PropertyField) {
+                val fieldState = fieldStatesById[field.GameFieldID] ?: return@forEach
+                field.ownerId = fieldState.ownerId
+                field.ownerName = fieldState.ownerId?.let { playersById[it]?.name }
+                field.houseCount = fieldState.houseCount
+                field.isMortgaged = fieldState.isMortgaged
             }
         }
     }
@@ -149,8 +171,14 @@ class GameViewModel @Inject constructor(
     }
 
     fun rollDice() = sendCommand(GameCommand.RollDice())
-    fun buyProperty() = sendCommand(GameCommand.BuyProperty())
-    fun declineBuy() = sendCommand(GameCommand.DeclineBuy())
+    fun buyProperty() {
+        sendCommand(GameCommand.BuyProperty())
+        _pendingPurchaseField.value = null
+    }
+    fun declineBuy() {
+        sendCommand(GameCommand.DeclineBuy())
+        _pendingPurchaseField.value = null
+    }
     fun endTurn() = sendCommand(GameCommand.EndTurn())
     fun buildHouse(fieldId: Int) = sendCommand(GameCommand.BuildHouse(fieldId))
     fun sellHouse(fieldId: Int) = sendCommand(GameCommand.SellHouse(fieldId))

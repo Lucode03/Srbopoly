@@ -46,9 +46,11 @@ import androidx.navigation.NavController
 import androidx.navigation.compose.rememberNavController
 import com.example.srbopoly.data.RewardCard
 import com.example.srbopoly.data.SurpriseCard
+import com.example.srbopoly.data.fields.PropertyField
 import com.example.srbopoly.ui.animations.ActionResultAnimation
 import com.example.srbopoly.ui.animations.DiceResultAnimation
 import com.example.srbopoly.ui.dialogs.ExitDialog
+import com.example.srbopoly.ui.dialogs.FieldInfoDialog
 import com.example.srbopoly.viewmodels.GameViewModel
 
 @Composable
@@ -72,6 +74,25 @@ fun GameScreen(
     var showPlayerDetails by remember { mutableStateOf(false) }
 
     val remainingTime by viewModel.remainingTime.collectAsState()
+
+    val pendingPurchaseField by viewModel.pendingPurchaseField.collectAsState()
+    val currentGameState by viewModel.gameState.collectAsState()
+    val isMyTurn = currentGameState?.currentTurn?.playerId == myId
+
+    pendingPurchaseField?.let { field ->
+        if (field is PropertyField) {
+            FieldInfoDialog(
+                onDismiss = { },
+                field = field,
+                action = true,
+                isMyTurn = isMyTurn,
+                playerID = myId,
+                onResult = { bought ->
+                    if (bought) viewModel.buyProperty() else viewModel.declineBuy()
+                }
+            )
+        }
+    }
 
     if (showQuitDialog) {
         ExitDialog(

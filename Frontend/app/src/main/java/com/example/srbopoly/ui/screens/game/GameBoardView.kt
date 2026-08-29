@@ -69,6 +69,7 @@ import com.example.srbopoly.draw_functions.drawImageOnCanvas
 import com.example.srbopoly.draw_functions.limit
 import com.example.srbopoly.draw_functions.rotateImageBitmap
 import com.example.srbopoly.data.gamedto.TurnPhase
+import com.example.srbopoly.ui.dialogs.FieldInfoDialog
 import com.example.srbopoly.viewmodels.GameViewModel
 
 @Composable
@@ -96,6 +97,8 @@ fun GameBoardView(myId:Int,viewModel: GameViewModel,showPlayerDetails:Boolean=tr
     val currentPlayer = players.getOrNull(state.currentPlayerIndex)
     val isMyTurn = myId == state.currentTurn.playerId
 
+    val pendingPurchaseField by viewModel.pendingPurchaseField.collectAsState()
+
     var selectedField by remember { mutableStateOf<Field?>(null) }
     var showInfoDialog by remember { mutableStateOf(false) }
 
@@ -104,44 +107,41 @@ fun GameBoardView(myId:Int,viewModel: GameViewModel,showPlayerDetails:Boolean=tr
     var selectedPlayerToShowFields by remember { mutableStateOf<Int?>(null) }
     var showPlayerFields by remember { mutableStateOf(false) }
 
-    /*
-    val actionField by viewModel.activeField
-    if(showInfoDialog)
-    {
+
+    val isTurnActionsPhase = state.currentTurn.phase == TurnPhase.TURN_ACTIONS
+
+    if (showInfoDialog && selectedField != null) {
         FieldInfoDialog(
-            onDismiss = {
-                selectedField=null
-                showInfoDialog=false
-            },
-            selectedField!!,
+            onDismiss = { selectedField = null; showInfoDialog = false },
+            field = selectedField!!,
+            action = false,
+            isMyTurn = isMyTurn,
+            playerID = myId,
             onResult = {
-                selectedField=null
-                showInfoDialog=false
-            },
-            playerID=myId
+                if (it && selectedField is PropertyField) {
+                    viewModel.buildHouse((selectedField as PropertyField).GameFieldID)
+                }
+                selectedField = null
+                showInfoDialog = false
+            }
         )
     }
-    if(actionField != null)
-    {
-        val isMyTurn= myId==viewModel.getCurrentPlayer().id
-        selectedField=null
-        showInfoDialog=false
 
-        FieldInfoDialog(
-            onDismiss = {
-//                viewModel.applyFieldAction(false)
-//                viewModel.clearActiveField()
-            },
-            actionField!!,
-            action=true,
-            onResult = { result->
-                viewModel.applyFieldAction(result)
-                viewModel.clearActiveField()
-            },
-//            isMyTurn = isMyTurn,
-            playerID=myId
-        )
-    }*/
+    pendingPurchaseField?.let { field ->
+        if (field is PropertyField) {
+            selectedField = null
+            showInfoDialog = false
+
+            FieldInfoDialog(
+                onDismiss = { },
+                field = field,
+                action = true,
+                isMyTurn = isMyTurn,
+                playerID = myId,
+                onResult = { bought -> if (bought) viewModel.buyProperty() else viewModel.declineBuy() }
+            )
+        }
+    }
 
     val scrollState = rememberScrollState()
 
@@ -336,7 +336,7 @@ fun GameBoardView(myId:Int,viewModel: GameViewModel,showPlayerDetails:Boolean=tr
                         if (isHighlighted && currentPlayer != null) getColor(currentPlayer.color.toColorName()) else Color.White
                     )
 
-                    val isOwnedBySelectedPlayer = (field is PropertyField && field.Owner?.id == selectedPlayerToShowFields)
+                    val isOwnedBySelectedPlayer = (field is PropertyField && field.ownerId == selectedPlayerToShowFields)
 
                     val fieldBorderColor by animateColorAsState(
                         if (showPlayerFields && isOwnedBySelectedPlayer) Color.Blue else Color.Black
