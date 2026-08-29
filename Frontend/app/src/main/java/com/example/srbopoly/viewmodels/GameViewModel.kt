@@ -1,195 +1,186 @@
 package com.example.srbopoly.viewmodels
 
-import androidx.compose.runtime.mutableStateOf
 import androidx.lifecycle.ViewModel
-import com.example.srbopoly.classes.GameState
-import androidx.compose.runtime.State
 import androidx.lifecycle.viewModelScope
-import com.example.srbopoly.data.Player
-import com.example.srbopoly.data.fields.Field
-import com.example.srbopoly.data.fields.PropertyField
-import com.example.srbopoly.enums.TurnPhase
+import com.example.srbopoly.data.gamedto.CardDeckType
+import com.example.srbopoly.data.gamedto.CardDrawnEvent
+import com.example.srbopoly.data.gamedto.DiceRolledEvent
+import com.example.srbopoly.data.gamedto.GameCommand
+import com.example.srbopoly.data.gamedto.GameEvent
+import com.example.srbopoly.data.gamedto.GameStateSnapshotDto
+import com.example.srbopoly.data.gamedto.PlayerMovedEvent
+import com.example.srbopoly.data.gamedto.TradeOfferDto
+import com.example.srbopoly.data.repository.GameHubRepository
+import com.example.srbopoly.data.repository.GameServerMessage
 import com.example.srbopoly.factories.FieldFactory
 import dagger.hilt.android.lifecycle.HiltViewModel
+import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.Job
 import kotlinx.coroutines.delay
+import kotlinx.coroutines.flow.MutableSharedFlow
 import kotlinx.coroutines.flow.MutableStateFlow
+import kotlinx.coroutines.flow.SharedFlow
+import kotlinx.coroutines.flow.StateFlow
+import kotlinx.coroutines.flow.asSharedFlow
 import kotlinx.coroutines.flow.asStateFlow
 import kotlinx.coroutines.launch
 import javax.inject.Inject
 
+private const val TURN_TIMEOUT_SECONDS = 60
+
 @HiltViewModel
 class GameViewModel @Inject constructor(
-//    private val lobbyRepository: LobbyRepository
+    private val gameHubRepository: GameHubRepository
 ): ViewModel() {
 
-    private val _board = List(40) { index ->
-        FieldFactory.createField(index)
-    }
-    val board = _board
+    private val fieldCatalog = List(40) { index -> FieldFactory.createField(index) }
+    val board get() = fieldCatalog
 
-//    val rewardCardsDeck = List(40) { mutableStateListOf<RewardCard>() }
-//    val surpriseCardsDeck = List(40) { mutableStateListOf<SurpriseCard>() }
+    private val _gameState = MutableStateFlow<GameStateSnapshotDto?>(null)
+    val gameState: StateFlow<GameStateSnapshotDto?> = _gameState.asStateFlow()
+
 
     private val _dice1 = MutableStateFlow(0)
     val dice1 = _dice1.asStateFlow()
 
     private val _dice2 = MutableStateFlow(0)
     val dice2 = _dice2.asStateFlow()
-
-    private val _players = mutableStateOf(
-        listOf(
-            Player(1,"Igrac 1",1000, 10,"Crvena"),
-            Player(2,"Igrac 2",1000,20, "Plava"),
-            Player(3,"Igrac 3",1000,20, "Bela"),
-            Player(4,"Igrac 4",1000,10, "Zelena")
-        )
-    )
-    val players: State<List<Player>> = _players
-
-    private val _gameState = mutableStateOf(GameState(50))
-    val gameState: State<GameState> = _gameState
-
-    //animation variables
     private val _diceResult = MutableStateFlow<Int?>(null)
     val diceResult = _diceResult.asStateFlow()
-
-    private val _activeField = mutableStateOf<Field?>(null)
-    val activeField: State<Field?> = _activeField
-
-    private val _highlightedFields = MutableStateFlow<List<Int>>(emptyList())
-    val highlightedFields = _highlightedFields
-
-    private var _phase = mutableStateOf(TurnPhase.DICE_ROLL)
-    val phase: State<TurnPhase> = _phase
-
-    private var _remainingTime = mutableStateOf(20)
-    val remainingTime: State<Int> = _remainingTime
 
     private val _actionResult = MutableStateFlow<String?>(null)
     val actionResult = _actionResult.asStateFlow()
 
+    private val _highlightedFields = MutableStateFlow<List<Int>>(emptyList())
+    val highlightedFields: StateFlow<List<Int>> = _highlightedFields.asStateFlow()
+
+    private val _lastDrawnCardText = MutableStateFlow<String?>(null)
+    val lastDrawnCardText: StateFlow<String?> = _lastDrawnCardText.asStateFlow()
+
+    private val _commandError = MutableSharedFlow<String>(extraBufferCapacity = 4)
+    val commandError: SharedFlow<String> = _commandError.asSharedFlow()
+
+    private val _remainingTime = MutableStateFlow(TURN_TIMEOUT_SECONDS)
+    val remainingTime: StateFlow<Int> = _remainingTime.asStateFlow()
+
     private var timerJob: Job? = null
 
-    private fun startTimer(seconds: Int, onFinish: () -> Unit) {
+    init {
+        viewModelScope.launch {
+            gameHubRepository.messages.collect { message ->
+                when (message) {
+                    is GameServerMessage.EventsBatch -> handleEvents(message.events)
+                    is GameServerMessage.Snapshot -> {
+                        _gameState.value = message.dto
+                        restartCosmeticTimer()
+                    }
+                }
+            }
+        }
+    }
+
+    private suspend fun animateMovement(from: Int, to: Int) {
+        val path = mutableListOf<Int>()
+        var current = from
+        val boardSize = board.size
+        val steps = if (to >= from) to - from else (boardSize - from) + to
+
+        repeat(steps) {
+            current = (current + 1) % boardSize
+            path.add(current)
+            _highlightedFields.value = path.toList()
+            delay(300)
+        }
+        _highlightedFields.value = emptyList()
+    }
+
+
+    private fun restartCosmeticTimer() {
         timerJob?.cancel()
-
         timerJob = viewModelScope.launch {
-            _remainingTime.value = seconds
-
+            _remainingTime.value = TURN_TIMEOUT_SECONDS
             while (_remainingTime.value > 0) {
                 delay(1000)
                 _remainingTime.value--
             }
-
-            onFinish()
         }
     }
 
-    private fun startDicePhase() {
-        _phase.value = TurnPhase.DICE_ROLL
-        startTimer(20) {
-            movePlayer()
-        }
-    }
-    private fun startPlayingPhase() {
-        _phase.value = TurnPhase.PLAYING
-        startTimer(120) {
-            if(activeField.value!=null)
-                clearActiveField()
-            nextTurn()
-        }
-    }
-    private fun rollDice():Int {
-        val r1 = (1..6).random()
-        val r2 = (1..6).random()
+    private suspend fun handleEvents(events: List<GameEvent>) {
+        var lastRollWasDiceRoll = false
 
-        _dice1.value = r1
-        _dice2.value = r2
-
-        return dice1.value+dice2.value
-    }
-    fun getCurrentPlayer():Player
-    {
-        val currentIndex = gameState.value.currentPlayer
-        val currentPlayer = _players.value[currentIndex]
-
-        return currentPlayer
-    }
-    fun startTurn(){
-        startDicePhase()
-    }
-    fun movePlayer() {
-        timerJob?.cancel()
-
-        val steps = rollDice()
-        _diceResult.value = steps
-
-        //proveri da li svi igraci vide animaciju
-        viewModelScope.launch {
-            delay(2000)
-
-            _diceResult.value = null
-
-            val currentPlayer = getCurrentPlayer()
-
-            delay(800)
-
-            val path = mutableListOf<Int>()
-            var currentPosition = currentPlayer.Position
-
-            repeat(steps) {
-                currentPosition = (currentPosition + 1) % board.size
-
-                path.add(currentPosition)
-                _highlightedFields.value = path.toList()
-
-                delay(600)
+        for (event in events) {
+            when (event) {
+                is DiceRolledEvent -> {
+                    lastRollWasDiceRoll = true
+                    _dice1.value = event.die1
+                    _dice2.value = event.die2
+                    _diceResult.value = event.die1 + event.die2
+                    delay(2000)
+                    _diceResult.value = null
+                }
+                is PlayerMovedEvent -> {
+                    val oldPosition = _gameState.value?.players
+                        ?.firstOrNull { it.id == event.playerId }?.position ?: event.newPosition
+                    if (lastRollWasDiceRoll) {
+                        animateMovement(oldPosition, event.newPosition)
+                    } else {
+                        _highlightedFields.value = emptyList()
+                    }
+                    lastRollWasDiceRoll = false
+                }
+                is CardDrawnEvent -> {
+                    _lastDrawnCardText.value = "TODO: tekst kartice (katalog dolazi kasnije)"
+                    delay(3000)
+                    _lastDrawnCardText.value = null
+                }
+                // ostali eventi (MoneyTransferEvent, PropertyBoughtEvent, TradeAcceptedEvent...)
+                // trenutno ne trebaju posebnu animaciju - gameState iz narednog Snapshot-a
+                // već nosi konačan, tačan rezultat
+                else -> Unit
             }
-
-            currentPlayer.Move(steps)
-
-            _highlightedFields.value = emptyList()
-            delay(200)
-
-            val field = board[currentPlayer.Position]
-            _activeField.value = field
-
-            startPlayingPhase()
-
-        }
-
-    }
-    fun nextTurn(){
-        timerJob?.cancel()
-
-        _dice1.value = 0
-        _dice2.value = 0
-
-        _gameState.value.currentPlayer=(_gameState.value.currentPlayer+1)%_players.value.size
-        if(_gameState.value.currentPlayer==0)
-            _gameState.value.currentMove+=1
-
-        startDicePhase()
-    }
-    fun applyFieldAction(apply:Boolean=true)
-    {
-        if(!apply && _activeField.value is PropertyField)
-            return
-        viewModelScope.launch {
-            val currentPlayer = getCurrentPlayer()
-
-            _actionResult.value = _activeField.value!!.Action(currentPlayer)
-
-            delay(4000)
-
-            _actionResult.value = null
         }
     }
-    fun clearActiveField() {
-        viewModelScope.launch {
-            _activeField.value = null
-            delay(1000L)
+
+    fun joinGame(gameId: String) {
+        viewModelScope.launch(Dispatchers.IO) {
+            gameHubRepository.connectAndJoin(gameId)
         }
+    }
+
+    fun rollDice() = sendCommand(GameCommand.RollDice())
+    fun buyProperty() = sendCommand(GameCommand.BuyProperty())
+    fun declineBuy() = sendCommand(GameCommand.DeclineBuy())
+    fun endTurn() = sendCommand(GameCommand.EndTurn())
+    fun buildHouse(fieldId: Int) = sendCommand(GameCommand.BuildHouse(fieldId))
+    fun sellHouse(fieldId: Int) = sendCommand(GameCommand.SellHouse(fieldId))
+    fun mortgageProperty(fieldId: Int) = sendCommand(GameCommand.MortgageProperty(fieldId))
+    fun unmortgageProperty(fieldId: Int) = sendCommand(GameCommand.UnmortgageProperty(fieldId))
+    fun useGetOutOfJailFreeCard(deckType: CardDeckType) =
+        sendCommand(GameCommand.UseGetOutOfJailFreeCard(deckType))
+
+    fun proposeTrade(targetPlayerId: Int, offer: TradeOfferDto) =
+        sendCommand(GameCommand.ProposeTrade(targetPlayerId, offer))
+    fun acceptTrade() = sendCommand(GameCommand.AcceptTrade())
+    fun rejectTrade() = sendCommand(GameCommand.RejectTrade())
+
+    fun requestPause() {
+        viewModelScope.launch(Dispatchers.IO) {
+            gameHubRepository.requestPause()
+        }
+    }
+
+    private fun sendCommand(command: GameCommand) {
+        viewModelScope.launch(Dispatchers.IO) {
+            val result = gameHubRepository.sendCommand(command)
+            if (!result.success && result.error != null) {
+                _commandError.tryEmit(result.error)
+            }
+        }
+    }
+
+    override fun onCleared() {
+        super.onCleared()
+        gameHubRepository.disconnect()
     }
 }

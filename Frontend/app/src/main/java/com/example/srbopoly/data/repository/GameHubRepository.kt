@@ -15,14 +15,16 @@ import com.microsoft.signalr.HubConnectionState
 import io.reactivex.rxjava3.core.Single
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.flow.MutableSharedFlow
-import kotlinx.coroutines.flow.MutableStateFlow
 import kotlinx.coroutines.flow.SharedFlow
-import kotlinx.coroutines.flow.StateFlow
 import kotlinx.coroutines.flow.asSharedFlow
-import kotlinx.coroutines.flow.asStateFlow
 import kotlinx.coroutines.withContext
 import javax.inject.Inject
 import javax.inject.Singleton
+
+sealed interface GameServerMessage {
+    data class Snapshot(val dto: GameStateSnapshotDto) : GameServerMessage
+    data class EventsBatch(val events: List<GameEvent>) : GameServerMessage
+}
 
 @Singleton
 class GameHubRepository @Inject constructor(
@@ -31,11 +33,8 @@ class GameHubRepository @Inject constructor(
 )  {
     private var hubConnection: HubConnection? = null
 
-    private val _gameState = MutableStateFlow<GameStateSnapshotDto?>(null)
-    val gameState: StateFlow<GameStateSnapshotDto?> = _gameState.asStateFlow()
-
-    private val _events = MutableSharedFlow<GameEvent>(extraBufferCapacity = 16)
-    val events: SharedFlow<GameEvent> = _events.asSharedFlow()
+    private val _messages = MutableSharedFlow<GameServerMessage>(extraBufferCapacity = 32)
+    val messages: SharedFlow<GameServerMessage> = _messages.asSharedFlow()
 
     fun connectAndJoin(gameId: String) {
         if (hubConnection?.connectionState == HubConnectionState.CONNECTED) {
@@ -48,18 +47,19 @@ class GameHubRepository @Inject constructor(
             .build()
 
         hubConnection?.on("GameSnapshot", { snapshot ->
-            _gameState.value = snapshot
+            _messages.tryEmit(GameServerMessage.Snapshot(snapshot))
         }, GameStateSnapshotDto::class.java)
 
         hubConnection?.on("GameEvents", { batch ->
-            batch.events.forEach { rawEvent ->
+            val parsed = batch.events.mapNotNull { rawEvent ->
                 try {
-                    val event = GameEventGson.instance.fromJson(rawEvent, GameEvent::class.java)
-                    _events.tryEmit(event)
+                    GameEventGson.instance.fromJson(rawEvent, GameEvent::class.java)
                 } catch (e: Exception) {
                     Log.e("GameHubRepository", "Neprepoznat event: $rawEvent", e)
+                    null
                 }
             }
+            _messages.tryEmit(GameServerMessage.EventsBatch(parsed))
         }, GameEventBatchRaw::class.java)
 
         hubConnection?.start()?.blockingAwait()
@@ -79,6 +79,5 @@ class GameHubRepository @Inject constructor(
 
     fun disconnect() {
         hubConnection?.stop()
-        _gameState.value = null
     }
 }

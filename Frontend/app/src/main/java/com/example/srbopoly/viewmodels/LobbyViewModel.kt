@@ -7,6 +7,7 @@ import com.example.srbopoly.data.AuthTokenProvider
 import com.example.srbopoly.data.Lobby
 import com.example.srbopoly.data.repository.LobbyRepository
 import dagger.hilt.android.lifecycle.HiltViewModel
+import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.flow.MutableStateFlow
 import kotlinx.coroutines.flow.StateFlow
 import kotlinx.coroutines.flow.asStateFlow
@@ -46,7 +47,9 @@ class LobbyViewModel @Inject constructor(
     fun initLobby(accessCode: String, userId: Int) {
         Log.d("LobbyViewModel", "Moj id-je $userId")
         val token = tokenProvider.token ?: return
-        lobbyRepository.connectToHub(accessCode, userId, token)
+        viewModelScope.launch(Dispatchers.IO) {
+            lobbyRepository.connectToHub(accessCode, userId, token)
+        }
     }
 
     fun setPlayerColor(accessCode: String, userId: Int, colorInt: Int) {

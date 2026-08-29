@@ -13,11 +13,9 @@ import androidx.compose.foundation.layout.BoxWithConstraints
 import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.Row
 import androidx.compose.foundation.layout.Spacer
-import androidx.compose.foundation.layout.fillMaxHeight
 import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.height
-import androidx.compose.foundation.layout.heightIn
 import androidx.compose.foundation.layout.offset
 import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.layout.size
@@ -64,13 +62,13 @@ import com.example.srbopoly.data.fields.PropertyField
 import com.example.srbopoly.data.fields.getCenterRect
 import com.example.srbopoly.data.fields.getFieldOffset
 import com.example.srbopoly.data.fields.getFieldSize
+import com.example.srbopoly.data.gamedto.toColorName
 import com.example.srbopoly.data.getColor
 import com.example.srbopoly.data.getFigure
 import com.example.srbopoly.draw_functions.drawImageOnCanvas
 import com.example.srbopoly.draw_functions.limit
 import com.example.srbopoly.draw_functions.rotateImageBitmap
-import com.example.srbopoly.enums.TurnPhase
-import com.example.srbopoly.ui.dialogs.FieldInfoDialog
+import com.example.srbopoly.data.gamedto.TurnPhase
 import com.example.srbopoly.viewmodels.GameViewModel
 
 @Composable
@@ -78,27 +76,36 @@ fun GameBoardView(myId:Int,viewModel: GameViewModel,showPlayerDetails:Boolean=tr
 {
     val board_center_image = ImageBitmap.imageResource(R.drawable.board_center)
 
-    val gameState by viewModel.gameState
+    val gameState by viewModel.gameState.collectAsState()
+    val state = gameState ?: run {
+        Box(modifier = Modifier.fillMaxSize(), contentAlignment = Alignment.Center) {
+            Text("Povezivanje sa partijom...")
+        }
+        return
+    }
 
     val dice1 by viewModel.dice1.collectAsState()
     val dice2 by viewModel.dice2.collectAsState()
 
     val board = viewModel.board
 
-    val players by viewModel.players
-    val playersByField = players.groupBy { it.Position }
+    val players = state.players
+    val playersByField = players.groupBy { it.position }
 
     val myPlayer = players.find { it.id == myId }
+    val currentPlayer = players.getOrNull(state.currentPlayerIndex)
+    val isMyTurn = myId == state.currentTurn.playerId
 
-    var showInfoDialog by remember { mutableStateOf(false) }
     var selectedField by remember { mutableStateOf<Field?>(null) }
-
-    val actionField by viewModel.activeField
+    var showInfoDialog by remember { mutableStateOf(false) }
 
     val highlighted by viewModel.highlightedFields.collectAsState()
 
     var selectedPlayerToShowFields by remember { mutableStateOf<Int?>(null) }
     var showPlayerFields by remember { mutableStateOf(false) }
+
+    /*
+    val actionField by viewModel.activeField
     if(showInfoDialog)
     {
         FieldInfoDialog(
@@ -134,7 +141,8 @@ fun GameBoardView(myId:Int,viewModel: GameViewModel,showPlayerDetails:Boolean=tr
 //            isMyTurn = isMyTurn,
             playerID=myId
         )
-    }
+    }*/
+
     val scrollState = rememberScrollState()
 
     Column(modifier = Modifier
@@ -151,8 +159,8 @@ fun GameBoardView(myId:Int,viewModel: GameViewModel,showPlayerDetails:Boolean=tr
                     horizontalArrangement = Arrangement.spacedBy(12.dp)
                 ) {
                     rowPlayers.forEach { player ->
-                        val isCurrentPlayer = player.id == players[gameState.currentPlayer].id
-                        val cardHeight=if(showPlayerDetails) 120.dp else 40.dp
+                        val isCurrentPlayer = player.id == currentPlayer?.id
+                        val cardHeight = if (showPlayerDetails) 120.dp else 40.dp
 
                         BoxWithConstraints(
                             modifier = Modifier
@@ -204,7 +212,7 @@ fun GameBoardView(myId:Int,viewModel: GameViewModel,showPlayerDetails:Boolean=tr
                                                 )
                                             } else {
                                                 Text(
-                                                    text = player.Username,
+                                                    text = player.name,
                                                     fontSize = titleSize,
                                                     color = Color.Black
                                                 )
@@ -212,8 +220,8 @@ fun GameBoardView(myId:Int,viewModel: GameViewModel,showPlayerDetails:Boolean=tr
                                         }
 
                                         Image(
-                                            painter = painterResource(getFigure(player.Color)),
-                                            contentDescription = "Figurica od ${player.Username}",
+                                            painter = painterResource(getFigure(player.color.toColorName())),
+                                            contentDescription = "Figurica od ${player.name}",
                                             modifier = Modifier.size(iconSize)
                                                 .align(Alignment.CenterEnd)
                                         )
@@ -235,7 +243,7 @@ fun GameBoardView(myId:Int,viewModel: GameViewModel,showPlayerDetails:Boolean=tr
                                         ) {
 
                                             Text(
-                                                text = "${player.Balance} "+stringResource(R.string.money),
+                                                text = "${player.money} "+stringResource(R.string.money),
                                                 fontSize = smallSize,
                                                 color = Color.Black,
                                                 maxLines = 2,
@@ -244,14 +252,14 @@ fun GameBoardView(myId:Int,viewModel: GameViewModel,showPlayerDetails:Boolean=tr
                                             Spacer(modifier = Modifier.height(spacerHeight))
                                             Row {
                                                 Text(
-                                                    text = board[player.Position].Name.limit(14),
+                                                    text = board[player.position].Name.limit(14),
                                                     maxLines = 1,
                                                     overflow = TextOverflow.Ellipsis,
                                                     fontSize = smallSize,
                                                     color = Color.Black
                                                 )
                                                 Text(
-                                                    text = " (${player.Position})",
+                                                    text = " (${player.position})",
                                                     fontSize = smallSize,
                                                     color = Color.Gray
                                                 )
@@ -270,11 +278,10 @@ fun GameBoardView(myId:Int,viewModel: GameViewModel,showPlayerDetails:Boolean=tr
                                                         if (showPlayerFields && selectedPlayerToShowFields != player.id) {
                                                             selectedPlayerToShowFields = player.id
                                                         } else {
-                                                            if (selectedPlayerToShowFields == null)
-                                                                selectedPlayerToShowFields =
-                                                                    player.id
+                                                            selectedPlayerToShowFields = if (selectedPlayerToShowFields == null)
+                                                                player.id
                                                             else
-                                                                selectedPlayerToShowFields = null
+                                                                null
                                                             showPlayerFields = !showPlayerFields
 
                                                         }
@@ -326,7 +333,7 @@ fun GameBoardView(myId:Int,viewModel: GameViewModel,showPlayerDetails:Boolean=tr
                     val playersOnField = playersByField[field.GameFieldID] ?: emptyList()
 
                     val fieldFillColor by animateColorAsState(
-                        if (isHighlighted) getColor(viewModel.getCurrentPlayer().Color) else Color.White
+                        if (isHighlighted && currentPlayer != null) getColor(currentPlayer.color.toColorName()) else Color.White
                     )
 
                     val isOwnedBySelectedPlayer = (field is PropertyField && field.Owner?.id == selectedPlayerToShowFields)
@@ -388,7 +395,7 @@ fun GameBoardView(myId:Int,viewModel: GameViewModel,showPlayerDetails:Boolean=tr
                             ) {
                                 playersOnField.forEach { player ->
                                     Image(
-                                        painter = painterResource(id = getFigure(player.Color)),
+                                        painter = painterResource(id = getFigure(player.color.toColorName())),
                                         contentDescription = null,
                                         modifier = Modifier.size(figureSize)
                                     )
@@ -419,7 +426,7 @@ fun GameBoardView(myId:Int,viewModel: GameViewModel,showPlayerDetails:Boolean=tr
                                     ) {
                                         columnPlayers.forEach { player ->
                                             Image(
-                                                painter = painterResource(id = getFigure(player.Color)),
+                                                painter = painterResource(id = getFigure(player.color.toColorName())),
                                                 contentDescription = null,
                                                 modifier = Modifier.size(figureSize)
                                             )
@@ -460,60 +467,46 @@ fun GameBoardView(myId:Int,viewModel: GameViewModel,showPlayerDetails:Boolean=tr
                 .padding(top=20.dp),
             contentAlignment = Alignment.TopCenter)
         {
-            val phase by viewModel.phase
-
-            if(phase==TurnPhase.DICE_ROLL) {
-                Row(
-                    modifier = Modifier.clickable(
-//                    enabled = myPlayer?.id == players[gameState.currentPlayer].id,
-                        onClick = {
-                            viewModel.movePlayer()
-                        }
-                    ),
-                    horizontalArrangement = Arrangement.spacedBy(16.dp),
-                    verticalAlignment = Alignment.CenterVertically
-                ) {
-                    Image(
-                        painter = painterResource(getDiceImage(dice1)),
-                        contentDescription = "Dice 1",
-                        modifier = Modifier
-                            .size(64.dp)
-                            .clip(RoundedCornerShape(12.dp))
-                            .border(
-                                width = 2.dp,
-                                color = Color.Blue,
-                                shape = RoundedCornerShape(12.dp)
-                            )
-                    )
-                    Image(
-                        painter = painterResource(getDiceImage(dice2)),
-                        contentDescription = "Dice 2",
-                        modifier = Modifier
-                            .size(64.dp)
-                            .clip(RoundedCornerShape(12.dp))
-                            .border(
-                                width = 2.dp,
-                                color = Color.Blue,
-                                shape = RoundedCornerShape(12.dp)
-                            )
-                    )
+            when {
+                state.currentTurn.phase == TurnPhase.AWAITING_ROLL -> {
+                    Row(
+                        modifier = Modifier.clickable(
+                            enabled = isMyTurn,
+                            onClick = { viewModel.rollDice() }
+                        ),
+                        horizontalArrangement = Arrangement.spacedBy(16.dp),
+                        verticalAlignment = Alignment.CenterVertically
+                    ) {
+                        Image(
+                            painter = painterResource(getDiceImage(dice1)),
+                            contentDescription = "Dice 1",
+                            modifier = Modifier.size(64.dp).clip(RoundedCornerShape(12.dp))
+                                .border(width = 2.dp, color = Color.Blue, shape = RoundedCornerShape(12.dp))
+                        )
+                        Image(
+                            painter = painterResource(getDiceImage(dice2)),
+                            contentDescription = "Dice 2",
+                            modifier = Modifier.size(64.dp).clip(RoundedCornerShape(12.dp))
+                                .border(width = 2.dp, color = Color.Blue, shape = RoundedCornerShape(12.dp))
+                        )
+                    }
                 }
-            }
-            else
-            {
-                Button(
-                    onClick = {
-                        viewModel.nextTurn()
-                    },
-                    modifier = Modifier.height(36.dp)
-                        .align(Alignment.Center),
-                    elevation = ButtonDefaults.elevatedButtonElevation(4.dp)
-                )
-                {
+                state.currentTurn.phase == TurnPhase.TURN_ACTIONS -> {
+                    Button(
+                        enabled = isMyTurn,
+                        onClick = { viewModel.endTurn() },
+                        modifier = Modifier.height(36.dp).align(Alignment.Center),
+                        elevation = ButtonDefaults.elevatedButtonElevation(4.dp)
+                    ) {
+                        Text(text = "Završi potez", fontSize = 14.sp, color = Color.Black)
+                    }
+                }
+                else -> {
+                    // AWAITING_PROPERTY_DECISION, TURN_ENDED, GAME_OVER - popup-i dolaze u 3b/3c
                     Text(
-                        text = "Završi potez",
+                        text = "Čekanje...",
                         fontSize = 14.sp,
-                        color = Color.Black
+                        color = Color.Gray
                     )
                 }
             }
@@ -525,7 +518,7 @@ fun GameBoardView(myId:Int,viewModel: GameViewModel,showPlayerDetails:Boolean=tr
 @Composable
 fun GffaPreview() {
     val mainNavController = rememberNavController()
-    val viewModel = GameViewModel()
-    GameBoardView(viewModel.players.value[0].id, viewModel)
+    //val viewModel = GameViewModel()
+    //GameBoardView(viewModel.players.value[0].id, viewModel)
 
 }

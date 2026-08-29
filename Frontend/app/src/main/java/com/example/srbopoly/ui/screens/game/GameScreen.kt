@@ -56,12 +56,12 @@ fun GameScreen(
     navController: NavController,
     viewModel: GameViewModel,
     gameId: String,
-    myId: Int=1) {
+    myId: Int) {
 
 //    var linearBoard by remember { mutableStateOf(false)}
 
     LaunchedEffect(gameId) {
-        //viewModel.joinGame(gameId)
+        viewModel.joinGame(gameId)
     }
 
     var showQuitDialog by remember { mutableStateOf(false) }
@@ -71,18 +71,15 @@ fun GameScreen(
 
     var showPlayerDetails by remember { mutableStateOf(false) }
 
-    val remainingTime by viewModel.remainingTime
+    val remainingTime by viewModel.remainingTime.collectAsState()
 
-    LaunchedEffect(Unit) {
-        viewModel.startTurn()
-    }
     if (showQuitDialog) {
         ExitDialog(
             onDismiss = {showQuitDialog=false},
             onYes = {
                 showQuitDialog=false
                 navController.navigate("home") {
-                    popUpTo("game") { inclusive = true }
+                    popUpTo("game/{gameId}") { inclusive = true }
                 }
             },
             onNo = {showQuitDialog=false},
@@ -187,5 +184,5 @@ fun GameScreen(
 @Composable
 fun GmPreview() {
     val mainNavController = rememberNavController()
-    GameScreen(mainNavController, viewModel = GameViewModel(),"", 1)
+   // GameScreen(mainNavController, viewModel = GameViewModel(),"", 1)
 }
