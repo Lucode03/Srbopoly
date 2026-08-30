@@ -47,8 +47,6 @@ import androidx.compose.ui.window.Dialog
 import androidx.compose.ui.zIndex
 import androidx.navigation.NavController
 import androidx.navigation.compose.rememberNavController
-import com.example.srbopoly.data.RewardCard
-import com.example.srbopoly.data.SurpriseCard
 import com.example.srbopoly.data.fields.PropertyField
 import com.example.srbopoly.data.gamedto.GameEndReason
 import com.example.srbopoly.ui.animations.ActionResultAnimation

@@ -11,19 +11,7 @@ data class Game(
     @SerializedName("currentPlayerIndex") val currentPlayerIndex: Int,
     @SerializedName(value="accessCode") val accessCode: String,
     val GameBoard:List<Field>,
-    val RewardCardsDeck: List<RewardCard>,
-    val SurpriseCardsDeck: List<SurpriseCard>
-
 )
 {
-    fun DrawSurpriseCard(): SurpriseCard
-    {
-        //logika za mesanje spila
-        return SurpriseCardsDeck.first()
-    }
-    fun DrawRewardsCard(): RewardCard
-    {
-        //logika za mesanje spila
-        return RewardCardsDeck.first()
-    }
+
 }

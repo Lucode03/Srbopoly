@@ -38,7 +38,8 @@ enum class MoneyTransferReason {
     @SerializedName("cardBonus") CARD_BONUS,
     @SerializedName("cardPenalty") CARD_PENALTY,
     @SerializedName("cardPlayerTransfer") CARD_PLAYER_TRANSFER,
-    @SerializedName("propertyRepairs") PROPERTY_REPAIRS
+    @SerializedName("propertyRepairs") PROPERTY_REPAIRS,
+    @SerializedName("landingBonus") LANDING_BONUS
 }
 
 enum class GameEndReason {
