@@ -15,8 +15,11 @@ import com.microsoft.signalr.HubConnectionState
 import io.reactivex.rxjava3.core.Single
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.flow.MutableSharedFlow
+import kotlinx.coroutines.flow.MutableStateFlow
 import kotlinx.coroutines.flow.SharedFlow
+import kotlinx.coroutines.flow.StateFlow
 import kotlinx.coroutines.flow.asSharedFlow
+import kotlinx.coroutines.flow.asStateFlow
 import kotlinx.coroutines.withContext
 import javax.inject.Inject
 import javax.inject.Singleton
@@ -35,6 +38,12 @@ class GameHubRepository @Inject constructor(
 
     private val _messages = MutableSharedFlow<GameServerMessage>(extraBufferCapacity = 32)
     val messages: SharedFlow<GameServerMessage> = _messages.asSharedFlow()
+
+    private val _pauseVotes = MutableStateFlow<List<Int>>(emptyList())
+    val pauseVotes: StateFlow<List<Int>> = _pauseVotes.asStateFlow()
+
+    private val _gamePaused = MutableStateFlow(false)
+    val gamePaused: StateFlow<Boolean> = _gamePaused.asStateFlow()
 
     fun connectAndJoin(gameId: String) {
         if (hubConnection?.connectionState == HubConnectionState.CONNECTED) {
@@ -61,6 +70,14 @@ class GameHubRepository @Inject constructor(
             }
             _messages.tryEmit(GameServerMessage.EventsBatch(parsed))
         }, GameEventBatchRaw::class.java)
+
+        hubConnection?.on("PauseVoteUpdated", { votedPlayerIds ->
+            _pauseVotes.value = votedPlayerIds.toList()
+        }, IntArray::class.java)
+
+        hubConnection?.on("GamePaused") {
+            _gamePaused.value = true
+        }
 
         hubConnection?.start()?.blockingAwait()
         hubConnection?.send("JoinGame", gameId)

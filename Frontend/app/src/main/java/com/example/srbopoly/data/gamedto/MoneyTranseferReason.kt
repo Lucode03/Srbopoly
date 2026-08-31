@@ -11,5 +11,6 @@ fun MoneyTransferEvent.describe(fromName: String, toName: String): String? = whe
     MoneyTransferReason.CARD_PENALTY -> "$fromName je platio/la $amount zbog kartice"
     MoneyTransferReason.CARD_PLAYER_TRANSFER -> "$fromName je platio/la $amount igraču $toName"
     MoneyTransferReason.PROPERTY_REPAIRS -> "$fromName je platio/la $amount za opšte popravke"
+    MoneyTransferReason.LANDING_BONUS -> "$toName je dobio/la $amount za sletanje tačno na Parking"
     else -> null
 }

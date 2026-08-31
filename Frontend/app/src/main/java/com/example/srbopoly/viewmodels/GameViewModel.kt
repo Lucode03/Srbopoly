@@ -14,6 +14,7 @@ import com.example.srbopoly.data.gamedto.GameStateSnapshotDto
 import com.example.srbopoly.data.gamedto.GetOutOfJailFreeCardUsedEvent
 import com.example.srbopoly.data.gamedto.HouseBuiltEvent
 import com.example.srbopoly.data.gamedto.HouseSoldEvent
+import com.example.srbopoly.data.gamedto.MoneyTransferEvent
 import com.example.srbopoly.data.gamedto.PlayerBankruptEvent
 import com.example.srbopoly.data.gamedto.PlayerMovedEvent
 import com.example.srbopoly.data.gamedto.PlayerReleasedFromJailEvent
@@ -26,8 +27,11 @@ import com.example.srbopoly.data.gamedto.PropertyUnmortgagedEvent
 import com.example.srbopoly.data.gamedto.TradeAcceptedEvent
 import com.example.srbopoly.data.gamedto.TradeOfferDto
 import com.example.srbopoly.data.gamedto.TradeRejectedEvent
+import com.example.srbopoly.data.gamedto.describe
 import com.example.srbopoly.data.repository.GameHubRepository
 import com.example.srbopoly.data.repository.GameServerMessage
+import com.example.srbopoly.factories.CardCatalog
+import com.example.srbopoly.factories.CardTextInfo
 import com.example.srbopoly.factories.FieldFactory
 import dagger.hilt.android.lifecycle.HiltViewModel
 import kotlinx.coroutines.Dispatchers
@@ -73,8 +77,8 @@ class GameViewModel @Inject constructor(
     private val _highlightedFields = MutableStateFlow<List<Int>>(emptyList())
     val highlightedFields: StateFlow<List<Int>> = _highlightedFields.asStateFlow()
 
-    private val _lastDrawnCardText = MutableStateFlow<String?>(null)
-    val lastDrawnCardText: StateFlow<String?> = _lastDrawnCardText.asStateFlow()
+    private val _lastDrawnCardText = MutableStateFlow<CardTextInfo?>(null)
+    val lastDrawnCardText: StateFlow<CardTextInfo?> = _lastDrawnCardText.asStateFlow()
 
     private val _commandError = MutableSharedFlow<String>(extraBufferCapacity = 4)
     val commandError: SharedFlow<String> = _commandError.asSharedFlow()
@@ -86,6 +90,9 @@ class GameViewModel @Inject constructor(
     val gameEndedInfo: StateFlow<GameEndedEvent?> = _gameEndedInfo.asStateFlow()
 
     private var timerJob: Job? = null
+
+    val pauseVotes: StateFlow<List<Int>> = gameHubRepository.pauseVotes
+    val gamePaused: StateFlow<Boolean> = gameHubRepository.gamePaused
 
     init {
         viewModelScope.launch {
@@ -147,13 +154,13 @@ class GameViewModel @Inject constructor(
                         ?.firstOrNull { it.id == event.playerId }?.position ?: event.newPosition
                     if (lastRollWasDiceRoll) {
                         animateMovement(oldPosition, event.newPosition)
-                    } /*else {
+                    } else {
                         _highlightedFields.value = emptyList()
-                    }*/
+                    }
                     lastRollWasDiceRoll = false
                 }
                 is CardDrawnEvent -> {
-                    _lastDrawnCardText.value = "TODO: tekst kartice (katalog dolazi kasnije)"
+                    _lastDrawnCardText.value = CardCatalog.infoFor(event.deckType, event.cardId)
                     delay(3000)
                     _lastDrawnCardText.value = null
                 }
@@ -199,6 +206,10 @@ class GameViewModel @Inject constructor(
                 }
                 is GameEndedEvent -> {
                     _gameEndedInfo.value = event
+                }
+                is MoneyTransferEvent -> {
+                    event.describe(playerName(event.fromId), playerName(event.toId))
+                        ?.let { showActionResult(it) }
                 }
                 else -> Unit
             }

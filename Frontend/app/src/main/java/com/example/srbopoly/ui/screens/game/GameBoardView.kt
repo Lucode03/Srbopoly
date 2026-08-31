@@ -49,11 +49,14 @@ import androidx.compose.ui.layout.ContentScale
 import androidx.compose.ui.res.imageResource
 import androidx.compose.ui.res.painterResource
 import androidx.compose.ui.res.stringResource
+import androidx.compose.ui.text.font.FontWeight
+import androidx.compose.ui.text.style.TextAlign
 import androidx.compose.ui.text.style.TextOverflow
 import androidx.compose.ui.tooling.preview.Preview
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.max
 import androidx.compose.ui.unit.sp
+import androidx.compose.ui.zIndex
 import androidx.navigation.compose.rememberNavController
 import com.example.srbopoly.R
 import com.example.srbopoly.classes.getDiceImage
@@ -62,6 +65,7 @@ import com.example.srbopoly.data.fields.PropertyField
 import com.example.srbopoly.data.fields.getCenterRect
 import com.example.srbopoly.data.fields.getFieldOffset
 import com.example.srbopoly.data.fields.getFieldSize
+import com.example.srbopoly.data.gamedto.CardDeckType
 import com.example.srbopoly.data.gamedto.toColorName
 import com.example.srbopoly.data.getColor
 import com.example.srbopoly.data.getFigure
@@ -110,6 +114,23 @@ fun GameBoardView(myId:Int,viewModel: GameViewModel,showPlayerDetails:Boolean=tr
 
     val isTurnActionsPhase = state.currentTurn.phase == TurnPhase.TURN_ACTIONS
 
+    val lastDrawnCardText by viewModel.lastDrawnCardText.collectAsState()
+
+    if (lastDrawnCardText != null) {
+        Box(
+            modifier = Modifier.fillMaxSize().background(Color.Black.copy(alpha = 0.6f)).zIndex(10f),
+            contentAlignment = Alignment.Center
+        ) {
+            Card(shape = RoundedCornerShape(16.dp), modifier = Modifier.padding(24.dp)) {
+                Column(modifier = Modifier.padding(20.dp), horizontalAlignment = Alignment.CenterHorizontally) {
+                    Text(lastDrawnCardText!!.name, fontSize = 18.sp, fontWeight = FontWeight.Bold)
+                    Spacer(modifier = Modifier.height(8.dp))
+                    Text(lastDrawnCardText!!.description, fontSize = 14.sp, textAlign = TextAlign.Center)
+                }
+            }
+        }
+    }
+
     if (showInfoDialog && selectedField != null) {
         FieldInfoDialog(
             onDismiss = { selectedField = null; showInfoDialog = false },
@@ -117,13 +138,25 @@ fun GameBoardView(myId:Int,viewModel: GameViewModel,showPlayerDetails:Boolean=tr
             action = false,
             isMyTurn = isMyTurn,
             playerID = myId,
-            onResult = {
-                if (it && selectedField is PropertyField) {
-                    viewModel.buildHouse((selectedField as PropertyField).GameFieldID)
-                }
-                selectedField = null
-                showInfoDialog = false
-            }
+            isTurnActionsPhase = isTurnActionsPhase,
+            myMoney = myPlayer?.money ?: 0,
+            onBuildHouse = {
+                (selectedField as? PropertyField)?.let { viewModel.buildHouse(it.GameFieldID) }
+                selectedField = null; showInfoDialog = false
+            },
+            onSellHouse = {
+                (selectedField as? PropertyField)?.let { viewModel.sellHouse(it.GameFieldID) }
+                selectedField = null; showInfoDialog = false
+            },
+            onMortgage = {
+                (selectedField as? PropertyField)?.let { viewModel.mortgageProperty(it.GameFieldID) }
+                selectedField = null; showInfoDialog = false
+            },
+            onUnmortgage = {
+                (selectedField as? PropertyField)?.let { viewModel.unmortgageProperty(it.GameFieldID) }
+                selectedField = null; showInfoDialog = false
+            },
+            onResult = { selectedField = null; showInfoDialog = false }
         )
     }
 
@@ -216,6 +249,10 @@ fun GameBoardView(myId:Int,viewModel: GameViewModel,showPlayerDetails:Boolean=tr
                                                     fontSize = titleSize,
                                                     color = Color.Black
                                                 )
+                                            }
+                                            if (player.isInJail) {
+                                                Spacer(modifier = Modifier.width(4.dp))
+                                                Text("🔒", fontSize = titleSize)
                                             }
                                         }
 
@@ -467,28 +504,78 @@ fun GameBoardView(myId:Int,viewModel: GameViewModel,showPlayerDetails:Boolean=tr
                 .padding(top=20.dp),
             contentAlignment = Alignment.TopCenter)
         {
+            Text(
+                text = if (isMyTurn) "Tvoj je red!" else "Red je na: ${currentPlayer?.name ?: "?"}",
+                fontSize = 16.sp,
+                fontWeight = FontWeight.Bold,
+                color = if (isMyTurn) Color(0xFF2E7D32) else Color.Gray
+            )
+            Spacer(modifier = Modifier.height(8.dp))
             when {
                 state.currentTurn.phase == TurnPhase.AWAITING_ROLL -> {
-                    Row(
-                        modifier = Modifier.clickable(
-                            enabled = isMyTurn,
-                            onClick = { viewModel.rollDice() }
-                        ),
-                        horizontalArrangement = Arrangement.spacedBy(16.dp),
-                        verticalAlignment = Alignment.CenterVertically
-                    ) {
-                        Image(
-                            painter = painterResource(getDiceImage(dice1)),
-                            contentDescription = "Dice 1",
-                            modifier = Modifier.size(64.dp).clip(RoundedCornerShape(12.dp))
-                                .border(width = 2.dp, color = Color.Blue, shape = RoundedCornerShape(12.dp))
-                        )
-                        Image(
-                            painter = painterResource(getDiceImage(dice2)),
-                            contentDescription = "Dice 2",
-                            modifier = Modifier.size(64.dp).clip(RoundedCornerShape(12.dp))
-                                .border(width = 2.dp, color = Color.Blue, shape = RoundedCornerShape(12.dp))
-                        )
+                    if (currentPlayer?.isInJail == true) {
+                        Column(horizontalAlignment = Alignment.CenterHorizontally) {
+                            Text(
+                                text = "U zatvoru (pokušaj ${currentPlayer.jailTurnsSpent + 1}/3)",
+                                fontSize = 14.sp,
+                                fontWeight = FontWeight.Bold,
+                                color = Color.Red
+                            )
+                            Spacer(modifier = Modifier.height(8.dp))
+
+                            if (isMyTurn && currentPlayer.heldGetOutOfJailCardDecks.isNotEmpty()) {
+                                Row(horizontalArrangement = Arrangement.spacedBy(8.dp)) {
+                                    currentPlayer.heldGetOutOfJailCardDecks.distinct().forEach { deckType ->
+                                        val deckName = if (deckType == CardDeckType.CHANCE) "Nagrada" else "Iznenađenje"
+                                        Button(onClick = { viewModel.useGetOutOfJailFreeCard(deckType) }) {
+                                            Text("Koristi kartu ($deckName)", fontSize = 12.sp)
+                                        }
+                                    }
+                                }
+                                Spacer(modifier = Modifier.height(8.dp))
+                            }
+
+                            Row(
+                                modifier = Modifier.clickable(enabled = isMyTurn, onClick = { viewModel.rollDice() }),
+                                horizontalArrangement = Arrangement.spacedBy(16.dp),
+                                verticalAlignment = Alignment.CenterVertically
+                            ) {
+                                Image(
+                                    painter = painterResource(getDiceImage(dice1)),
+                                    contentDescription = "Dice 1",
+                                    modifier = Modifier.size(64.dp).clip(RoundedCornerShape(12.dp))
+                                        .border(width = 2.dp, color = Color.Blue, shape = RoundedCornerShape(12.dp))
+                                )
+                                Image(
+                                    painter = painterResource(getDiceImage(dice2)),
+                                    contentDescription = "Dice 2",
+                                    modifier = Modifier.size(64.dp).clip(RoundedCornerShape(12.dp))
+                                        .border(width = 2.dp, color = Color.Blue, shape = RoundedCornerShape(12.dp))
+                                )
+                            }
+
+                            Spacer(modifier = Modifier.height(4.dp))
+                            Text("Baci duplu da izađeš odmah", fontSize = 12.sp, color = Color.Gray)
+                        }
+                    } else {
+                        Row(
+                            modifier = Modifier.clickable(enabled = isMyTurn, onClick = { viewModel.rollDice() }),
+                            horizontalArrangement = Arrangement.spacedBy(16.dp),
+                            verticalAlignment = Alignment.CenterVertically
+                        ) {
+                            Image(
+                                painter = painterResource(getDiceImage(dice1)),
+                                contentDescription = "Dice 1",
+                                modifier = Modifier.size(64.dp).clip(RoundedCornerShape(12.dp))
+                                    .border(width = 2.dp, color = Color.Blue, shape = RoundedCornerShape(12.dp))
+                            )
+                            Image(
+                                painter = painterResource(getDiceImage(dice2)),
+                                contentDescription = "Dice 2",
+                                modifier = Modifier.size(64.dp).clip(RoundedCornerShape(12.dp))
+                                    .border(width = 2.dp, color = Color.Blue, shape = RoundedCornerShape(12.dp))
+                            )
+                        }
                     }
                 }
                 state.currentTurn.phase == TurnPhase.TURN_ACTIONS -> {

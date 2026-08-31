@@ -97,7 +97,12 @@ fun FieldAction(field: Field,
                 modifier: Modifier = Modifier,
                 onResult: (Boolean) -> Unit,
                 playerID:Int,
-                isTurnActionsPhase: Boolean = false)
+                isTurnActionsPhase: Boolean = false,
+                myMoney: Int = 0,
+                onBuildHouse: () -> Unit = {},
+                onSellHouse: () -> Unit = {},
+                onMortgage: () -> Unit = {},
+                onUnmortgage: () -> Unit = {})
 {
     val fullWidthModifier = modifier.fillMaxWidth()
 
@@ -107,7 +112,10 @@ fun FieldAction(field: Field,
         is MovementField -> MovementFieldAction(field,action,onResult,fullWidthModifier,isMyTurn)
         is NationalParkField -> NationalParkFieldAction(field,action,onResult,fullWidthModifier,isMyTurn)
         is PaymentField -> PaymentFieldAction(field,action,onResult,fullWidthModifier,isMyTurn)
-        is PropertyField -> PropertyFieldAction(field, action, onResult, fullWidthModifier, isMyTurn, playerID, isTurnActionsPhase)
+        is PropertyField -> PropertyFieldAction(
+            field, action, onResult, fullWidthModifier, isMyTurn, playerID, isTurnActionsPhase,
+            myMoney, onBuildHouse, onSellHouse, onMortgage, onUnmortgage
+        )
         is RewardCardField -> RewardCardFieldAction(field,action,onResult,fullWidthModifier,isMyTurn)
         is SurpriseCardField -> SurpriseCardFieldAction(field,action,onResult,fullWidthModifier,isMyTurn)
     }

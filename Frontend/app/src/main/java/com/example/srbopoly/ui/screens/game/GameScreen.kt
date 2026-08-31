@@ -27,6 +27,9 @@ import androidx.compose.material3.Button
 import androidx.compose.material3.Card
 import androidx.compose.material3.HorizontalDivider
 import androidx.compose.material3.Icon
+import androidx.compose.material3.Scaffold
+import androidx.compose.material3.SnackbarHost
+import androidx.compose.material3.SnackbarHostState
 import androidx.compose.material3.Text
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.LaunchedEffect
@@ -52,7 +55,6 @@ import com.example.srbopoly.data.gamedto.GameEndReason
 import com.example.srbopoly.ui.animations.ActionResultAnimation
 import com.example.srbopoly.ui.animations.DiceResultAnimation
 import com.example.srbopoly.ui.dialogs.ExitDialog
-import com.example.srbopoly.ui.dialogs.FieldInfoDialog
 import com.example.srbopoly.viewmodels.GameViewModel
 
 @Composable
@@ -63,6 +65,8 @@ fun GameScreen(
     myId: Int) {
 
 //    var linearBoard by remember { mutableStateOf(false)}
+
+    val snackbarHostState = remember { SnackbarHostState() }
 
     LaunchedEffect(gameId) {
         viewModel.joinGame(gameId)
@@ -80,6 +84,26 @@ fun GameScreen(
     val remainingTime by viewModel.remainingTime.collectAsState()
 
     val gameEndedInfo by viewModel.gameEndedInfo.collectAsState()
+
+    val pauseVotes by viewModel.pauseVotes.collectAsState()
+    val gamePaused by viewModel.gamePaused.collectAsState()
+
+    val hasVotedForPause = myId in pauseVotes
+    val activePlayerCount = gameState?.players?.count { !it.isBankrupt } ?: 0
+
+    LaunchedEffect(gamePaused) {
+        if (gamePaused) {
+            navController.navigate("home") {
+                popUpTo("game/{gameId}") { inclusive = true }
+            }
+        }
+    }
+
+    LaunchedEffect(Unit) {
+        viewModel.commandError.collect { error ->
+            snackbarHostState.showSnackbar(error)
+        }
+    }
 
     gameEndedInfo?.let { ended ->
         val winnerName = gameState?.players?.firstOrNull { it.id == ended.winnerPlayerId }?.name ?: "Nepoznat igrač"
@@ -145,51 +169,71 @@ fun GameScreen(
             ActionResultAnimation(actionResult!!)
         }
     }
-    Column(
-        modifier = Modifier.fillMaxSize()
-            .background(Color(0xFFD9F2FA))
-    ) {
-        Row(
-            modifier = Modifier
-                .background(Color(0xFFE7E7E7))
-                .fillMaxWidth()
-                .padding(top=8.dp, start = 6.dp, end = 6.dp),
-            horizontalArrangement = Arrangement.SpaceBetween
-        ){
-            Icon(
-                Icons.AutoMirrored.Filled.KeyboardArrowLeft,
-                contentDescription = "Napusti igru",
-                modifier = Modifier.size(40.dp).clickable {
-                    showQuitDialog = true
-                },
-                Color.Black
-            )
-            Box(
-                modifier = Modifier.align(Alignment.CenterVertically)
-                    .border(border = BorderStroke(2.dp,Color(0xFF001EE7)), shape = RoundedCornerShape(4.dp))
-                    .background(Color(0xFF9EA8FF), shape = RoundedCornerShape(4.dp))
-                    .width(60.dp)
-            ){
-                Text(
-                    text = "${remainingTime}s",
-                    fontSize = 20.sp,
-                    fontWeight = FontWeight.Bold,
-                    color = when {
-                        remainingTime <= 5 -> Color.Red
-                        remainingTime <= 10 -> Color(0xFFDC8A00)
-                        else -> Color.Black
+
+    Scaffold(snackbarHost = { SnackbarHost(snackbarHostState) }) { padding ->
+        Column(
+            modifier = Modifier.fillMaxSize().padding(padding)
+                .background(Color(0xFFD9F2FA))
+        ) {
+            Row(
+                modifier = Modifier
+                    .background(Color(0xFFE7E7E7))
+                    .fillMaxWidth()
+                    .padding(top = 8.dp, start = 6.dp, end = 6.dp),
+                horizontalArrangement = Arrangement.SpaceBetween
+            ) {
+                Icon(
+                    Icons.AutoMirrored.Filled.KeyboardArrowLeft,
+                    contentDescription = "Napusti igru",
+                    modifier = Modifier.size(40.dp).clickable {
+                        showQuitDialog = true
                     },
-                    modifier = Modifier.align(Alignment.Center)
+                    Color.Black
                 )
-            }
-            Icon(
-                Icons.Default.AccountBox,
-                contentDescription = "Igraci",
-                modifier = Modifier.size(40.dp).clickable {
-                    showPlayerDetails=!showPlayerDetails
-                },
-                Color.Black
-            )
+                Box(
+                    modifier = Modifier.align(Alignment.CenterVertically)
+                        .border(
+                            border = BorderStroke(2.dp, Color(0xFF001EE7)),
+                            shape = RoundedCornerShape(4.dp)
+                        )
+                        .background(Color(0xFF9EA8FF), shape = RoundedCornerShape(4.dp))
+                        .width(60.dp)
+                ) {
+                    Text(
+                        text = "${remainingTime}s",
+                        fontSize = 20.sp,
+                        fontWeight = FontWeight.Bold,
+                        color = when {
+                            remainingTime <= 5 -> Color.Red
+                            remainingTime <= 10 -> Color(0xFFDC8A00)
+                            else -> Color.Black
+                        },
+                        modifier = Modifier.align(Alignment.Center)
+                    )
+                }
+                Icon(
+                    Icons.Default.AccountBox,
+                    contentDescription = "Igraci",
+                    modifier = Modifier.size(40.dp).clickable {
+                        showPlayerDetails = !showPlayerDetails
+                    },
+                    Color.Black
+                )
+
+                Box(
+                    modifier = Modifier.align(Alignment.CenterVertically)
+                        .border(border = BorderStroke(2.dp, if (hasVotedForPause) Color(0xFF00A651) else Color.Gray),
+                            shape = RoundedCornerShape(4.dp))
+                        .background(if (hasVotedForPause) Color(0xFFB8F2C9) else Color(0xFFE0E0E0), shape = RoundedCornerShape(4.dp))
+                        .clickable { viewModel.requestPause() }
+                        .padding(horizontal = 8.dp, vertical = 4.dp)
+                ) {
+                    Text(
+                        text = "Pauza (${pauseVotes.size}/$activePlayerCount)",
+                        fontSize = 12.sp,
+                        color = Color.Black
+                    )
+                }
 //            Icon(
 //                if (linearBoard)
 //                    Icons.Default.Menu
@@ -201,16 +245,21 @@ fun GameScreen(
 //                },
 //                Color.Black
 //            )
-        }
-        Spacer(modifier = Modifier.height((2.dp)))
-        HorizontalDivider(thickness = 2.dp, color = Color.Black, modifier = Modifier.fillMaxWidth())
-        Box(modifier = Modifier.fillMaxSize()) {
+            }
+            Spacer(modifier = Modifier.height((2.dp)))
+            HorizontalDivider(
+                thickness = 2.dp,
+                color = Color.Black,
+                modifier = Modifier.fillMaxWidth()
+            )
+            Box(modifier = Modifier.fillMaxSize()) {
 //            if (linearBoard) {
 //                GameLinearView(myId, viewModel, myPlayer!!.Position)
 //
 //            } else {
-                GameBoardView(myId,viewModel,showPlayerDetails)
+                GameBoardView(myId, viewModel, showPlayerDetails)
 //            }
+            }
         }
     }
 }

@@ -38,7 +38,12 @@ fun FieldInfoDialog(onDismiss:()->Unit, field: Field,
                     action:Boolean=false,
                     onResult:(Boolean)->Unit={},isMyTurn:Boolean=true,
                     playerID:Int,
-                    isTurnActionsPhase: Boolean = false)
+                    isTurnActionsPhase: Boolean = false,
+                    myMoney: Int = 0,
+                    onBuildHouse: () -> Unit = {},
+                    onSellHouse: () -> Unit = {},
+                    onMortgage: () -> Unit = {},
+                    onUnmortgage: () -> Unit = {})
 {
     Dialog(onDismissRequest = onDismiss) {
         Card(
@@ -93,7 +98,12 @@ fun FieldInfoDialog(onDismiss:()->Unit, field: Field,
                         onResult(result)
                     },
                     playerID = playerID,
-                    isTurnActionsPhase = isTurnActionsPhase
+                    isTurnActionsPhase = isTurnActionsPhase,
+                    myMoney = myMoney,
+                    onBuildHouse = onBuildHouse,
+                    onSellHouse = onSellHouse,
+                    onMortgage = onMortgage,
+                    onUnmortgage = onUnmortgage
                 )
                 Spacer(modifier = Modifier.height(10.dp))
             }
