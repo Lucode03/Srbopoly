@@ -55,6 +55,10 @@ import com.example.srbopoly.data.gamedto.GameEndReason
 import com.example.srbopoly.ui.animations.ActionResultAnimation
 import com.example.srbopoly.ui.animations.DiceResultAnimation
 import com.example.srbopoly.ui.dialogs.ExitDialog
+import com.example.srbopoly.ui.dialogs.dialogwrappers.ActionResultAnimationWrapper
+import com.example.srbopoly.ui.dialogs.dialogwrappers.DiceResultAnimationWrapper
+import com.example.srbopoly.ui.dialogs.dialogwrappers.ExitDialogWrapper
+import com.example.srbopoly.ui.dialogs.dialogwrappers.GameEndDialogWrapper
 import com.example.srbopoly.viewmodels.GameViewModel
 
 @Composable
@@ -105,70 +109,25 @@ fun GameScreen(
         }
     }
 
-    gameEndedInfo?.let { ended ->
-        val winnerName = gameState?.players?.firstOrNull { it.id == ended.winnerPlayerId }?.name ?: "Nepoznat igrač"
-        val reasonText = when (ended.reason) {
-            GameEndReason.LAST_PLAYER_STANDING -> "Svi ostali igrači su bankrotirali"
-            GameEndReason.TURN_LIMIT_REACHED -> "Dostignut je limit rundi"
+    GameEndDialogWrapper(gameEndedInfo, gameState) {
+        navController.navigate("home") {
+            popUpTo("game/{gameId}") { inclusive = true }
         }
+    }
 
-        Dialog(onDismissRequest = { }) {
-            Card(shape = RoundedCornerShape(20.dp), modifier = Modifier.padding(16.dp)) {
-                Column(modifier = Modifier.padding(20.dp), horizontalAlignment = Alignment.CenterHorizontally) {
-                    Text("Igra je gotova!", fontSize = 20.sp, fontWeight = FontWeight.Bold)
-                    Spacer(modifier = Modifier.height(8.dp))
-                    Text("Pobednik: $winnerName", fontSize = 16.sp)
-                    Text(reasonText, fontSize = 14.sp, color = Color.Gray)
-                    Spacer(modifier = Modifier.height(16.dp))
-                    Button(onClick = {
-                        navController.navigate("home") {
-                            popUpTo("game/{gameId}") { inclusive = true }
-                        }
-                    }) {
-                        Text("Nazad na početnu")
-                    }
-                }
+    ExitDialogWrapper(showQuitDialog,
+        onDismiss = { showQuitDialog=false },
+        onYes = {
+            showQuitDialog=false
+            navController.navigate("home") {
+                popUpTo("game/{gameId}") { inclusive = true }
             }
-        }
-    }
+        },
+        onNo = { showQuitDialog=false })
 
-    if (showQuitDialog) {
-        ExitDialog(
-            onDismiss = {showQuitDialog=false},
-            onYes = {
-                showQuitDialog=false
-                navController.navigate("home") {
-                    popUpTo("game/{gameId}") { inclusive = true }
-                }
-            },
-            onNo = {showQuitDialog=false},
-            text = "Igra može biti nastavljena samo ukoliko svi ostali igrači ponovo uđu!"
-        )
-    }
-    if (diceResult != null) {
-        Box(
-            modifier = Modifier
-                .fillMaxSize()
-                .background(Color.Black.copy(alpha = 0.6f))
-                .zIndex(10f)
-            ,
-            contentAlignment = Alignment.Center
-        ) {
-            DiceResultAnimation(diceResult!!)
-        }
-    }
-    if (actionResult != null) {
-        Box(
-            modifier = Modifier
-                .fillMaxSize()
-                .background(Color.Black.copy(alpha = 0.6f))
-                .zIndex(10f)
-            ,
-            contentAlignment = Alignment.Center
-        ) {
-            ActionResultAnimation(actionResult!!)
-        }
-    }
+    DiceResultAnimationWrapper(diceResult)
+
+    ActionResultAnimationWrapper(actionResult)
 
     Scaffold(snackbarHost = { SnackbarHost(snackbarHostState) }) { padding ->
         Column(

@@ -29,6 +29,7 @@ import androidx.compose.material3.Button
 import androidx.compose.material3.ButtonDefaults
 import androidx.compose.material3.Card
 import androidx.compose.material3.CardColors
+import androidx.compose.material3.CardDefaults
 import androidx.compose.material3.HorizontalDivider
 import androidx.compose.material3.Icon
 import androidx.compose.material3.MaterialTheme
@@ -74,6 +75,8 @@ import com.example.srbopoly.draw_functions.limit
 import com.example.srbopoly.draw_functions.rotateImageBitmap
 import com.example.srbopoly.data.gamedto.TurnPhase
 import com.example.srbopoly.ui.dialogs.FieldInfoDialog
+import com.example.srbopoly.ui.dialogs.IncomingTradeDialog
+import com.example.srbopoly.ui.dialogs.dialogwrappers.IncomingTradeDialogWrapper
 import com.example.srbopoly.viewmodels.GameViewModel
 
 @Composable
@@ -102,6 +105,8 @@ fun GameBoardView(myId:Int,viewModel: GameViewModel,showPlayerDetails:Boolean=tr
     val isMyTurn = myId == state.currentTurn.playerId
 
     val pendingPurchaseField by viewModel.pendingPurchaseField.collectAsState()
+
+    val pendingTrade by viewModel.pendingTrade.collectAsState()
 
     var selectedField by remember { mutableStateOf<Field?>(null) }
     var showInfoDialog by remember { mutableStateOf(false) }
@@ -175,6 +180,11 @@ fun GameBoardView(myId:Int,viewModel: GameViewModel,showPlayerDetails:Boolean=tr
             )
         }
     }
+
+    IncomingTradeDialogWrapper(pendingTrade, myId, players, board,
+        onAccept = { viewModel.acceptTrade() },
+        onReject = { viewModel.rejectTrade() }
+    )
 
     val scrollState = rememberScrollState()
 

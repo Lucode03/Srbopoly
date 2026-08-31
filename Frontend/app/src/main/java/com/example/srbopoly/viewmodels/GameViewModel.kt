@@ -15,6 +15,7 @@ import com.example.srbopoly.data.gamedto.GetOutOfJailFreeCardUsedEvent
 import com.example.srbopoly.data.gamedto.HouseBuiltEvent
 import com.example.srbopoly.data.gamedto.HouseSoldEvent
 import com.example.srbopoly.data.gamedto.MoneyTransferEvent
+import com.example.srbopoly.data.gamedto.PendingTradeDto
 import com.example.srbopoly.data.gamedto.PlayerBankruptEvent
 import com.example.srbopoly.data.gamedto.PlayerMovedEvent
 import com.example.srbopoly.data.gamedto.PlayerReleasedFromJailEvent
@@ -40,9 +41,12 @@ import kotlinx.coroutines.delay
 import kotlinx.coroutines.flow.MutableSharedFlow
 import kotlinx.coroutines.flow.MutableStateFlow
 import kotlinx.coroutines.flow.SharedFlow
+import kotlinx.coroutines.flow.SharingStarted
 import kotlinx.coroutines.flow.StateFlow
 import kotlinx.coroutines.flow.asSharedFlow
 import kotlinx.coroutines.flow.asStateFlow
+import kotlinx.coroutines.flow.map
+import kotlinx.coroutines.flow.stateIn
 import kotlinx.coroutines.launch
 import javax.inject.Inject
 
@@ -93,6 +97,11 @@ class GameViewModel @Inject constructor(
 
     val pauseVotes: StateFlow<List<Int>> = gameHubRepository.pauseVotes
     val gamePaused: StateFlow<Boolean> = gameHubRepository.gamePaused
+
+    val pendingTrade: StateFlow<PendingTradeDto?> = gameState
+        .map { it?.currentTurn?.pendingTrade }
+        .stateIn(viewModelScope, SharingStarted.WhileSubscribed(5000), null)
+
 
     init {
         viewModelScope.launch {
