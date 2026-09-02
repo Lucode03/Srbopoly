@@ -15,16 +15,12 @@ import androidx.compose.foundation.layout.height
 import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.layout.size
 import androidx.compose.foundation.layout.width
+import androidx.compose.foundation.shape.CircleShape
 import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.automirrored.filled.KeyboardArrowLeft
 import androidx.compose.material.icons.filled.AccountBox
-import androidx.compose.material.icons.filled.Edit
-import androidx.compose.material.icons.filled.Menu
-import androidx.compose.material.icons.filled.MoreVert
-import androidx.compose.material.icons.filled.Person
-import androidx.compose.material3.Button
-import androidx.compose.material3.Card
+import androidx.compose.material.icons.filled.MailOutline
 import androidx.compose.material3.HorizontalDivider
 import androidx.compose.material3.Icon
 import androidx.compose.material3.Scaffold
@@ -35,7 +31,6 @@ import androidx.compose.runtime.Composable
 import androidx.compose.runtime.LaunchedEffect
 import androidx.compose.runtime.collectAsState
 import androidx.compose.runtime.getValue
-import androidx.compose.runtime.mutableStateListOf
 import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.remember
 import androidx.compose.runtime.setValue
@@ -46,15 +41,10 @@ import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.tooling.preview.Preview
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
-import androidx.compose.ui.window.Dialog
-import androidx.compose.ui.zIndex
 import androidx.navigation.NavController
 import androidx.navigation.compose.rememberNavController
-import com.example.srbopoly.data.fields.PropertyField
-import com.example.srbopoly.data.gamedto.GameEndReason
-import com.example.srbopoly.ui.animations.ActionResultAnimation
-import com.example.srbopoly.ui.animations.DiceResultAnimation
-import com.example.srbopoly.ui.dialogs.ExitDialog
+import com.example.srbopoly.data.repository.ConnectionStatus
+import com.example.srbopoly.ui.dialogs.ChatPanelDialog
 import com.example.srbopoly.ui.dialogs.dialogwrappers.ActionResultAnimationWrapper
 import com.example.srbopoly.ui.dialogs.dialogwrappers.DiceResultAnimationWrapper
 import com.example.srbopoly.ui.dialogs.dialogwrappers.ExitDialogWrapper
@@ -94,6 +84,30 @@ fun GameScreen(
 
     val hasVotedForPause = myId in pauseVotes
     val activePlayerCount = gameState?.players?.count { !it.isBankrupt } ?: 0
+
+    val chatMessages by viewModel.chatMessages.collectAsState()
+    val unreadChatCount by viewModel.unreadChatCount.collectAsState()
+    var showChatPanel by remember { mutableStateOf(false) }
+
+    val connectionStatus by viewModel.connectionStatus.collectAsState()
+
+    if (connectionStatus == ConnectionStatus.RECONNECTING) {
+        Box(
+            modifier = Modifier.fillMaxWidth().background(Color(0xFFFFC107)).padding(6.dp),
+            contentAlignment = Alignment.Center
+        ) {
+            Text("Ponovno povezivanje...", fontSize = 13.sp, color = Color.Black)
+        }
+    }
+
+    if (showChatPanel) {
+        ChatPanelDialog(
+            messages = chatMessages,
+            myPlayerId = myId,
+            onSend = { text -> viewModel.sendChatMessage(text) },
+            onDismiss = { showChatPanel = false; viewModel.onChatPanelClosed() }
+        )
+    }
 
     LaunchedEffect(gamePaused) {
         if (gamePaused) {
@@ -178,6 +192,33 @@ fun GameScreen(
                     },
                     Color.Black
                 )
+
+                Box {
+                    Icon(
+                        Icons.Default.MailOutline,
+                        contentDescription = "Chat",
+                        modifier = Modifier.size(40.dp).clickable {
+                            showChatPanel = true
+                            viewModel.onChatPanelOpened()
+                        },
+                        tint = Color.Black
+                    )
+                    if (unreadChatCount > 0) {
+                        Box(
+                            modifier = Modifier
+                                .size(18.dp)
+                                .align(Alignment.TopEnd)
+                                .background(Color.Red, shape = CircleShape)
+                        ) {
+                            Text(
+                                text = unreadChatCount.toString(),
+                                fontSize = 10.sp,
+                                color = Color.White,
+                                modifier = Modifier.align(Alignment.Center)
+                            )
+                        }
+                    }
+                }
 
                 Box(
                     modifier = Modifier.align(Alignment.CenterVertically)

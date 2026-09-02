@@ -77,6 +77,7 @@ import com.example.srbopoly.data.gamedto.TurnPhase
 import com.example.srbopoly.ui.dialogs.FieldInfoDialog
 import com.example.srbopoly.ui.dialogs.IncomingTradeDialog
 import com.example.srbopoly.ui.dialogs.dialogwrappers.IncomingTradeDialogWrapper
+import com.example.srbopoly.ui.dialogs.dialogwrappers.TradeProposalDialogWrapper
 import com.example.srbopoly.viewmodels.GameViewModel
 
 @Composable
@@ -120,6 +121,8 @@ fun GameBoardView(myId:Int,viewModel: GameViewModel,showPlayerDetails:Boolean=tr
     val isTurnActionsPhase = state.currentTurn.phase == TurnPhase.TURN_ACTIONS
 
     val lastDrawnCardText by viewModel.lastDrawnCardText.collectAsState()
+
+    var showTradeProposalDialog by remember { mutableStateOf(false) }
 
     if (lastDrawnCardText != null) {
         Box(
@@ -184,6 +187,11 @@ fun GameBoardView(myId:Int,viewModel: GameViewModel,showPlayerDetails:Boolean=tr
     IncomingTradeDialogWrapper(pendingTrade, myId, players, board,
         onAccept = { viewModel.acceptTrade() },
         onReject = { viewModel.rejectTrade() }
+    )
+
+    TradeProposalDialogWrapper(show = showTradeProposalDialog, myId = myId, board = board, players = players,
+        onPropose = { targetId, offer -> viewModel.proposeTrade(targetId, offer) },
+        onDismiss = { showTradeProposalDialog = false }
     )
 
     val scrollState = rememberScrollState()
@@ -589,17 +597,27 @@ fun GameBoardView(myId:Int,viewModel: GameViewModel,showPlayerDetails:Boolean=tr
                     }
                 }
                 state.currentTurn.phase == TurnPhase.TURN_ACTIONS -> {
-                    Button(
-                        enabled = isMyTurn,
-                        onClick = { viewModel.endTurn() },
-                        modifier = Modifier.height(36.dp).align(Alignment.Center),
-                        elevation = ButtonDefaults.elevatedButtonElevation(4.dp)
-                    ) {
-                        Text(text = "Završi potez", fontSize = 14.sp, color = Color.Black)
+                    Row(horizontalArrangement = Arrangement.spacedBy(12.dp), verticalAlignment = Alignment.CenterVertically) {
+                        if (pendingTrade == null) {
+                            Button(
+                                enabled = isMyTurn,
+                                onClick = { showTradeProposalDialog = true }
+                            ) {
+                                Text("Predloži razmenu", fontSize = 14.sp)
+                            }
+                        }
+                        Button(
+                            enabled = isMyTurn,
+                            onClick = { viewModel.endTurn() },
+                            modifier = Modifier.height(36.dp),
+                            elevation = ButtonDefaults.elevatedButtonElevation(4.dp)
+                        ) {
+                            Text(text = "Završi potez", fontSize = 14.sp, color = Color.Black)
+                        }
                     }
                 }
                 else -> {
-                    // AWAITING_PROPERTY_DECISION, TURN_ENDED, GAME_OVER - popup-i dolaze u 3b/3c
+
                     Text(
                         text = "Čekanje...",
                         fontSize = 14.sp,

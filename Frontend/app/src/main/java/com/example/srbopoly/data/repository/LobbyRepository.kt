@@ -12,8 +12,10 @@ import com.microsoft.signalr.HubConnection
 import com.microsoft.signalr.HubConnectionBuilder
 import com.microsoft.signalr.HubConnectionState
 import io.reactivex.rxjava3.core.Single
+import kotlinx.coroutines.flow.MutableSharedFlow
 import kotlinx.coroutines.flow.MutableStateFlow
 import kotlinx.coroutines.flow.StateFlow
+import kotlinx.coroutines.flow.asSharedFlow
 import kotlinx.coroutines.flow.asStateFlow
 import javax.inject.Inject
 import javax.inject.Singleton
@@ -31,6 +33,9 @@ class LobbyRepository @Inject constructor(
 
     private val _gameStarted = MutableStateFlow<String?>(null)
     val gameStarted: StateFlow<String?> = _gameStarted.asStateFlow()
+
+    private val _errorMessage = MutableSharedFlow<String>(extraBufferCapacity = 1)
+    val errorMessage = _errorMessage.asSharedFlow()
 
     suspend fun createLobby(hostUserId: Int, hostUsername: String): Result<Lobby> {
         return try {
@@ -100,6 +105,11 @@ class LobbyRepository @Inject constructor(
 
         hubConnection?.on("GameStarted", { gameId ->
             _gameStarted.value = gameId
+        }, String::class.java)
+
+        hubConnection?.on("Error", { errorMsg ->
+            Log.e("LobbyRepository", "Greška sa servera: $errorMsg")
+            _errorMessage.tryEmit(errorMsg)
         }, String::class.java)
 
         hubConnection?.start()?.blockingAwait()

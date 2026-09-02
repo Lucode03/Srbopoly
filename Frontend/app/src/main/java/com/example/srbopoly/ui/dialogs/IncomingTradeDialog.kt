@@ -12,6 +12,10 @@ import androidx.compose.material3.Button
 import androidx.compose.material3.Card
 import androidx.compose.material3.Text
 import androidx.compose.runtime.Composable
+import androidx.compose.runtime.mutableStateOf
+import androidx.compose.runtime.remember
+import androidx.compose.runtime.setValue
+import androidx.compose.runtime.getValue
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.unit.dp
@@ -27,6 +31,8 @@ fun IncomingTradeDialog(
     onAccept: () -> Unit,
     onReject: () -> Unit
 ) {
+    var responded by remember(trade.id) { mutableStateOf(false) }
+
     Dialog(onDismissRequest = { }) {
         Card(shape = RoundedCornerShape(16.dp), modifier = Modifier.padding(12.dp)) {
             Column(modifier = Modifier.padding(16.dp)) {
@@ -45,8 +51,8 @@ fun IncomingTradeDialog(
 
                 Spacer(modifier = Modifier.height(16.dp))
                 Row(horizontalArrangement = Arrangement.SpaceAround, modifier = Modifier.fillMaxWidth()) {
-                    Button(onClick = onAccept) { Text("Prihvati") }
-                    Button(onClick = onReject) { Text("Odbij") }
+                    Button(onClick = { responded = true; onAccept() }, enabled = !responded) { Text("Prihvati") }
+                    Button(onClick = { responded = true; onReject() }, enabled = !responded) { Text("Odbij") }
                 }
             }
         }

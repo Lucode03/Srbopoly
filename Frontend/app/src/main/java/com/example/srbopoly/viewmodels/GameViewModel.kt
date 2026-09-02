@@ -6,6 +6,7 @@ import com.example.srbopoly.data.fields.Field
 import com.example.srbopoly.data.fields.PropertyField
 import com.example.srbopoly.data.gamedto.CardDeckType
 import com.example.srbopoly.data.gamedto.CardDrawnEvent
+import com.example.srbopoly.data.gamedto.ChatMessageDto
 import com.example.srbopoly.data.gamedto.DiceRolledEvent
 import com.example.srbopoly.data.gamedto.GameCommand
 import com.example.srbopoly.data.gamedto.GameEndedEvent
@@ -29,6 +30,7 @@ import com.example.srbopoly.data.gamedto.TradeAcceptedEvent
 import com.example.srbopoly.data.gamedto.TradeOfferDto
 import com.example.srbopoly.data.gamedto.TradeRejectedEvent
 import com.example.srbopoly.data.gamedto.describe
+import com.example.srbopoly.data.repository.ConnectionStatus
 import com.example.srbopoly.data.repository.GameHubRepository
 import com.example.srbopoly.data.repository.GameServerMessage
 import com.example.srbopoly.factories.CardCatalog
@@ -63,6 +65,12 @@ class GameViewModel @Inject constructor(
     private val _gameState = MutableStateFlow<GameStateSnapshotDto?>(null)
     val gameState: StateFlow<GameStateSnapshotDto?> = _gameState.asStateFlow()
 
+    val chatMessages: StateFlow<List<ChatMessageDto>> = gameHubRepository.chatMessages
+
+    private val _unreadChatCount = MutableStateFlow(0)
+    val unreadChatCount: StateFlow<Int> = _unreadChatCount.asStateFlow()
+
+    private var chatPanelOpen = false
 
     private val _dice1 = MutableStateFlow(0)
     val dice1 = _dice1.asStateFlow()
@@ -98,6 +106,8 @@ class GameViewModel @Inject constructor(
     val pauseVotes: StateFlow<List<Int>> = gameHubRepository.pauseVotes
     val gamePaused: StateFlow<Boolean> = gameHubRepository.gamePaused
 
+    val connectionStatus: StateFlow<ConnectionStatus> = gameHubRepository.connectionStatus
+
     val pendingTrade: StateFlow<PendingTradeDto?> = gameState
         .map { it?.currentTurn?.pendingTrade }
         .stateIn(viewModelScope, SharingStarted.WhileSubscribed(5000), null)
@@ -113,6 +123,13 @@ class GameViewModel @Inject constructor(
                         syncFieldState(message.dto)
                         restartCosmeticTimer()
                     }
+                }
+            }
+        }
+        viewModelScope.launch {
+            gameHubRepository.chatMessages.collect { messages ->
+                if (!chatPanelOpen && messages.isNotEmpty()) {
+                    _unreadChatCount.value += 1
                 }
             }
         }
@@ -294,6 +311,21 @@ class GameViewModel @Inject constructor(
                 _commandError.tryEmit(result.error)
             }
         }
+    }
+
+    fun sendChatMessage(text: String) {
+        viewModelScope.launch(Dispatchers.IO) {
+            gameHubRepository.sendChatMessage(text)
+        }
+    }
+
+    fun onChatPanelOpened() {
+        chatPanelOpen = true
+        _unreadChatCount.value = 0
+    }
+
+    fun onChatPanelClosed() {
+        chatPanelOpen = false
     }
 
     override fun onCleared() {

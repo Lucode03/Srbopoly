@@ -1,6 +1,7 @@
 package com.example.srbopoly.ui.screens
 
 import android.R.attr.singleLine
+import android.widget.Toast
 import androidx.compose.foundation.Image
 import androidx.compose.foundation.background
 import androidx.compose.foundation.border
@@ -65,7 +66,9 @@ import androidx.compose.foundation.gestures.detectTapGestures
 import androidx.compose.foundation.text.KeyboardActions
 import androidx.compose.foundation.text.input.InputTransformation.Companion.keyboardOptions
 import androidx.compose.ui.input.pointer.pointerInput
+import androidx.compose.ui.platform.LocalContext
 import androidx.compose.ui.text.input.ImeAction
+import kotlinx.coroutines.flow.collectLatest
 
 @Composable
 fun SettingsScreen(navController: NavController,myId: Int, gameCode: String, lobbyViewModel: LobbyViewModel = hiltViewModel()) {
@@ -87,9 +90,17 @@ fun SettingsScreen(navController: NavController,myId: Int, gameCode: String, lob
     var isTextFieldFocused by remember { mutableStateOf(false) }
 
     val gameStarted by lobbyViewModel.gameStarted.collectAsState()
-    
+
+    val context = LocalContext.current
+
     LaunchedEffect(gameCode) {
         lobbyViewModel.initLobby(gameCode, myId)
+    }
+
+    LaunchedEffect(Unit) {
+        lobbyViewModel.errorMessage.collectLatest { errorMsg ->
+            Toast.makeText(context, errorMsg, Toast.LENGTH_LONG).show()
+        }
     }
 
     LaunchedEffect(gameStarted) {

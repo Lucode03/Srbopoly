@@ -9,6 +9,7 @@ import com.example.srbopoly.data.repository.LobbyRepository
 import dagger.hilt.android.lifecycle.HiltViewModel
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.flow.MutableStateFlow
+import kotlinx.coroutines.flow.SharedFlow
 import kotlinx.coroutines.flow.StateFlow
 import kotlinx.coroutines.flow.asStateFlow
 import kotlinx.coroutines.launch
@@ -29,6 +30,7 @@ class LobbyViewModel @Inject constructor(
     private val _maxMovesText = MutableStateFlow(50)
     val maxMovesText = _maxMovesText.asStateFlow()
 
+    val errorMessage: SharedFlow<String> = lobbyRepository.errorMessage
 
     private val _dice1 = MutableStateFlow(0)
     val dice1 = _dice1.asStateFlow()
