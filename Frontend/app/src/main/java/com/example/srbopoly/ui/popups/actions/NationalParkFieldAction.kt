@@ -16,7 +16,7 @@ fun NationalParkFieldAction(
     onResult: (Boolean) -> Unit,
     modifier: Modifier,
     isMyTurn:Boolean
-){
+) {
     Box(
         modifier = modifier.fillMaxWidth(),
         contentAlignment = Alignment.Center

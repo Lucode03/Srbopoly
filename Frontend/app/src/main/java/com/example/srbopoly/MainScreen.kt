@@ -32,6 +32,7 @@ import com.example.srbopoly.ui.screens.RankingsScreen
 import com.example.srbopoly.ui.screens.SettingsScreen
 import com.example.srbopoly.viewmodels.AuthViewModel
 import com.example.srbopoly.viewmodels.GameViewModel
+import com.example.srbopoly.viewmodels.MyGamesViewModel
 
 @RequiresApi(Build.VERSION_CODES.O)
 @Composable
@@ -116,7 +117,13 @@ fun MainScreen(modifier: Modifier = Modifier,
                     )
                 }
             }
-            composable(NavItem.GameList.route) { user?.let { it1 -> GameListScreen(user = it1) } }
+            composable(NavItem.GameList.route) { user?.let { val myGamesViewModel: MyGamesViewModel = hiltViewModel()
+
+                GameListScreen(
+                    navController = mainNavController,
+                    viewModel = myGamesViewModel
+                ) }
+            }
             composable("settings/{gameCode}") { backStackEntry ->
                 val gameCode = backStackEntry.arguments?.getString("gameCode") ?: ""
                 user?.let {

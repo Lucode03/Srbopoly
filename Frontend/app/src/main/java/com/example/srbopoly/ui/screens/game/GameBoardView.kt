@@ -62,6 +62,7 @@ import androidx.navigation.compose.rememberNavController
 import com.example.srbopoly.R
 import com.example.srbopoly.classes.getDiceImage
 import com.example.srbopoly.data.fields.Field
+import com.example.srbopoly.data.fields.NationalParkField
 import com.example.srbopoly.data.fields.PropertyField
 import com.example.srbopoly.data.fields.getCenterRect
 import com.example.srbopoly.data.fields.getFieldOffset
@@ -169,18 +170,34 @@ fun GameBoardView(myId:Int,viewModel: GameViewModel,showPlayerDetails:Boolean=tr
     }
 
     pendingPurchaseField?.let { field ->
-        if (field is PropertyField) {
-            selectedField = null
-            showInfoDialog = false
+        if (field is PropertyField || field is NationalParkField) {
+            if (isMyTurn) {
+                selectedField = null
+                showInfoDialog = false
 
-            FieldInfoDialog(
-                onDismiss = { },
-                field = field,
-                action = true,
-                isMyTurn = isMyTurn,
-                playerID = myId,
-                onResult = { bought -> if (bought) viewModel.buyProperty() else viewModel.declineBuy() }
-            )
+                FieldInfoDialog(
+                    onDismiss = { },
+                    field = field,
+                    action = true,
+                    isMyTurn = true,
+                    playerID = myId,
+                    onResult = { bought -> if (bought) viewModel.buyProperty() else viewModel.declineBuy() }
+                )
+            } else {
+                Box(
+                    modifier = Modifier.fillMaxWidth().padding(8.dp),
+                    contentAlignment = Alignment.Center
+                ) {
+                    Card(colors = CardDefaults.cardColors(containerColor = Color(0xFFE8E8E8))) {
+                        Text(
+                            "${currentPlayer?.name ?: "Igrač"} razmišlja da li da kupi ${field.Name}...",
+                            modifier = Modifier.padding(12.dp),
+                            fontSize = 13.sp,
+                            color = Color.Gray
+                        )
+                    }
+                }
+            }
         }
     }
 
@@ -522,12 +539,6 @@ fun GameBoardView(myId:Int,viewModel: GameViewModel,showPlayerDetails:Boolean=tr
                 .padding(top=20.dp),
             contentAlignment = Alignment.TopCenter)
         {
-            Text(
-                text = if (isMyTurn) "Tvoj je red!" else "Red je na: ${currentPlayer?.name ?: "?"}",
-                fontSize = 16.sp,
-                fontWeight = FontWeight.Bold,
-                color = if (isMyTurn) Color(0xFF2E7D32) else Color.Gray
-            )
             Spacer(modifier = Modifier.height(8.dp))
             when {
                 state.currentTurn.phase == TurnPhase.AWAITING_ROLL -> {
@@ -553,23 +564,25 @@ fun GameBoardView(myId:Int,viewModel: GameViewModel,showPlayerDetails:Boolean=tr
                                 Spacer(modifier = Modifier.height(8.dp))
                             }
 
-                            Row(
-                                modifier = Modifier.clickable(enabled = isMyTurn, onClick = { viewModel.rollDice() }),
-                                horizontalArrangement = Arrangement.spacedBy(16.dp),
-                                verticalAlignment = Alignment.CenterVertically
-                            ) {
-                                Image(
-                                    painter = painterResource(getDiceImage(dice1)),
-                                    contentDescription = "Dice 1",
-                                    modifier = Modifier.size(64.dp).clip(RoundedCornerShape(12.dp))
-                                        .border(width = 2.dp, color = Color.Blue, shape = RoundedCornerShape(12.dp))
-                                )
-                                Image(
-                                    painter = painterResource(getDiceImage(dice2)),
-                                    contentDescription = "Dice 2",
-                                    modifier = Modifier.size(64.dp).clip(RoundedCornerShape(12.dp))
-                                        .border(width = 2.dp, color = Color.Blue, shape = RoundedCornerShape(12.dp))
-                                )
+                            if (isMyTurn) {
+                                Row(
+                                    modifier = Modifier.clickable(enabled = isMyTurn, onClick = { viewModel.rollDice() }),
+                                    horizontalArrangement = Arrangement.spacedBy(16.dp),
+                                    verticalAlignment = Alignment.CenterVertically
+                                ) {
+                                    Image(
+                                        painter = painterResource(getDiceImage(dice1)),
+                                        contentDescription = "Dice 1",
+                                        modifier = Modifier.size(64.dp).clip(RoundedCornerShape(12.dp))
+                                            .border(width = 2.dp, color = Color.Blue, shape = RoundedCornerShape(12.dp))
+                                    )
+                                    Image(
+                                        painter = painterResource(getDiceImage(dice2)),
+                                        contentDescription = "Dice 2",
+                                        modifier = Modifier.size(64.dp).clip(RoundedCornerShape(12.dp))
+                                            .border(width = 2.dp, color = Color.Blue, shape = RoundedCornerShape(12.dp))
+                                    )
+                                }
                             }
 
                             Spacer(modifier = Modifier.height(4.dp))
@@ -597,22 +610,24 @@ fun GameBoardView(myId:Int,viewModel: GameViewModel,showPlayerDetails:Boolean=tr
                     }
                 }
                 state.currentTurn.phase == TurnPhase.TURN_ACTIONS -> {
-                    Row(horizontalArrangement = Arrangement.spacedBy(12.dp), verticalAlignment = Alignment.CenterVertically) {
-                        if (pendingTrade == null) {
-                            Button(
-                                enabled = isMyTurn,
-                                onClick = { showTradeProposalDialog = true }
-                            ) {
-                                Text("Predloži razmenu", fontSize = 14.sp)
+                    if(isMyTurn) {
+                        Row(horizontalArrangement = Arrangement.spacedBy(12.dp), verticalAlignment = Alignment.CenterVertically) {
+                            if (pendingTrade == null) {
+                                Button(
+                                    enabled = true,
+                                    onClick = { showTradeProposalDialog = true }
+                                ) {
+                                    Text("Predloži razmenu", fontSize = 14.sp)
+                                }
                             }
-                        }
-                        Button(
-                            enabled = isMyTurn,
-                            onClick = { viewModel.endTurn() },
-                            modifier = Modifier.height(36.dp),
-                            elevation = ButtonDefaults.elevatedButtonElevation(4.dp)
-                        ) {
-                            Text(text = "Završi potez", fontSize = 14.sp, color = Color.Black)
+                            Button(
+                                enabled = true,
+                                onClick = { viewModel.endTurn() },
+                                modifier = Modifier.height(36.dp),
+                                elevation = ButtonDefaults.elevatedButtonElevation(4.dp)
+                            ) {
+                                Text(text = "Završi potez", fontSize = 14.sp, color = Color.Black)
+                            }
                         }
                     }
                 }

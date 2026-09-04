@@ -14,6 +14,7 @@ import com.example.srbopoly.network.NetworkConfig
 import com.microsoft.signalr.HubConnection
 import com.microsoft.signalr.HubConnectionBuilder
 import com.microsoft.signalr.HubConnectionState
+import com.microsoft.signalr.HubException
 import io.reactivex.rxjava3.core.Single
 import kotlinx.coroutines.CoroutineScope
 import kotlinx.coroutines.Dispatchers
@@ -142,10 +143,24 @@ class GameHubRepository @Inject constructor(
     }
 
     suspend fun sendCommand(command: GameCommand): CommandResultDto = withContext(Dispatchers.IO) {
-        hubConnection
-            ?.invoke(CommandResultDto::class.java, "SendCommand", command)
-            ?.blockingGet()
-            ?: CommandResultDto(success = false, error = "Nema aktivne konekcije")
+        val connection = hubConnection
+        if (connection == null || connection.connectionState != HubConnectionState.CONNECTED) {
+            return@withContext CommandResultDto(success = false, error = "Nema aktivne konekcije")
+        }
+
+        try {
+            Log.d("GameHubRepository", "Šaljem komandu na server: ${command.commandType}")
+
+            connection
+                .invoke(CommandResultDto::class.java, "SendCommand", command)
+                .blockingGet()
+        } catch (e: HubException) {
+            Log.e("GameHubRepository", "Server HubException pri slanju komande (${command.javaClass.simpleName}): ${e.message}", e)
+            CommandResultDto(success = false, error = e.message ?: "Greška na serveru")
+        } catch (e: Exception) {
+            Log.e("GameHubRepository", "Neuspešno slanje komande (${command.javaClass.simpleName}): ${e.message}", e)
+            CommandResultDto(success = false, error = "Greška pri komunikaciji sa serverom")
+        }
     }
 
     fun requestPause() {

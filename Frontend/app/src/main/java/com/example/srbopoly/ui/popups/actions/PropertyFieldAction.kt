@@ -41,7 +41,7 @@ fun PropertyFieldAction(
         when {
             action && !hasOwner -> {
                 Row(horizontalArrangement = Arrangement.SpaceAround, modifier = Modifier.fillMaxWidth()) {
-                    Button(onClick = { onResult(true) }, enabled = isMyTurn) { Text("Kupi") }
+                    Button(onClick = { onResult(true) }, enabled = isMyTurn && myMoney >= field.Price) { Text("Kupi") }
                     Button(onClick = { onResult(false) }, enabled = isMyTurn) { Text("Otkaži") }
                 }
             }

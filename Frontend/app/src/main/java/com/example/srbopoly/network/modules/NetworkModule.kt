@@ -4,6 +4,7 @@ import com.example.srbopoly.network.NetworkConfig
 import com.example.srbopoly.network.apiServices.persistanceService.ApiService
 import com.example.srbopoly.network.apiServices.persistanceService.ApiServiceAuth
 import com.example.srbopoly.network.apiServices.persistanceService.ApiServiceGame
+import com.example.srbopoly.network.apiServices.persistanceService.ApiServiceMyGames
 import com.example.srbopoly.network.apiServices.persistanceService.ApiServiceUser
 import dagger.Module
 import dagger.Provides
@@ -59,5 +60,13 @@ object NetworkModule {
     fun provideApiServiceUser(
         @Named("GameRetrofit")retrofit: Retrofit): ApiServiceUser {
         return retrofit.create(ApiServiceUser::class.java)
+    }
+
+    @Provides
+    @Singleton
+    fun provideApiServiceMyGames(
+        @Named("GameRetrofit") retrofit: Retrofit
+    ): ApiServiceMyGames {
+        return retrofit.create(ApiServiceMyGames::class.java)
     }
 }

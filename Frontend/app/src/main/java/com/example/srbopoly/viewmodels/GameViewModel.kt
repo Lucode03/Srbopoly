@@ -195,9 +195,11 @@ class GameViewModel @Inject constructor(
                 }
                 is PropertyBoughtEvent -> {
                     showActionResult("${playerName(event.ownerId)} je kupio/la ${fieldName(event.fieldId)} za ${event.pricePaid}")
+                    _pendingPurchaseField.value = null
                 }
                 is PropertyPurchaseDeclinedEvent -> {
                     showActionResult("Niko nije kupio ${fieldName(event.propertyId)}")
+                    _pendingPurchaseField.value = null
                 }
                 is HouseBuiltEvent -> {
                     val what = if (event.newHouseCount == 5) "hotel" else "kuća"
